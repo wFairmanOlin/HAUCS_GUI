@@ -1,0 +1,19 @@
+param,value
+truck_id,truck1
+fb_key,/home/haucs/Desktop/HAUCS_GUI/fb_key.json
+do_vals,/home/haucs/Desktop/HAUCS_GUI/DO_data/
+log_folder,log
+database_folder,database_truck
+unsaved_json,unsaved_json
+completed_upload,completed_json
+ysi_vals,/home/haucs/Desktop/HAUCS_GUI/YSI_data/
+underwater_counter,30
+max_battv,4.2
+min_battv,3.2
+upload_firebase_max_counter,30
+unit,mgl
+autoclose_sec,10
+min_do,4.0
+good_do,5.0
+last_calibration=N/A,
+last_calibration,"Jul 14, 2025 11:13 AM"

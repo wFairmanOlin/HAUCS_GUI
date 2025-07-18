@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "haucs-monitoring",
+  "private_key_id": "2b0970952d1d267e2c2fa104c201e120258b5f6c",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDBkqNizciDN1Cw\nM+gTYViF1YN0OB5h3E/M0iaMSE/2FWOPlwT7PSu+mFc6yJYL0gHy2rOj7R82C1SC\nJWLw0A299HfdzjxuVvsqOvUpdwK+ym05aDu8MOtrMj+9Wz7xDU/Qdz8H40m7E/NN\nN0bm8NwUSmKPoAIVp+3+g9YuvkZ7XdWU1yT4OWplFCXxGT86YuyCOdtWAkUsR/Ai\nmS9vdCOKvOqN0JOMgEnSxWznq566vhAhIVvO/oiLZQ8/MKC8OHdtd7RjsoaTiNe6\ndGqzxnldmw/z8OnolQQYKTa9CLDCOW1aRO+CymwNsSs+06RWXAHtevTJmen/TSGL\n5dh1jXFTAgMBAAECggEAAKu+KmtuKM5CvSEP25QA/aueXgM2tiSDqPRD5lYH9KWl\nZY4RkZ4j7BJQjs/uOO3/mO40tdhDzksk9YBg3on9QSLyoc1t6WMvpv2duAje0rLa\norh/jyrx1e2bQTZqnG2GyGvXx1ji6WWr1kMjg9XI7ot4hOjpH1bCHyIHCauie5D3\niDs+q6DrKfEHH8hQQtPVxUL9a7V6xOFId9/1zqMe76M1hxASDVIBtc37/q+bi+j8\nkDfcJGdAvCe5Z5PlOyFZ1fOgYO4Xf5Efj0Ug94Rl6N26SZiW5Gh3xFUoV5eBgjwF\nCG/xUzz0QpXuP12AV1AfLhTHfWAfWFxkBCww8mLlmQKBgQD8ORG84hdKvBYUp1o3\nqF4NBYAdDpbhNRPfN2Zhh9OQNrA4Hjtb6URAvoiFCEDw74hPVyKDHanZik9z85eW\nKjui/2XIB84bXZbsCW87Awuye+9txt2Yfo7Qmhdae3FbMQCc6zBlVgAslC7UTgBS\n4wLLMDFX+Z8aTCyipKgX6md+VwKBgQDEeLnLo3ufjgbcJyO+E00CUWonIyoU4676\nMuyukxn0rkdYVn0LFxvEKdi+16ywl3Bt56Y6AIiGMch72OW/s9IdH9rZeQrId74o\nQuqe2ErdM2FMOjab9I0axWMTsOTDyfUwGOw7c1TrdiNmr+Mz+tRDNY55GNnqIUdL\nGTNSykqPZQKBgQC19bYGPlXvZKHJZLKBVMYFPuKeE9hlwJUFhEIoOoU2lT2sPqM0\nO6Ux0ENNNhcjuqrsEkCjttLCTjXjwOirPOypOveCx565v1sSDfxg5mGZ8i9ZUw6q\n5SLC+2e9rzCoSUHX8xSHBvQ5NO5T27IAGiX50FrIzR0rK6lH7OIX3tOrIQKBgADO\ncgzI7f/4qESNEJN+JsnEpcflWA3f5V73iIsq5Wdgs8BEEp1SCfYjKdWWswnChV6e\nHcuNJwJOAAGqIT9JMKqX7+EGoymxfCFULPxb7Oq9hD+42XKIbW/XsZFqH3ZCRPRe\nldGkpouU345TWH5lICvqc1xB4tsYKd/ACbrkQ6wVAoGALj/00ojJc4lcCpqopcQV\ngChTSrQAD788S9Kbw5xQcxvvMdF+6iy9hYgWS2PHECE8vh6oiaIDCUvueA6KhavS\nSFmFcYGWHFXg6F6umsWfxD8VM81RKzdANMj/74uSLbiaR4lihEp/DHdhzJYqucvZ\nag158V5nGypzxMI6986I8nY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-wt1pb@haucs-monitoring.iam.gserviceaccount.com",
+  "client_id": "118370528610262078346",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-wt1pb%40haucs-monitoring.iam.gserviceaccount.com"
+}
