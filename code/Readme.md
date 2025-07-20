@@ -62,8 +62,8 @@ The following sections describe the purpose of each file.
 **Data Flow:**
 1. When a reading is performed, a `.txt` file is saved in `DO_data/` or `YSI_data/`.
 2. A `.json` file for that session is created in `unsaved_json/`.
-3. A summary line (including paths to data files) is appended to the daily `.csv` file in `database_truck/`.
-4. After successful upload or post-processing, the `.json` files may be moved to `completed_json/`.
+3. A summary line (including paths to data files) is appended to the daily `.csv` file in `database_truck/` inside must set upload status as `TRUE`.
+4. After successful upload or post-processing, the `.txt` files from `unsaved_json/` must be moved to `completed_json/` and change upload status of `.csv` file that is the same uploaded information as `TRUE`.
 
 ---
 
@@ -77,7 +77,8 @@ The following sections describe the purpose of each file.
 - Detailed function-level explanations are documented in code comments.
 - For development and debugging, start the main program with:
   ```bash
-  python3 gui02.py
+  > cd /home/haucs/Desktop/HAUCS_GUI/
+  > /home/haucs/buoy/bin/python3 gui02.py
   ```
 
 ## License
