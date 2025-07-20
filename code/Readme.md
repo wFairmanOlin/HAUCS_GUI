@@ -82,4 +82,4 @@ The following sections describe the purpose of each file.
   ```
 
 ## License
-MIT License
+MIT license
