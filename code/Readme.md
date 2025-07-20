@@ -51,11 +51,11 @@ The following sections describe the purpose of each file.
 ## Data and Log Folders
 
 - **log/** – Stores program log files. A new log file is created each time the program is started.
-- **DO_data/** – Stores DO sensor data from each reading cycle. Each measurement session is saved as a separate `.txt` file, which contains raw loop data and final computed DO values.
+- **DO_data/** – Stores DO sensor data from each reading cycle. Each measurement session is saved as a separate `.csv` file, which contains raw loop data and final computed DO values.
 - **YSI_data/** – Stores DO data collected from the YSI machine, saved in a similar structure to `DO_data/`.
-- **unsaved_json/** – Temporary storage for raw measurement results in `.json` format. Each file corresponds to one measurement.
+- **unsaved_json/** – Temporary storage for raw measurement results in `.txt` format. Each file corresponds to one measurement.
 - **database_truck/** – Contains daily `.csv` files summarizing measurement sessions. Each CSV file represents one day of data, with one row per reading session and paths pointing to related `DO_data` and `YSI_data` files.
-- **completed_json/** – Stores finalized JSON files after data is successfully uploaded or processed.
+- **completed_json/** – Stores finalized TXT files after data is successfully uploaded.
 
 ---
 
