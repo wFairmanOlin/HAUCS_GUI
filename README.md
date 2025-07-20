@@ -59,3 +59,22 @@ To enable the GUI to start automatically on boot:
    ```bash
    ~/.config/autostart
    ```
+
+## `gui.sh` — Program Launcher Script
+`gui.sh` is a shell script that launches the HAUCS-GUI software.
+
+Its content is as follows:
+
+```bash
+#!/bin/bash
+echo sh started
+cd /home/haucs/Desktop/HAUCS_GUI/
+
+# if no files have been change
+/home/haucs/buoy/bin/python3 gui02.py
+```
+
+Make sure to set execute permission:
+```bash
+chmod +x /home/haucs/Desktop/gui.sh
+```
