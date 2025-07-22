@@ -1,8 +1,0 @@
-time,Pond ID,HBOI DO,YSI DO,Temperature,Pressure,do csv,upload status,message_time
-16:09:54,300,0.62,0.0,78.91,1027.78,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-16-09-27.csv,True,20250712_20:09:26
-16:12:13,300,0.53,0.0,76.8,1028.07,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-16-11-45.csv,True,20250712_20:11:44
-17:52:59,unk25,0.56,0.0,69.48,1027.9,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-17-52-43.csv,True,20250712_21:52:41
-18:20:54,unk25,0.62,0.0,69.55,1028.88,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-18-20-39.csv,True,20250712_22:20:38
-18:25:22,unk25,0.53,0.0,69.67,1028.26,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-18-23-46.csv,True,20250712_22:23:45
-18:38:30,300,0.71,0.0,69.58,1027.54,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-18-35-27.csv,True,20250712_22:35:26
-18:45:43,unk25,0.62,0.0,70.08,1026.78,/home/haucs/Desktop/HAUCS_GUI/DO_data/2025-07-12-18-45-18.csv,True,20250712_22:45:16
