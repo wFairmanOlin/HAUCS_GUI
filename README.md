@@ -40,7 +40,22 @@ The diagram below shows the hardware and data flow of the HAUCS-GUI system:
 - **YSI Measure (ADC)**: Allows compatibility with analog sensors.
 
 ---
+# Installation
 
+## Python Virtual Environment
+Run the following commands to create a virtual environment
+```
+python3 -m venv truck
+```
+
+## Clone Repository
+Make sure to clone this repository in `/home/haucs/Desktop`. After cloning, install python libraries:
+
+```
+source /home/truck/bin/activate
+cd /home/haucs/Desktop/HAUCS_GUI/code
+pip3 install -r requirements.txt
+```
 ## Autostart Setup
 To enable the GUI to start automatically on boot:
 
@@ -53,28 +68,17 @@ To enable the GUI to start automatically on boot:
    [Desktop Entry]
    Type=Application
    Name=TRUCKGUI
-   Exec=/home/haucs/Desktop/gui.sh
+   Exec=/home/haucs/Desktop/HAUCS_GUI/gui_start.sh
    ```
 3. Save the `gui.desktop` file in:
    ```bash
    ~/.config/autostart
    ```
 
-## `gui.sh` — Program Launcher Script
+## `gui_start.sh` — Program Launcher Script
 `gui.sh` is a shell script that launches the HAUCS-GUI software.
-
-Its content is as follows:
-
-```bash
-#!/bin/bash
-echo sh started
-cd /home/haucs/Desktop/HAUCS_GUI/
-
-# if no files have been change
-/home/haucs/buoy/bin/python3 gui02.py
-```
 
 Make sure to set execute permission:
 ```bash
-chmod +x /home/haucs/Desktop/gui.sh
+chmod +x /home/haucs/Desktop/HAUCS_CODE/gui_start.sh
 ```
