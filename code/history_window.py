@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 import os, csv, re
 from datetime import datetime, timedelta
-from converter import convert_percent_to_mgl, farenheigh_to_celcius
+from converter import convert_percent_to_mgl, to_celcius
 
 class HistoryLogWindow(QDialog):
     unit = "percent"
@@ -106,7 +106,7 @@ class HistoryLogWindow(QDialog):
                         hboi = row["HBOI DO"]
                         ysi = row["YSI DO"]
                         temp_f = float(row["Temperature"])
-                        temp = farenheigh_to_celcius(temp_f)
+                        temp = to_celcius(temp_f)
                         press = float(row["Pressure"])
 
                         if self.is_number(hboi):

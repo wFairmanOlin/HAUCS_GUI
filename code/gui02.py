@@ -14,7 +14,7 @@ from truck_sensor import TruckSensor
 from datetime import datetime
 from battery_widget import BatteryWidget
 from led_indicator import LEDStatusWidget
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, farenheigh_to_celcius
+from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_celcius
 from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
@@ -92,7 +92,7 @@ class DOApp(QWidget):
         self.last_calibration = self.settings.get("last_calibration", "N/A")
 
     def update_setting(self, key, value):
-        self.settings[key] = str(value)  # แปลงเป็น string สำหรับเขียนลง CSV
+        self.settings[key] = str(value)
 
     def save_settings(self, filename="setting.setting"):
         try:
@@ -120,17 +120,17 @@ class DOApp(QWidget):
         
         if self.unit == "percent":
             self.unit_toggle = ToggleSwitch(checked=True)
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px;")
         else:
             self.unit_toggle = ToggleSwitch(checked=False)
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px; font-weight: bold;")
         self.unit_toggle.toggled.connect(self.on_toggle_click)
 
         self.lbl_percent = QLabel("%")
         if self.unit == "percent":
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px; font-weight: bold;")
         else:
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px;")
 
         top_bar.addWidget(self.lbl_unit)
         top_bar.addSpacing(10)
@@ -266,21 +266,20 @@ class DOApp(QWidget):
         log_layout.setContentsMargins(0, 0, 0, 0)  # ลบขอบ
         log_layout.setSpacing(0)
 
-        # Container widget สำหรับใส่ background ให้ layout
+        # Container widget layout
         log_container = QWidget()
         log_container.setStyleSheet("background-color: #eeeeee;")
         log_container.setMaximumHeight(int(self.base_font_size * 1.2))
 
         log_inner_layout = QHBoxLayout()
-        log_inner_layout.setContentsMargins(10, 2, 10, 2)  # padding ด้านในเล็กน้อย
+        log_inner_layout.setContentsMargins(10, 2, 10, 2)  # padding
 
         self.log_label = QLabel("System ready.")
         self.log_label.setStyleSheet(f"""
             color: #000000;
             font-size: {int(self.base_font_size * 0.5)}px;
         """)
-        self.log_label.setFixedHeight(int(self.base_font_size * 0.7))  # ขนาดพอดีตัวอักษร
-
+        self.log_label.setFixedHeight(int(self.base_font_size * 0.7))  
         log_inner_layout.addWidget(self.log_label)
         log_container.setLayout(log_inner_layout)
 
@@ -295,7 +294,7 @@ class DOApp(QWidget):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_counter)
-        self.timer.start(1000)  # ทุก 1000 ms
+        self.timer.start(1000)
 
     def setup_thread(self):
         self.thread = TruckSensor()
@@ -356,7 +355,7 @@ class DOApp(QWidget):
         if 'do' in data_dict:
             self.update_value("SDL", f"{data_dict['do']:.2f}")
             if self.unit == "percent":
-                t = farenheigh_to_celcius(self.thread.sdata["temp"][0])
+                t = to_celcius(self.thread.sdata["temp"][0])
                 p = self.thread.sdata["pressure"][0]
                 do_val = convert_percent_to_mgl(data_dict['do'], t, p)
             else:
@@ -378,7 +377,7 @@ class DOApp(QWidget):
             self.update_value("YSI", f"{data_dict['ysi']:.2f}")
             
             if self.unit == "percent":
-                t = farenheigh_to_celcius(self.thread.sdata["temp"][0])
+                t = to_celcius(self.thread.sdata["temp"][0])
                 p = self.thread.sdata["pressure"][0]
                 do_val = convert_percent_to_mgl(data_dict['ysi'], t, p)
             else:
@@ -440,7 +439,7 @@ class DOApp(QWidget):
         else:
             self.result_window.update_value("PID", "-1")
         if 'temp' in data_dict:
-            self.result_window.temp_c = farenheigh_to_celcius(data_dict['temp'][0])
+            self.result_window.temp_c = to_celcius(data_dict['temp'][0])
             self.result_window.update_value("Temp", f"{data_dict['temp'][0]:.2f} °F")
         if 'pressure' in data_dict:
             self.result_window.pressure = data_dict['pressure'][0]

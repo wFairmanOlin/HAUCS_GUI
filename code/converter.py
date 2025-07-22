@@ -1,10 +1,10 @@
 import math
 import numpy as np
 
-def celcius_to_farenheigh(temp):
+def to_fahrenheit(temp):
     return (temp / 5) * 9 + 32
 
-def farenheigh_to_celcius(temp):
+def to_celcius(temp):
     return ((temp - 32) / 9) * 5
 
 # def convert_percent_to_mgl(do, t, p, s=0):

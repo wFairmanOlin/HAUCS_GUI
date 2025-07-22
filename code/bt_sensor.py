@@ -12,7 +12,7 @@ from datetime import datetime
 import subprocess
 import serial
 from subprocess import call
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, celcius_to_farenheigh, farenheigh_to_celcius
+from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_fahrenheit, to_celcius
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
@@ -256,7 +256,7 @@ class BluetoothReader(QObject):
                 self.writeCSV(self.csv_file, [float(value[0]), do_val, temp_val, pressure_val])
 
             self.do_vals.append(do_val) # DO
-            temp_val = celcius_to_farenheigh(temp_val)
+            temp_val = to_fahrenheit(temp_val)
             self.temp_vals.append(round(temp_val, 1))   # tempuerature 
             self.pressure_vals.append(pressure_val) # pressure
             self.data_counter = self.data_counter + 1  

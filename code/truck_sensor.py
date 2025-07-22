@@ -10,12 +10,12 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, celcius_to_farenheigh, farenheigh_to_celcius
+from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_fahrenheit, to_celcius
 
 from firebase_worker import FirebaseWorker
 
 class TruckSensor(QThread):
-    update_data = pyqtSignal(dict)  # ส่งข้อความหรือข้อมูลที่ต้องการ
+    update_data = pyqtSignal(dict) 
     status_data = pyqtSignal(str)
     logger_data = pyqtSignal(dict)
     counter_is_running = pyqtSignal(str)
@@ -352,7 +352,7 @@ class TruckSensor(QThread):
 
             if update_pond_data:
                 time_stop = len(self.data_dict["do_vals"])
-                self.water_temp = farenheigh_to_celcius(self.data_dict["temp"][0])
+                self.water_temp = to_celcius(self.data_dict["temp"][0])
                 self.pressure = self.data_dict["pressure"][0]
                 self.do_val = self.data_dict["do"]
                 self.ysi_v = self.ysi_worker.get_record(time_stop)
