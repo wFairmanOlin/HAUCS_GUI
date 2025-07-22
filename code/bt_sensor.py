@@ -365,9 +365,8 @@ class BluetoothReader(QObject):
     #     return y_fit, x_plot, y_at_30, do_vals
 
     def calculate_do_and_fit(self, do_vals, max_time = 30):
-        s_vals = np.arange(len(do_vals))  # x จริงตามเวลาจริง (เช่น 0,1,...)
+        s_vals = np.arange(len(do_vals)) 
 
-        # สร้างแกน x_plot ที่ครอบคลุมถึง 30 วินาที (เสมอ)
         x_plot = np.linspace(0, 30, 100)
 
         # default fallback
@@ -375,13 +374,10 @@ class BluetoothReader(QObject):
         y_at_30 = None
 
         try:
-            # ✅ Fit exponential curve กับเท่าที่มีข้อมูล
             popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
 
-            # ✅ สร้าง y_fit ให้มีค่าครอบคลุม x_plot ถึง 30s
             y_fit = self.exp_func(x_plot, *popt)
 
-            # ✅ คำนวณ y ที่ x=30 วินาที (แม้ข้อมูลจริงจะน้อยกว่านั้น)
             y_at_30 = self.exp_func(30, *popt)
 
         except Exception as e:
@@ -390,7 +386,6 @@ class BluetoothReader(QObject):
             # fallback: linear interpolation (ถ้ามีข้อมูลน้อย)
             y_fit = np.interp(x_plot, s_vals, do_vals)
 
-            # คำนวณ y_at_30 เฉพาะกรณีที่ข้อมูลถึง 30 วิ
             if 30 <= s_vals[-1]:
                 y_at_30 = np.interp(30, s_vals, do_vals)
             else:
