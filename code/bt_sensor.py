@@ -42,8 +42,8 @@ class BluetoothReader(QObject):
     data_size_at30sec = 30
     sample_stop_time = 30
 
-    msg_command = ["get init_do", 'get init_p', 'batt', 'sample reset', 'sample size', 'sample print', 'calibration pressure', 'calibration do']
-    do_vals_log = "/home/haucs/Desktop/HAUCS/truck_app/data/"
+    do_vals_log = "DO_data/"
+    msg_command = ["get init_do", 'get init_p', 'batt', 'sample reset', 'sample size', 'sample print', 'cal ps', 'cal do']
 
     ################## logger #########################
     logger_status = "normal"
@@ -316,7 +316,6 @@ class BluetoothReader(QObject):
         try:
             header = ['time', 'do', 'temperature', 'pressure']
             filePath = self.do_vals_log
-            #filePath = "data/"
             date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
             if not os.path.exists(filePath):
@@ -341,7 +340,6 @@ class BluetoothReader(QObject):
     #     data_size_at30sec = self.data_size_at30sec
     #     sample_stop_time = self.sample_stop_time
 
-    #     # ✅ ปรับ scale ของ s_vals ตามกรณี
     #     if is_30sec:
     #         s_vals = np.linspace(0, 30, data_size_at30sec)
     #     else:

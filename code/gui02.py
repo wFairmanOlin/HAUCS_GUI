@@ -71,7 +71,7 @@ class DOApp(QWidget):
             print(f"Settings file '{filename}' not found.")
 
         self.fb_key = self.settings.get("fb_key", "fb_key.json") #
-        self.do_vals_log = self.settings.get("do_vals", "data/") #
+        self.do_vals_log = self.settings.get("do_vals", "DO_data/") #
         self.log_folder = self.settings.get("log_folder", "log") #
         self.database_folder = self.settings.get("database_folder", "database_truck") #
         self.upload_firebase_max_counter = int(self.settings.get("upload_firebase_max_counter", 30)) #

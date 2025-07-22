@@ -53,13 +53,13 @@ class TruckSensor(QThread):
 
     max_fail = 30
     truck_id = "truck1"
-    fb_key="/home/haucs/Desktop/HAUCS_GUI/fb_key.json"
+    fb_key="fb_key.json"
     database_folder = "database_truck"
-    log_folder = "log"
-    do_vals_log = "/home/haucs/Desktop/HAUCS/truck_app/data/"
+    log_folder = "log/"
+    do_vals_log = "DO_data/"
     unsaved_json = "unsaved_json"
     completed_upload = "completed_json"
-    YSI_folder = "/home/haucs/Desktop/HAUCS_GUI/YSI_data/"
+    YSI_folder = "YSI_data/"
     unit = "mgl"
 
     def __init__(self, parent=None):
@@ -69,7 +69,10 @@ class TruckSensor(QThread):
     def initialize(self):
         date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-        logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', filename=f'{self.log_folder}/log_{date}.log', encoding='utf-8',
+        if not os.path.exists(self.log_folder):
+            os.makedirs(self.log_folder)
+
+        logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', filename=f"{self.log_folder}log_{date}.log", encoding='utf-8',
                     level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         self.update_logger_text("info", 'DO Sensor Starting')

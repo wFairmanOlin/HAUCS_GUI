@@ -1,12 +1,12 @@
 param,value
 truck_id,truck1
-fb_key,/home/haucs/Desktop/HAUCS_GUI/fb_key.json
-do_vals,/home/haucs/Desktop/HAUCS_GUI/DO_data/
+fb_key,fb_key.json
+do_vals,DO_data/
 log_folder,log
 database_folder,database_truck
 unsaved_json,unsaved_json
 completed_upload,completed_json
-ysi_vals,/home/haucs/Desktop/HAUCS_GUI/YSI_data/
+ysi_vals,YSI_data/
 underwater_counter,30
 max_battv,4.2
 min_battv,3.2

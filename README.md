@@ -42,6 +42,9 @@ The diagram below shows the hardware and data flow of the HAUCS-GUI system:
 ---
 # Installation
 
+## Enable I2C
+Go to `sudo raspi-config` and enable i2c interface.
+
 ## Python Virtual Environment
 Run the following commands to create a virtual environment
 ```
@@ -57,6 +60,8 @@ cd /home/haucs/Desktop/HAUCS_GUI/code
 pip3 install --upgrade pip
 pip3 install -r requirements.txt
 ```
+After cloning, place `fb_key.json` in the main folder. 
+
 ## Autostart Setup
 To enable the GUI to start automatically on boot:
 
