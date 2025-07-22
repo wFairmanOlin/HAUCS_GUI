@@ -17,7 +17,7 @@ import io
 import re
 import pandas as pd
 from datetime import datetime, timedelta
-from converter import convert_percent_to_mgl, farenheigh_to_celcius, convert_mgl_to_percent
+from converter import convert_percent_to_mgl, to_celcius, convert_mgl_to_percent
 
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
@@ -498,7 +498,7 @@ class ResultWindow(QWidget):
                                 do = row["HBOI DO"]
                                 # print(f"DO past: {t}, {do}")
                                 do = float(do)
-                                temp = farenheigh_to_celcius(float(row["Temperature"]))
+                                temp = to_celcius(float(row["Temperature"]))
                                 p = float(row["Pressure"])
                                 do_out = convert_percent_to_mgl(do, temp, p)
                                 do_dict[ts].append(do_out)
