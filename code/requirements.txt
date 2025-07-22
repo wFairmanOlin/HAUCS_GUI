@@ -2,7 +2,6 @@ pandas
 numpy
 ADS1x15-ADC
 scipy
-PyQt5
 firebase-admin
 adafruit-circuitpython-ble
 pyserial

@@ -45,15 +45,16 @@ The diagram below shows the hardware and data flow of the HAUCS-GUI system:
 ## Python Virtual Environment
 Run the following commands to create a virtual environment
 ```
-python3 -m venv truck
+python3 -m venv truck --system-site-packages
 ```
 
 ## Clone Repository
 Make sure to clone this repository in `/home/haucs/Desktop`. After cloning, install python libraries:
 
 ```
-source /home/truck/bin/activate
+source /home/haucs/truck/bin/activate
 cd /home/haucs/Desktop/HAUCS_GUI/code
+pip3 install --upgrade pip
 pip3 install -r requirements.txt
 ```
 ## Autostart Setup
