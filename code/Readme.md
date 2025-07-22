@@ -68,8 +68,7 @@ The following sections describe the purpose of each file.
 ---
 
 ## Log and Media
-- **sensor.json** – JSON file containing example format of firebase data upload.
-- **setting.png**, **settings.png** – Image assets for settings UI.
+- **settings.png** – Image assets for settings UI.
 
 ---
 

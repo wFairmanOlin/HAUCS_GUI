@@ -7,6 +7,9 @@ code/database_truck/*.csv
 code/DO_data/*.csv
 code/YSI_data/*.csv
 
+#sensor files
+code/sensor.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
