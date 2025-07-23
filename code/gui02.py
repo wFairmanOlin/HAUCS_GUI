@@ -144,11 +144,11 @@ class DOApp(QWidget):
 
         self.led_status = LEDStatusWidget(status="disconnected", font_size=int(self.base_font_size * 1.2))
         top_bar.addWidget(self.led_status)
-        top_bar.addSpacing(30)  # เพิ่มระยะห่างระหว่าง battery กับปุ่ม X
+        top_bar.addSpacing(30)
 
         settings_btn = QPushButton()
-        settings_btn.setIcon(QIcon("settings.png"))  # ใส่ path ตามจริง
-        settings_btn.setIconSize(QSize(40, 40))  # ปรับขนาดไอคอน
+        settings_btn.setIcon(QIcon("settings.png"))
+        settings_btn.setIconSize(QSize(40, 40)) 
         settings_btn.setFixedSize(44, 44)
         settings_btn.setStyleSheet("""
             QPushButton {
@@ -171,7 +171,7 @@ class DOApp(QWidget):
 
         self.battery_widget = BatteryWidget()
         top_bar.addWidget(self.battery_widget)
-        top_bar.addSpacing(30)  # เพิ่มระยะห่างระหว่าง battery กับปุ่ม X
+        top_bar.addSpacing(30)
 
         # Exit Button (red X)
         exit_btn = QPushButton("X")

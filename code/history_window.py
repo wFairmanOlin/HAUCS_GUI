@@ -75,6 +75,9 @@ class HistoryLogWindow(QDialog):
 
         pattern = re.compile(r".+_(\d{4}-\d{2}-\d{2})\.csv$")
 
+        if not os.path.exists(foldername):
+            os.makedirs(foldername)
+
         for fname in os.listdir(foldername):
             match = pattern.match(fname)
             if match:
@@ -92,7 +95,6 @@ class HistoryLogWindow(QDialog):
 
     def load_data(self, foldername):
         rows = []
-        temp_dict = {}  # จำ temp/press ของแต่ละแถวไว้ใช้ตอนสร้างสี
 
         for fpath in self.get_target_files(foldername):
             basename = os.path.basename(fpath)
