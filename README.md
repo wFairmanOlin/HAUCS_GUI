@@ -91,6 +91,9 @@ chmod +x /home/haucs/Desktop/HAUCS_CODE/gui_start.sh
 
 ## Sixfab Cellular Base Hat Setup
 
+[!CAUTION]
+Raspberry Pi Connect consumes a significant amount of data when not in use. Make sure to logout of Raspberry Pi Connect when using the cellular modem to avoid excess costs. 
+
 ### ATCOM
 
 Following this [guide](https://docs.sixfab.com/page/sending-at-commands) to setup and install `atcom` in the truck virtual environment.
