@@ -88,3 +88,29 @@ Make sure to set execute permission:
 ```bash
 chmod +x /home/haucs/Desktop/HAUCS_CODE/gui_start.sh
 ```
+
+## Sixfab Cellular Base Hat Setup
+
+### ATCOM
+
+Following this [guide](https://docs.sixfab.com/page/sending-at-commands) to setup and install `atcom` in the truck virtual environment.
+
+### ECM Setup
+
+Follow this [installation guide](https://docs.sixfab.com/page/cellular-internet-connection-in-ecm-mode) to setup the cellular hat in ECM mode. We are currently using the Quectel modems. 
+
+### Reorder Priority
+
+By default, the cellular modem, which shows up as `usb0`, has a higher priority than WiFi, `wlan0`. In order to connect to WiFi when present, run the following commands:
+
+#### Retrieve Connection Name
+```
+nmcli connection
+```
+The name should be something like `Wired\ connection\ 2`.
+#### Increase Metric for USB Connection
+The interfaces with lower metrics will run first. Give the usb connection a higher priority than the WiFi connection. 
+```
+nmcli connection modify <connection-name> ipv4.route-metric 700
+```
+Reboot to the RPI when finished.
