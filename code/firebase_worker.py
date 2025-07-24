@@ -71,12 +71,9 @@ class FirebaseWorker(QThread):
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata.get(key[3])
-        print(f"SDATA: {sdata.get(key[4])}")
-        stored_do = sdata.get(key[4], [-1])
-        if isinstance(stored_do, (int, float)):
-            do = [init_DO * stored_do]
-        else:
-            do = [init_DO * i for i in stored_do]
+        stored_do = np.array(sdata.get(key[4], [-1])).tolist()
+        if not isinstance(stored_do, list):
+            do = [stored_do]
 
         temp = np.array(sdata.get(key[5], [-1])).tolist()
         pressure = np.array(sdata.get(key[6], [-1])).tolist()
@@ -88,11 +85,9 @@ class FirebaseWorker(QThread):
         if (lat is None or lat == "None"):
             lat = -1000
         message_time = sdata.get(key[10],"-1")
-        stored_ysi_do = sdata.get(key[11],[-1])
-        if isinstance(stored_ysi_do, (int, float)):
+        stored_ysi_do = np.array(sdata.get(key[11],[-1])).tolist()
+        if not isinstance(stored_ysi_do, list):
             ysi_do = [stored_ysi_do]
-        else:
-            ysi_do = np.array(stored_ysi_do).tolist()
 
         data = {
             'do': do, 'init_do': init_DO, 'init_pressure': init_pressure,
