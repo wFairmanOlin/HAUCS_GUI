@@ -67,8 +67,8 @@ class FirebaseWorker(QThread):
 
     def convert_datadict_for_save(self, sdata, key, full_info = False):
         truck_id = sdata.get(key[0], "-1")
-        init_DO = sdata[key[1]]
-        init_pressure = sdata[key[2]]
+        init_DO = sdata.get(key[1], "-1")
+        init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata[key[3]]
         avg_do_perc = np.array(sdata[key[4]]).tolist()
         temp = np.array(sdata[key[5]]).tolist()

@@ -354,6 +354,7 @@ class TruckSensor(QThread):
                 self.data_dict["lat"] = self.latitude
 
             if update_pond_data:
+                #TODO: This breaks when sampling rate is less than 0
                 time_stop = len(self.data_dict["do_vals"])
                 self.water_temp = to_celcius(self.data_dict["temp"][0])
                 self.pressure = self.data_dict["pressure"][0]
@@ -361,7 +362,7 @@ class TruckSensor(QThread):
                 self.ysi_mgl = self.ysi_worker.get_record(time_stop)
                 self.ysi_csv = self.ysi_worker.csv_file
                 self.ysi = convert_mgl_to_raw(self.ysi_mgl, self.water_temp, self.pressure)
-                self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {self.ysi} %")
+                self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {100 * self.ysi} %")
                 if self.unit == "percent":
                     self.data_dict["ysi"] = self.ysi
                 else:
