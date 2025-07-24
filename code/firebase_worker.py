@@ -71,9 +71,9 @@ class FirebaseWorker(QThread):
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata.get(key[3])
-        avg_do_perc = np.array(sdata.get(key[4], [-1])).tolist()
-        temp = np.array(sdata.get(key[5], [-1])).tolist()
-        pressure = np.array(sdata.get(key[6], [-1])).tolist()
+        avg_do_perc = list(np.array(sdata.get(key[4], [-1])))
+        temp = list(np.array(sdata.get(key[5], [-1])))
+        pressure = list(np.array(sdata.get(key[6], [-1])))
         battv = sdata.get(key[7])
         lng = sdata.get(key[8])
         if (lng is None or lng == "None"):
@@ -82,7 +82,7 @@ class FirebaseWorker(QThread):
         if (lat is None or lat == "None"):
             lat = -1000
         message_time = sdata.get(key[10],"-1")
-        ysi_do = np.array(sdata.get(key[11], [-1])).tolist()
+        ysi_do = (np.array(sdata.get(key[11], [-1])))
         print(avg_do_perc, ysi_do)
 
         data = {
