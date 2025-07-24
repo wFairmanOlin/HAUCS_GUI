@@ -72,7 +72,12 @@ class FirebaseWorker(QThread):
         init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata.get(key[3])
         print(f"SDATA: {sdata.get(key[4])}")
-        do = [int(init_DO) * i for i in np.array(sdata.get(key[4],[-1]))]
+        stored_do = sdata.get(key[4], "[-1]")
+        if isinstance(stored_do, (int, float)):
+            do = [init_DO * stored_do]
+        else:
+            do = [init_DO * i for i in stored_do]
+
         temp = np.array(sdata.get(key[5], [-1])).to_list()
         pressure = np.array(sdata.get(key[6], [-1])).to_list()
         battv = sdata.get(key[7])
