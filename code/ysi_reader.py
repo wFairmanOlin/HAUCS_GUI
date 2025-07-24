@@ -61,7 +61,7 @@ class YSIReader(QThread):
                 if self.start_record:
                     if csv_file is None:
                         csv_file = self.init_csv_file()
-                        start_time = time.time()  # ✅ จับเวลาตอนเริ่ม record
+                        start_time = time.time()
                     now = time.time()
                     delta_sec = now - start_time
                     # print(delta_sec)
@@ -69,7 +69,6 @@ class YSIReader(QThread):
                     if delta_sec <= 30:
                         ysi = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
                         self.data_record.append(ysi)
-                        self.time_pass = delta_sec
                         self.writeCSV(csv_file, [len(self.data_record), ysi, val])
                     self.csv_file = csv_file
                 else:
@@ -92,7 +91,7 @@ class YSIReader(QThread):
         # TODO: NEED TEMPERATURE
         data_raw = convert_mgl_to_raw(self.data_record, t=25)
         print("ysi temperature not given")
-        _, _, send_data, _, _ = calculate_do_and_fit(data_raw, time_stop, self.time_pass)
+        _, _, send_data, _, _ = calculate_do_and_fit(data_raw, time_stop)
         self.data_record = []
         return send_data
 
@@ -122,6 +121,3 @@ class YSIReader(QThread):
             self.logger_data.emit("warning", f"YSI: Failed to create csv file {csvfile} {str(e)}")
 
         return csvFile
-
-    def exp_func(self, x, a, b, c):
-        return a * np.exp(-b * x) + c
