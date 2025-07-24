@@ -89,7 +89,9 @@ class YSIReader(QThread):
     def get_record(self, time_stop):
         self.start_record = False
         # CONVERT DO TO RAW
-        data_raw = convert_mgl_to_raw(self.data_record)
+        # TODO: NEED TEMPERATURE
+        data_raw = convert_mgl_to_raw(self.data_record, t=25)
+        print("ysi temperature not given")
         _, _, send_data, _, _ = calculate_do_and_fit(data_raw, time_stop, self.time_pass)
         self.data_record = []
         return send_data
