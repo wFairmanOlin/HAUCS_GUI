@@ -62,7 +62,7 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     def exp_func(self, x, a, b, c):
         return a * np.exp(-b * x) + c
 
-    do_vals [100 * i for i in do_vals] #CONVERT TO PERCENT SATURATION
+    do_vals = [100 * i for i in do_vals] #CONVERT TO PERCENT SATURATION
 
     s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
 
