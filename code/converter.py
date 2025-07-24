@@ -59,7 +59,7 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
 
 def calculate_do_and_fit(do_vals, max_time= 30):
     
-    def exp_func(self, x, a, b, c):
+    def exp_func(x, a, b, c):
         return a * np.exp(-b * x) + c
 
     do_vals = [100 * i for i in do_vals] #CONVERT TO PERCENT SATURATION
@@ -71,6 +71,8 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     # default fallback
     y_fit = np.zeros_like(x_plot)
     y_at_30 = None
+
+    print(f"do vals\n{do_vals}\ns_time\n{s_time}\nx_plot\n{x_plot}")
 
     try:
         popt, _ = curve_fit(exp_func, s_time, do_vals)

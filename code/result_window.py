@@ -348,6 +348,7 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color='red', fontsize=16)
         ax.set_ylabel("% Saturation", color='red', fontsize=16)
 
+        print(f"x_plot len {len(x_plot)}\nY_FIT\n{y_fit}")
         ax.scatter(s_time, do_vals, color='red', alpha=1)
         ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
         ax.annotate(
