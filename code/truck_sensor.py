@@ -10,7 +10,7 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
+from converter import convert_mgl_to_percent, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from firebase_worker import FirebaseWorker
 
@@ -358,16 +358,16 @@ class TruckSensor(QThread):
                 self.water_temp = to_celcius(self.data_dict["temp"][0])
                 self.pressure = self.data_dict["pressure"][0]
                 self.do_val = self.data_dict["do"]
-                self.ysi_v = self.ysi_worker.get_record(time_stop)
+                self.ysi_mgl = self.ysi_worker.get_record(time_stop)
                 self.ysi_csv = self.ysi_worker.csv_file
-                self.ysi = convert_mgl_to_raw(self.ysi_v, self.water_temp, self.pressure)
-                self.update_logger_text("info", f"YSI value: {self.ysi_v} mgl and {self.ysi} %")
+                self.ysi = convert_mgl_to_percent(self.ysi_mgl, self.water_temp, self.pressure)
+                self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {self.ysi} %")
                 if self.unit == "percent":
                     self.data_dict["ysi"] = self.ysi
                 else:
-                    self.data_dict["ysi"] = self.ysi_v
+                    self.data_dict["ysi"] = self.ysi_mgl
                 self.sdata["ysi_do"] = self.ysi
-                self.sdata["ysi_v"] = self.ysi_v
+                self.sdata["ysi_do_mgl"] = self.ysi_mgl
 
                 self.data_dict = self.check_unit()
 
@@ -442,7 +442,7 @@ class TruckSensor(QThread):
         truck_id = self.truck_id
         pid = data_dict["pid"]
         do_val = round(self.sdata.get("do", ""), 2)
-        ysi_val = round(self.sdata.get("ysi_do", ""), 2)
+        ysi_val = round(self.sdata.get("ysi_do_mgl", ""), 2)
         temp_val = round(self.sdata.get("temp", "")[0], 2)
         press_val = round(self.sdata.get("pressure", "")[0], 2)
         csv_file = self.csv_file
@@ -450,7 +450,6 @@ class TruckSensor(QThread):
         self.sdata["pid"] = pid
         time_str = datetime.now().strftime("%H:%M:%S")
 
-        # ข้อมูลแถวเดียวที่ต้องบันทึก
         row = {
             "time": time_str,
             "Pond ID": pid,
