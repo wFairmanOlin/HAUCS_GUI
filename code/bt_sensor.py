@@ -12,7 +12,7 @@ from datetime import datetime
 import subprocess
 import serial
 from subprocess import call
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius, calculate_do_and_fit
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
@@ -231,7 +231,7 @@ class BluetoothReader(QObject):
             # self.do_val = 100*arr[arr > 0].mean()
             if len(self.do_vals) > 30:
                 self.do_vals = self.do_vals[:30]
-            y_fit, x_plot, y_at_30, do_vals = self.calculate_do_and_fit(self.do_vals)
+            y_fit, x_plot, y_at_30, do_vals, _ = calculate_do_and_fit(self.do_vals)
             self.do_val = y_at_30
             arr = np.array(self.temp_vals)
             self.temp_val = [float(arr.mean())]

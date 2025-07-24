@@ -17,7 +17,7 @@ import io
 import re
 import pandas as pd
 from datetime import datetime, timedelta
-from converter import convert_raw_to_mgl, to_celcius, convert_mgl_to_raw
+from converter import convert_raw_to_mgl, to_celcius, convert_mgl_to_raw, calculate_do_and_fit
 
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
@@ -316,39 +316,6 @@ class ResultWindow(QWidget):
                 self.img_label.setAlignment(Qt.AlignCenter)
 
 
-    def exp_func(self, x, a, b, c):
-        return a * np.exp(-b * x) + c
-
-
-    def calculate_do_and_fit(self, do_vals, max_time = 30):
-
-        do_vals *= 100 #CONVERT DO TO PERCENT SATURATION
-
-        s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
-
-        x_plot = np.linspace(0, max_time, max_time * 10)
-
-        # default fallback
-        y_fit = np.zeros_like(x_plot)
-        y_at_30 = None
-
-        try:
-            popt, _ = curve_fit(self.exp_func, s_time, do_vals)
-            y_fit = self.exp_func(x_plot, *popt)
-            y_at_30 = self.exp_func(30, *popt)
-
-        except Exception as e:
-            print("Curve fit failed:", e)
-
-            p = np.polyfit(s_time, do_vals, 2)
-            y_fit = np.polyval(p, x_plot)
-            y_at_30 = np.polyval(p, 30)
-        
-        if y_at_30 < 0:
-            print("oops broke physics, predicted DO below 0%")
-            y_at_30 = 0
-
-        return y_fit, x_plot, y_at_30, do_vals, s_time
 
 
     def set_do_temp_pressure(self, do_vals, temp_vals, pressure_vals, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
@@ -376,7 +343,7 @@ class ResultWindow(QWidget):
 
         if len(do_vals) > 30:
             do_vals = do_vals[:30]
-        y_fit, x_plot, y_at_30, do_vals, s_vals = self.calculate_do_and_fit(do_vals)
+        y_fit, x_plot, y_at_30, do_vals, s_vals = calculate_do_and_fit(do_vals)
 
         # วาดภาพบน matplotlib Figure โดยตรง
         fig = Figure(figsize=((self.img_label2.width() + 100) / 100.0, self.img_label2.height() / 100.0), dpi=100, facecolor='white')
