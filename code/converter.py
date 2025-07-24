@@ -61,9 +61,8 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     
     def exp_func(x, a, b, c):
         return a * np.exp(-b * x) + c
-
+    
     do_vals = [100 * i for i in do_vals] #CONVERT TO PERCENT SATURATION
-
     s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
 
     x_plot = np.linspace(0, max_time, max_time * 10)
@@ -82,7 +81,7 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     except Exception as e:
         print("Curve fit failed:", e)
 
-        p = np.polyfit(s_time, do_vals, 2)
+        p = np.polyfit(s_time, do_vals, 1)
         y_fit = np.polyval(p, x_plot)
         y_at_30 = np.polyval(p, 30)
     
@@ -90,4 +89,5 @@ def calculate_do_and_fit(do_vals, max_time= 30):
         print("oops broke physics, predicted DO below 0%")
         y_at_30 = 0
 
+    print(f"converter y-fit\n{y_fit}")
     return y_fit, x_plot, y_at_30, do_vals, s_time
