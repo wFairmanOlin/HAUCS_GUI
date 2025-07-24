@@ -71,12 +71,14 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     y_fit = np.zeros_like(x_plot)
     y_at_30 = None
 
-    print(f"do vals\n{do_vals}\ns_time\n{s_time}\nx_plot\n{x_plot}")
+    print(do_vals)
+    print(y_fit)
 
     try:
         popt, _ = curve_fit(exp_func, s_time, do_vals)
         y_fit = exp_func(x_plot, *popt)
         y_at_30 = exp_func(30, *popt)
+        print(y_fit)
 
     except Exception as e:
         print("Curve fit failed:", e)
@@ -84,6 +86,7 @@ def calculate_do_and_fit(do_vals, max_time= 30):
         p = np.polyfit(s_time, do_vals, 1)
         y_fit = np.polyval(p, x_plot)
         y_at_30 = np.polyval(p, 30)
+        print(y_fit)
     
     if y_at_30 < 0:
         print("oops broke physics, predicted DO below 0%")
