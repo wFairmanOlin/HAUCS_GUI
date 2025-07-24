@@ -327,25 +327,13 @@ class ResultWindow(QWidget):
         self.data_size_at30sec = data_size_at30sec
         self.sample_stop_time = sample_stop_time
 
-        # เตรียมข้อมูล x,y
         if len(do_vals) < 5:
             self.img_label2.setText("Insufficient DO data")
             return
 
-        # s_vals = np.arange(len(do_vals))  # สมมุติว่าแต่ละจุดคือ 1 วินาที
-        # x_plot = np.linspace(0, len(do_vals)-1, 100)
-
-        # try:
-        #     popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
-        #     y_fit = self.exp_func(x_plot, *popt)
-        # except:
-        #     y_fit = np.interp(x_plot, s_vals, do_vals)  # fallback: interpolation
-
         if len(do_vals) > 30:
             do_vals = do_vals[:30]
-        y_fit, x_plot, y_at_30, do_vals, s_vals = calculate_do_and_fit(do_vals)
-
-        # วาดภาพบน matplotlib Figure โดยตรง
+        y_fit, x_plot, y_at_30, do_vals, s_time = calculate_do_and_fit(do_vals)
         fig = Figure(figsize=((self.img_label2.width() + 100) / 100.0, self.img_label2.height() / 100.0), dpi=100, facecolor='white')
         canvas = FigureCanvas(fig)
         ax = fig.add_subplot(111)
@@ -360,7 +348,7 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color='red', fontsize=16)
         ax.set_ylabel("% Saturation", color='red', fontsize=16)
 
-        ax.scatter(s_vals, do_vals, color='red', alpha=1)
+        ax.scatter(s_time, do_vals, color='red', alpha=1)
         ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
         ax.annotate(
             str(round(y_fit[-1])) + '%',
