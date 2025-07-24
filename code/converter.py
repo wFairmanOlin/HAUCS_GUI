@@ -18,6 +18,11 @@ def convert_raw_to_mgl(do, t, p=977, s=0):
     T = t + 273.15 #temperature in kelvin
     P = p * 9.869233e-4 #pressure in atm
 
+    #Handle Arrays
+    if isinstance(do, list):
+        do = np.array(do)
+
+
     DO_baseline = math.exp(-139.34411 + 1.575701e5/T - 6.642308e7/math.pow(T, 2) + 1.2438e10/math.pow(T, 3) - 8.621949e11/math.pow(T, 4))
     # SALINITY CORRECTION
     Fs = math.exp(-s * (0.017674 - 10.754/T + 2140.7/math.pow(T, 2)))
@@ -41,6 +46,10 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
     '''
     T = t + 273.15 #temperature in kelvin
     P = p * 9.869233e-4 #pressure in atm
+
+    #Handle Arrays
+    if isinstance(do, list):
+        do = np.array(do)
 
     DO_baseline = math.exp(-139.34411 + 1.575701e5/T - 6.642308e7/math.pow(T, 2) + 1.2438e10/math.pow(T, 3) - 8.621949e11/math.pow(T, 4))
     # SALINITY CORRECTION
@@ -75,7 +84,6 @@ def calculate_do_and_fit(do_vals, max_time= 30):
         popt, _ = curve_fit(exp_func, s_time, do_vals)
         y_fit = exp_func(x_plot, *popt)
         y_at_30 = exp_func(30, *popt)
-        print(y_fit)
 
     except Exception as e:
         print("Curve fit failed:", e)
@@ -83,10 +91,9 @@ def calculate_do_and_fit(do_vals, max_time= 30):
         p = np.polyfit(s_time, do_vals, 1)
         y_fit = np.polyval(p, x_plot)
         y_at_30 = np.polyval(p, 30)
-        print(y_fit)
     
     if y_at_30 < 0:
-        print("oops broke physics, predicted DO below 0%")
+        print(f"oops broke physics, predicted DO below 0%, {y_at_30}")
         y_at_30 = 0
 
     return y_fit, x_plot, y_at_30, do_vals, s_time
