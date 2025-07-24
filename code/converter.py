@@ -57,7 +57,7 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
     return DO_percent
 
 
-def calculate_do_and_fit(self, do_vals, max_time = 30):
+def calculate_do_and_fit(do_vals, max_time= 30):
     
     def exp_func(self, x, a, b, c):
         return a * np.exp(-b * x) + c
