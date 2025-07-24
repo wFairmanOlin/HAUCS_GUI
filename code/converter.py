@@ -7,11 +7,11 @@ def to_fahrenheit(temp):
 def to_celcius(temp):
     return ((temp - 32) / 9) * 5
 
-def convert_percent_to_mgl(do, t, p, s=0):
+def convert_percent_to_mgl(do, t, p=977, s=0):
     '''
     do: dissolved oxygen in percent saturation
     t: temperature in celcius
-    p: pressure in hPa
+    p: pressure in hPa, default is pressure at 400ft
     s: salinity in parts per thousand
     '''
     T = t + 273.15 #temperature in kelvin
@@ -31,11 +31,11 @@ def convert_percent_to_mgl(do, t, p, s=0):
 
     return DO_mgl
 
-def convert_mgl_to_percent(do, t, p, s=0):
+def convert_mgl_to_percent(do, t, p=977, s=0):
     '''
     do: dissolved oxygen in percent saturation
     t: temperature in celcius
-    p: pressure in hPa
+    p: pressure in hPa, default is pressure at 400ft
     s: salinity in parts per thousand
     '''
     T = t + 273.15 #temperature in kelvin
