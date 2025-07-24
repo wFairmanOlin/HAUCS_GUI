@@ -132,8 +132,8 @@ class DOApp(QWidget):
         else:
             self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px;")
 
-        top_bar.addWidget(self.lbl_unit)
-        top_bar.addSpacing(10)
+        # top_bar.addWidget(self.lbl_unit)
+        top_bar.addSpacing(5)
         top_bar.addWidget(self.lbl_mgl)
         top_bar.addSpacing(5)
         top_bar.addWidget(self.unit_toggle)

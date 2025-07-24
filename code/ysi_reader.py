@@ -22,7 +22,7 @@ class YSIReader(QThread):
     FULL_MGL = 15
     time_pass = 0
 
-    YSI_folder = "/home/haucs/Desktop/HAUCS_GUI/YSI_data/"
+    YSI_folder = "YSI_data/"
     csv_file = ""
 
     def __init__(self):

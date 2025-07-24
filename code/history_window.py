@@ -142,7 +142,7 @@ class HistoryLogWindow(QDialog):
                 item.setTextAlignment(Qt.AlignCenter)
                 item.setBackground(row_color)
 
-                # สีเฉพาะ HBOI DO (col=3) และ YSI DO (col=4)
+                # HBOI DO (col=3) YSI DO (col=4)
                 if c == 3 and self.is_number(mgl1):
                     if mgl1 < self.min_do:
                         item.setForeground(QColor("red"))
