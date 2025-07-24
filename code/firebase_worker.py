@@ -75,10 +75,9 @@ class FirebaseWorker(QThread):
         stored_do = np.array(sdata.get(key[4], [-1])).tolist()
         print(f"STORED DO {stored_do}")
         if not isinstance(stored_do, list):
-            do = [stored_do]
-        else:
-            do = stored_do
-        do = [init_DO * i for i in do]
+            stored_do = [stored_do]
+
+        do = [init_DO * i for i in stored_do]
         temp = np.array(sdata.get(key[5], [-1])).tolist()
         pressure = np.array(sdata.get(key[6], [-1])).tolist()
         battv = sdata.get(key[7])
@@ -91,9 +90,9 @@ class FirebaseWorker(QThread):
         message_time = sdata.get(key[10],"-1")
         stored_ysi_do = np.array(sdata.get(key[11],[-1])).tolist()
         if not isinstance(stored_ysi_do, list):
-            ysi_do = [stored_ysi_do]
-        else:
-            ysi_do = stored_ysi_do
+            stored_ysi_do = [stored_ysi_do]
+            
+        ysi_do = stored_ysi_do
 
         data = {
             'do': do, 'init_do': init_DO, 'init_pressure': init_pressure,
