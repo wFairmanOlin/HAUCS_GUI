@@ -70,7 +70,7 @@ class FirebaseWorker(QThread):
         init_DO = sdata[key[1]]
         init_pressure = sdata[key[2]]
         pond_id = sdata[key[3]]
-        avg_do_perc = [float(sdata[key[4]])]
+        avg_do_perc = np.array(sdata[key[4]]).tolist()
         temp = np.array(sdata[key[5]]).tolist()
         pressure = np.array(sdata[key[6]]).tolist()
         battv = sdata[key[7]]
@@ -81,7 +81,8 @@ class FirebaseWorker(QThread):
         if (lat is None or lat == "None"):
             lat = -1000
         message_time = sdata[key[10]]
-        ysi_do = [sdata[key[11]]]
+        ysi_do = np.array(sdata[key[11]]).tolist()
+        print(avg_do_perc, ysi_do)
 
         data = {
             'do': avg_do_perc, 'init_do': init_DO, 'init_pressure': init_pressure,
@@ -99,13 +100,9 @@ class FirebaseWorker(QThread):
         folder = self.database_folder
         os.makedirs(folder, exist_ok=True)  # สร้างโฟลเดอร์ถ้ายังไม่มี
         file_path = os.path.join(folder, f"{self.truck_id}_{today_str}.csv")
-
-        key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do_mgl']
-        data, message_time = self.convert_datadict_for_save(sdata, key, full_info=True)
         # print(data)
         # self.save_json_firebase_single(data)
-        self.save_datadict_txt(data, self.key)
-        self.sdatas.append(data)
+        self.save_datadict_txt(sdata, self.key)
 
         # ถ้ามีไฟล์อยู่แล้ว ให้ append
         if os.path.exists(file_path):
@@ -143,7 +140,7 @@ class FirebaseWorker(QThread):
     def restore_unsaved_from_json(self):
         folder = self.unsaved_json
         if not os.path.exists(folder):
-            return  # ไม่มีโฟลเดอร์ ไม่ต้องทำอะไร
+            return
 
         files = [f for f in os.listdir(folder) if f.endswith(".json")]
         self.sdatas = []
@@ -276,6 +273,7 @@ class FirebaseWorker(QThread):
         data, message_time = self.convert_datadict_for_save(sdata, key, full_info=True)
         safe_time = message_time.replace(":", "-")
         txt_file = os.path.join(self.unsaved_json, safe_time + ".txt")
+        self.sdatas.append(data)
 
         try:
             os.makedirs(self.unsaved_json, exist_ok=True)

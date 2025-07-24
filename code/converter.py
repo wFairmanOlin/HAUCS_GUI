@@ -73,9 +73,9 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     y_at_30 = None
 
     try:
-        popt, _ = curve_fit(self.exp_func, s_time, do_vals)
-        y_fit = self.exp_func(x_plot, *popt)
-        y_at_30 = self.exp_func(30, *popt)
+        popt, _ = curve_fit(exp_func, s_time, do_vals)
+        y_fit = exp_func(x_plot, *popt)
+        y_at_30 = exp_func(30, *popt)
 
     except Exception as e:
         print("Curve fit failed:", e)
