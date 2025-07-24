@@ -65,7 +65,7 @@ class FirebaseWorker(QThread):
             return new_app
         return None
 
-    def convert_datadict_for_save(self, sdata, key, full_info = False):
+    def convert_datadict_for_save(self, sdata, key):
         print(sdata)
         truck_id = sdata.get(key[0], "-1")
         init_DO = sdata.get(key[1], "-1")
@@ -81,8 +81,8 @@ class FirebaseWorker(QThread):
         lat = sdata[key[9]]
         if (lat is None or lat == "None"):
             lat = -1000
-        message_time = sdata[key[10]]
-        ysi_do = np.array(sdata[key[11]]).tolist()
+        message_time = sdata.get(key[10],"-1")
+        ysi_do = np.array(sdata.get(key[11], [-1])).tolist()
         print(avg_do_perc, ysi_do)
 
         data = {
@@ -90,36 +90,32 @@ class FirebaseWorker(QThread):
             'lat': lat, 'lng': lng, 'pid': pond_id, 'pressure': pressure,
             'sid': truck_id, 'temp': temp, 'batt_v': battv, 'type': 'truck', 'ysi_do_mgl': ysi_do
         }
-        if full_info:
-            data[key[10]] = message_time
+
         return data, message_time
 
     def add_sdata(self, sdata, csv_file, row):
-        # สร้างชื่อไฟล์
+
         today_str = datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.now().strftime("%H:%M:%S")
         folder = self.database_folder
-        os.makedirs(folder, exist_ok=True)  # สร้างโฟลเดอร์ถ้ายังไม่มี
+        os.makedirs(folder, exist_ok=True)
         file_path = os.path.join(folder, f"{self.truck_id}_{today_str}.csv")
-        # print(data)
-        # self.save_json_firebase_single(data)
+
         self.save_datadict_txt(sdata, self.key)
 
-        # ถ้ามีไฟล์อยู่แล้ว ให้ append
         if os.path.exists(file_path):
             df = pd.read_csv(file_path)
             df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
         else:
-            df = pd.DataFrame([row])  # สร้างใหม่พร้อม header
+            df = pd.DataFrame([row]) 
 
-        # บันทึกลงไฟล์
         df.to_csv(file_path, index=False)
 
     def run(self):
-        # self.restore_unsaved_from_json()
+
         folder = self.unsaved_json
         if not os.path.exists(folder):
-            return  # ไม่มีโฟลเดอร์ ไม่ต้องทำอะไร
+            return
 
         files = [f for f in os.listdir(folder) if f.endswith(".txt")]
         for filename in files:
@@ -210,17 +206,18 @@ class FirebaseWorker(QThread):
             self.logger_data.emit("error", f"Failed to move JSON: {src_path} → {dst_path} — {e}")
 
 
-    def update_firebase(self, sdata, key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do_mgl']):
-        data, message_time = self.convert_datadict_for_save(sdata, key, False)
+    def update_firebase(self, sdata):
+
+        data, message_time = self.convert_datadict_for_save(sdata, self.key)
 
         try:
-            pond_id = sdata[key[3]]
+            pond_id = sdata.get(self.key[3])
             if self.app is not None:
                 db.reference('LH_Farm/pond_' + pond_id + '/' + message_time + '/').set(data)
-                data[key[10]] = message_time
+                data[self.key[10]] = message_time
             else:
                 self.update_logger_text("warning", "uploading data to firebase failed")
-                data[key[10]] = message_time
+                data[self.key[10]] = message_time
                 return False, data
         except Exception as error:
             print("An exception occurred:", error)
@@ -230,35 +227,31 @@ class FirebaseWorker(QThread):
             if self.fail_counter >= self.max_fail:
                 self.app = self.restart_firebase(self.app)
                 self.fail_counter = 0
-            data[key[10]] = message_time
-            return False, data
-        return True, data
+            data[self.key[10]] = message_time
+            return False
+        return True
 
     def update_firebase_when_internet(self):
         # upload when internet recovered
         for i in reversed(range(len(self.sdatas))):
             sdata = self.sdatas[i]
-            # print("update_firebase_when_internet")
-            # print(sdata)
-            upload_status, data_dict = self.update_firebase(sdata, self.key)
+
+            upload_status = self.update_firebase(sdata)
             if upload_status:
-                # self.move_json_to_completed(sdata)
+  
                 self.move_txt_to_completed(sdata)
 
-                self.logger_data.emit("info", "upload missing data to firebase completed")
+                self.logger_data.emit("info", "upload data to firebase completed (update_firebase_when_internet)")
                 del self.sdatas[i]
 
                 try:
-                    # แปลง message_time เป็นวันที่ เพื่อหาไฟล์ CSV ที่เกี่ยวข้อง
                     msg_time_str = sdata.get("message_time", "")
                     msg_date = datetime.strptime(msg_time_str.split("_")[0], "%Y%m%d").strftime("%Y-%m-%d")
 
-                    # โหลดไฟล์ CSV เดิม
                     file_path = os.path.join(self.database_folder, f"{self.truck_id}_{msg_date}.csv")
                     if os.path.exists(file_path):
                         df = pd.read_csv(file_path)
 
-                        # หาตำแหน่งแถวที่ message_time ตรงกัน
                         match_index = df[df["message_time"] == msg_time_str].index
 
                         if not match_index.empty:
@@ -271,7 +264,8 @@ class FirebaseWorker(QThread):
                 self.msleep(300)
 
     def save_datadict_txt(self, sdata, key):
-        data, message_time = self.convert_datadict_for_save(sdata, key, full_info=True)
+        data, message_time = self.convert_datadict_for_save(sdata, self.key)
+        data[self.key[10]] = message_time
         safe_time = message_time.replace(":", "-")
         txt_file = os.path.join(self.unsaved_json, safe_time + ".txt")
         self.sdatas.append(data)
