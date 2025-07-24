@@ -131,7 +131,7 @@ class BluetoothReader(QObject):
                     self.previous_connect = True
                 # self.check_size = 1
                 update_logger, update_status, msg = True, True, True, True
-                return , update_json, update_logger, update_status, msg, ['connection']
+                return update_json, update_logger, update_status, msg, ['connection']
             except:
                 self.update_logger("warning", "BLE connect failed - maybe underwater")
                 #fails['ble'] += 1
