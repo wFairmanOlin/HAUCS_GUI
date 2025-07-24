@@ -130,13 +130,13 @@ class BluetoothReader(QObject):
                     self.update_logger("info", 'reconnect after disconnect - finished sampling and re-emerge')
                     self.previous_connect = True
                 # self.check_size = 1
-                update_logger, update_status, msg = True, True, True, True
+                update_logger, update_status, msg = True, True, True
                 return update_json, update_logger, update_status, msg, ['connection']
             except:
                 self.update_logger("warning", "BLE connect failed - maybe underwater")
                 #fails['ble'] += 1
                 self.status_string = "BLE connect failed - maybe underwater"
-                update_logger, update_status, msg = True, True, True, False
+                update_logger, update_status, msg = True, True, False
                 return update_json, update_logger, update_status, msg, ['connection']
 
         else: # do nothing
