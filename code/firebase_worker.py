@@ -71,10 +71,12 @@ class FirebaseWorker(QThread):
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata.get(key[3])
+        
         stored_do = np.array(sdata.get(key[4], [-1])).tolist()
+        print(f"STORED DO {stored_do}")
         if not isinstance(stored_do, list):
             do = [stored_do]
-
+        do = [init_DO * i for i in do]
         temp = np.array(sdata.get(key[5], [-1])).tolist()
         pressure = np.array(sdata.get(key[6], [-1])).tolist()
         battv = sdata.get(key[7])
