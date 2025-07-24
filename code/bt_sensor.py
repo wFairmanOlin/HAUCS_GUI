@@ -251,7 +251,7 @@ class BluetoothReader(QObject):
             self.sdata["pressure_vals"] = self.pressure_vals
 
         elif key == "ts":
-            do_val = float(value[2])
+            do_val = 100 * float(value[2]) #CONVERT TO PERCENT SATURATION
             temp_val = float(value[4])
             pressure_val = float(value[6])
             if self.csv_file is not None:

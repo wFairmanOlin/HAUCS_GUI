@@ -51,6 +51,6 @@ def convert_mgl_to_percent(do, t, p=977, s=0):
 
     DO_corrected = DO_baseline * Fs * Fp
 
-    DO_percent = do / DO_corrected
+    DO_percent = 100 * do / DO_corrected
 
     return DO_percent
