@@ -220,15 +220,6 @@ class BluetoothReader(QObject):
             self.temp_vals = []
             self.pressure_vals = []
         elif "dfinish" in key:
-            # print("DO val:")
-            # print(self.do_vals)
-            # print("Temp val:")
-            # print(self.temp_vals)
-            # print("Pressure val:")
-            # print(self.pressure_vals)
-
-            # arr = np.array(self.do_vals)
-            # self.do_val = 100*arr[arr > 0].mean()
             if len(self.do_vals) > 30:
                 self.do_vals = self.do_vals[:30]
             y_fit, x_plot, y_at_30, do_vals, _ = calculate_do_and_fit(self.do_vals)

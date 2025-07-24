@@ -9,6 +9,7 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 import csv
 import time
 from scipy.optimize import curve_fit
+from converter import calculate_do_and_fit, convert_mgl_to_raw
 
 class YSIReader(QThread):
     logger_data = pyqtSignal(str, str)
@@ -87,7 +88,9 @@ class YSIReader(QThread):
 
     def get_record(self, time_stop):
         self.start_record = False
-        send_data = self.calculate_do_and_fit(self.data_record, time_stop, self.time_pass)
+        # CONVERT DO TO RAW
+        data_raw = convert_mgl_to_raw(self.data_record)
+        _, _, send_data, _, _ = calculate_do_and_fit(data_raw, time_stop, self.time_pass)
         self.data_record = []
         return send_data
 
@@ -120,48 +123,3 @@ class YSIReader(QThread):
 
     def exp_func(self, x, a, b, c):
         return a * np.exp(-b * x) + c
-
-    def calculate_do_and_fit(self, do_vals, time_stop, time_pass):
-        do_size = len(do_vals)
-        scale_data = do_size / time_pass
-
-        # time_stop is the real time sec which underwater, normally less than time_pass
-        if time_stop < time_pass:
-            do_size = int(scale_data * time_stop)
-            do_vals = do_vals[:do_size]
-        else:
-            time_stop = time_pass
-
-        s_vals = np.arange(len(do_vals)) / scale_data  # x จริงตามเวลาจริง (เช่น 0,1,...)
-
-        # สร้างแกน x_plot ที่ครอบคลุมถึง 30 วินาที (เสมอ)
-        x_plot = np.linspace(0, 30, 100)
-
-        # default fallback
-        y_fit = np.zeros_like(x_plot)
-        y_at_30 = None
-
-        try:
-            # ✅ Fit exponential curve กับเท่าที่มีข้อมูล
-            popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
-
-            # ✅ สร้าง y_fit ให้มีค่าครอบคลุม x_plot ถึง 30s
-            y_fit = self.exp_func(x_plot, *popt)
-
-            # ✅ คำนวณ y ที่ x=30 วินาที (แม้ข้อมูลจริงจะน้อยกว่านั้น)
-            y_at_30 = self.exp_func(30, *popt)
-
-        except Exception as e:
-            print("Curve fit failed:", e)
-
-            # fallback: linear interpolation (ถ้ามีข้อมูลน้อย)
-            y_fit = np.interp(x_plot, s_vals, do_vals)
-
-            # คำนวณ y_at_30 เฉพาะกรณีที่ข้อมูลถึง 30 วิ
-            if 30 <= s_vals[-1]:
-                y_at_30 = np.interp(30, s_vals, do_vals)
-            else:
-                y_at_30 = np.mean(do_vals)
-
-        # print(f"y_fit at x=30s: {y_at_30}")
-        return y_at_30

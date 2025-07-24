@@ -277,10 +277,10 @@ class ResultWindow(QWidget):
 
 
     def closeEvent(self, event):
-        raw_text = self.data_labels["Press"].text()  # เช่น "1000 hPa" หรือ "1013.25 hPa"
-        pressure_val = re.findall(r"[\d.]+", raw_text)[0]  # ดึงเฉพาะเลข เช่น "1013.25"
-        raw_text = self.data_labels["Temp"].text()  # เช่น "1000 hPa" หรือ "1013.25 hPa"
-        temperature_val = re.findall(r"[\d.]+", raw_text)[0]  # ดึงเฉพาะเลข เช่น "1013.25"
+        raw_text = self.data_labels["Press"].text() 
+        pressure_val = re.findall(r"[\d.]+", raw_text)[0] 
+        raw_text = self.data_labels["Temp"].text() 
+        temperature_val = re.findall(r"[\d.]+", raw_text)[0] 
         data_send = {
             "status": "completed",
             "pid": self.data_labels["PID"].text(),

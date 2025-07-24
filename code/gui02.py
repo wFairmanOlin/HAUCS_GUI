@@ -381,7 +381,7 @@ class DOApp(QWidget):
                 p = self.thread.sdata["pressure"][0]
                 do_val = convert_raw_to_mgl(data_dict['ysi'], t, p)
             else:
-                do_val = data_dict['ysi']
+                do_val = round(100 * data_dict['ysi'])
             key = "YSI"
             if do_val < self.min_do:
                 self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
