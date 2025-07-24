@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 import os, csv, re
 from datetime import datetime, timedelta
-from converter import convert_percent_to_mgl, to_celcius
+from converter import convert_raw_to_mgl, to_celcius
 
 class HistoryLogWindow(QDialog):
     unit = "percent"
@@ -112,13 +112,13 @@ class HistoryLogWindow(QDialog):
                         press = float(row["Pressure"])
 
                         if self.is_number(hboi):
-                            hboi_mgl = convert_percent_to_mgl(float(hboi), temp, press)
+                            hboi_mgl = convert_raw_to_mgl(float(hboi), temp, press)
                             hboi_mgl = round(hboi_mgl, 2)
                         else:
                             hboi_mgl = None
 
                         if self.is_number(ysi):
-                            ysi_mgl = convert_percent_to_mgl(float(ysi), temp, press)
+                            ysi_mgl = convert_raw_to_mgl(float(ysi), temp, press)
                             ysi_mgl = round(ysi_mgl, 2)
                         else:
                             ysi_mgl = None

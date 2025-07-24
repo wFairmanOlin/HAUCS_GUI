@@ -17,7 +17,7 @@ import io
 import re
 import pandas as pd
 from datetime import datetime, timedelta
-from converter import convert_percent_to_mgl, to_celcius, convert_mgl_to_percent
+from converter import convert_raw_to_mgl, to_celcius, convert_mgl_to_raw
 
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
@@ -500,7 +500,7 @@ class ResultWindow(QWidget):
                                 do = float(do)
                                 temp = to_celcius(float(row["Temperature"]))
                                 p = float(row["Pressure"])
-                                do_out = convert_percent_to_mgl(do, temp, p)
+                                do_out = convert_raw_to_mgl(do, temp, p)
                                 do_dict[ts].append(do_out)
                             except:
                                 print("Something went wrong in DO conversion")
@@ -519,8 +519,8 @@ class ResultWindow(QWidget):
         min_do = self.min_do
         good_do = self.good_do
 
-        min_do_percent = convert_mgl_to_percent(min_do, 25.0)
-        good_do_percent = convert_mgl_to_percent(good_do, 25.0)
+        min_do_percent = convert_mgl_to_raw(min_do, 25.0)
+        good_do_percent = convert_mgl_to_raw(good_do, 25.0)
         print(f"unit: {self.unit}")
         print(f"DO min-good: {min_do}, {good_do}, {min_do_percent}, {good_do_percent}")
         if self.unit == "percent":

@@ -12,7 +12,7 @@ from datetime import datetime
 import subprocess
 import serial
 from subprocess import call
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_fahrenheit, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
@@ -251,7 +251,7 @@ class BluetoothReader(QObject):
             self.sdata["pressure_vals"] = self.pressure_vals
 
         elif key == "ts":
-            do_val = 100 * float(value[2]) #CONVERT TO PERCENT SATURATION
+            do_val = float(value[2])
             temp_val = float(value[4])
             pressure_val = float(value[6])
             if self.csv_file is not None:

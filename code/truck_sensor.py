@@ -10,7 +10,7 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_fahrenheit, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from firebase_worker import FirebaseWorker
 
@@ -360,7 +360,7 @@ class TruckSensor(QThread):
                 self.do_val = self.data_dict["do"]
                 self.ysi_v = self.ysi_worker.get_record(time_stop)
                 self.ysi_csv = self.ysi_worker.csv_file
-                self.ysi = convert_mgl_to_percent(self.ysi_v, self.water_temp, self.pressure)
+                self.ysi = convert_mgl_to_raw(self.ysi_v, self.water_temp, self.pressure)
                 self.update_logger_text("info", f"YSI value: {self.ysi_v} mgl and {self.ysi} %")
                 if self.unit == "percent":
                     self.data_dict["ysi"] = self.ysi
@@ -385,10 +385,10 @@ class TruckSensor(QThread):
                 try:
                     if key == "ysi_do":
                         val = float(self.sdata[key])  # ตรวจสอบว่าเป็นตัวเลขได้
-                        self.data_dict["ysi"] = convert_percent_to_mgl(val, self.water_temp, self.pressure)
+                        self.data_dict["ysi"] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
                     else:
                         val = float(self.sdata[key])  # ตรวจสอบว่าเป็นตัวเลขได้
-                        self.data_dict[key] = convert_percent_to_mgl(val, self.water_temp, self.pressure)
+                        self.data_dict[key] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
                 except (ValueError, TypeError):
                     pass  # ข้ามถ้าแปลงไม่ได้ (ไม่ใช่ตัวเลข)
 

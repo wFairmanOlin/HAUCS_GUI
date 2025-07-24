@@ -70,7 +70,7 @@ class FirebaseWorker(QThread):
         init_DO = sdata[key[1]]
         init_pressure = sdata[key[2]]
         pond_id = sdata[key[3]]
-        avg_do_perc = float(sdata[key[4]])
+        avg_do_perc = [float(sdata[key[4]])]
         temp = np.array(sdata[key[5]]).tolist()
         pressure = np.array(sdata[key[6]]).tolist()
         battv = sdata[key[7]]
@@ -81,12 +81,12 @@ class FirebaseWorker(QThread):
         if (lat is None or lat == "None"):
             lat = -1000
         message_time = sdata[key[10]]
-        ysi_do = sdata[key[11]]
+        ysi_do = [sdata[key[11]]]
 
         data = {
             'do': avg_do_perc, 'init_do': init_DO, 'init_pressure': init_pressure,
             'lat': lat, 'lng': lng, 'pid': pond_id, 'pressure': pressure,
-            'sid': truck_id, 'temp': temp, 'batt_v': battv, 'type': 'truck', 'ysi_do': ysi_do
+            'sid': truck_id, 'temp': temp, 'batt_v': battv, 'type': 'truck', 'ysi_do_mgl': ysi_do
         }
         if full_info:
             data[key[10]] = message_time
@@ -100,7 +100,7 @@ class FirebaseWorker(QThread):
         os.makedirs(folder, exist_ok=True)  # สร้างโฟลเดอร์ถ้ายังไม่มี
         file_path = os.path.join(folder, f"{self.truck_id}_{today_str}.csv")
 
-        key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do']
+        key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do_mgl']
         data, message_time = self.convert_datadict_for_save(sdata, key, full_info=True)
         # print(data)
         # self.save_json_firebase_single(data)
@@ -212,7 +212,7 @@ class FirebaseWorker(QThread):
             self.logger_data.emit("error", f"Failed to move JSON: {src_path} → {dst_path} — {e}")
 
 
-    def update_firebase(self, sdata, key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do']):
+    def update_firebase(self, sdata, key=['name', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'battv', 'lng', 'lat', 'message_time', 'ysi_do_mgl']):
         data, message_time = self.convert_datadict_for_save(sdata, key, False)
 
         try:
@@ -303,7 +303,7 @@ class FirebaseWorker(QThread):
                     # Type conversion by key name
                     if key in ['sid', 'pid', 'type', 'message_time']:
                         sdata[key] = val
-                    elif key in ['init_do', 'init_pressure', 'batt_v', 'lat', 'lng', 'ysi_do', 'do']:
+                    elif key in ['init_do', 'init_pressure', 'batt_v', 'lat', 'lng', 'ysi_do_mgl', 'do']:
                         try:
                             sdata[key] = float(val) if val != 'None' else None
                         except:

@@ -14,7 +14,7 @@ from truck_sensor import TruckSensor
 from datetime import datetime
 from battery_widget import BatteryWidget
 from led_indicator import LEDStatusWidget
-from converter import convert_mgl_to_percent, convert_percent_to_mgl, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_celcius
 from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
@@ -357,9 +357,9 @@ class DOApp(QWidget):
             if self.unit == "percent":
                 t = to_celcius(self.thread.sdata["temp"][0])
                 p = self.thread.sdata["pressure"][0]
-                do_val = convert_percent_to_mgl(data_dict['do'], t, p)
+                do_val = convert_raw_to_mgl(data_dict['do'], t, p)
             else:
-                do_val = data_dict['do']
+                do_val = round(100 * data_dict['do'])
             key = "SDL"
             # print("do_val", do_val)
             if do_val < self.min_do:
@@ -379,7 +379,7 @@ class DOApp(QWidget):
             if self.unit == "percent":
                 t = to_celcius(self.thread.sdata["temp"][0])
                 p = self.thread.sdata["pressure"][0]
-                do_val = convert_percent_to_mgl(data_dict['ysi'], t, p)
+                do_val = convert_raw_to_mgl(data_dict['ysi'], t, p)
             else:
                 do_val = data_dict['ysi']
             key = "YSI"
@@ -449,13 +449,13 @@ class DOApp(QWidget):
             if self.unit == "mgl":
                 self.result_window.do_val_current = data_dict["do"]
             else:
-                self.result_window.do_val_current = convert_percent_to_mgl(data_dict["do"], self.result_window.temp_c, self.result_window.pressure)
+                self.result_window.do_val_current = convert_raw_to_mgl(data_dict["do"], self.result_window.temp_c, self.result_window.pressure)
             self.result_window.update_value("HBOI", f"{data_dict['do']:.2f}")
         if 'ysi' in data_dict:
             if self.unit == "mgl":
                 self.result_window.ysi_val_current = data_dict["ysi"]
             else:
-                self.result_window.ysi_val_current = convert_percent_to_mgl(data_dict["ysi"], self.result_window.temp_c, self.result_window.pressure)
+                self.result_window.ysi_val_current = convert_raw_to_mgl(data_dict["ysi"], self.result_window.temp_c, self.result_window.pressure)
 
             self.result_window.update_value("YSI", f"{data_dict['ysi']:.2f}")
 
