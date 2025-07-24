@@ -519,8 +519,8 @@ class ResultWindow(QWidget):
         min_do = self.min_do
         good_do = self.good_do
 
-        min_do_percent = convert_mgl_to_percent(min_do, temp_c=25.0)
-        good_do_percent = convert_mgl_to_percent(good_do, temp_c=25.0)
+        min_do_percent = convert_mgl_to_percent(min_do, 25.0)
+        good_do_percent = convert_mgl_to_percent(good_do, 25.0)
         print(f"unit: {self.unit}")
         print(f"DO min-good: {min_do}, {good_do}, {min_do_percent}, {good_do_percent}")
         if self.unit == "percent":
