@@ -66,15 +66,16 @@ class FirebaseWorker(QThread):
         return None
 
     def convert_datadict_for_save(self, sdata, key, full_info = False):
+        print(sdata)
         truck_id = sdata.get(key[0], "-1")
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
-        pond_id = sdata[key[3]]
-        avg_do_perc = np.array(sdata[key[4]]).tolist()
-        temp = np.array(sdata[key[5]]).tolist()
-        pressure = np.array(sdata[key[6]]).tolist()
-        battv = sdata[key[7]]
-        lng = sdata[key[8]]
+        pond_id = sdata.get(key[3])
+        avg_do_perc = np.array(sdata.get(key[4], [-1])).tolist()
+        temp = np.array(sdata.get(key[5], [-1])).tolist()
+        pressure = np.array(sdata.get(key[6], [-1])).tolist()
+        battv = sdata.get(key[7])
+        lng = sdata.get(key[8])
         if (lng is None or lng == "None"):
             lng = -1000
         lat = sdata[key[9]]
