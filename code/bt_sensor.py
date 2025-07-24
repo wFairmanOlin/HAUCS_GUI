@@ -92,7 +92,7 @@ class BluetoothReader(QObject):
             self.connection_status = "connected"
             self.sdata['connection'] = self.connection_status
             self.update_logger("info", 'first time connected to the payload (boot up)')
-            update_json, update_logger, update_status, msg = True, True, True, True, True
+            update_json, update_logger, update_status, msg = True, True, True, True
             return update_json, update_logger, update_status, msg, ['name', 'connection']
         except:
             self.update_logger("warning", "BLE connect failed")
@@ -100,7 +100,7 @@ class BluetoothReader(QObject):
             self.status_string = "BLE connect failed"
             self.connection_status = "not connected"
             self.sdata['connection'] = self.connection_status
-        update_json, update_logger, update_status, msg = False, False, True, True, False
+        update_json, update_logger, update_status, msg = False, True, True, False
         return update_json, update_logger, update_status, msg, None
 
     def check_connection_status(self):
@@ -140,35 +140,35 @@ class BluetoothReader(QObject):
                 return update_json, update_logger, update_status, msg, ['connection']
 
         else: # do nothing
-            update_json, update_logger, update_status, msg = None, None, None, None, None
+            update_json, update_logger, update_status, msg = None, None, None, None
             return update_json, update_logger, update_status, msg, None
 
     def get_init_do(self):
         self.sdata["init_do"] = 0
-        update_json, update_logger, update_status = True, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[0])
         return update_json, update_logger, update_status, msg, ["init_do"]
 
     def get_init_pressure(self):
         self.sdata["init_pressure"] = 0
-        update_json, update_logger, update_status = True, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[1])
         return update_json, update_logger, update_status, msg, ["init_pressure"]
 
     def get_battery(self):
-        update_json, update_logger, update_status = True, True, False, False
+        update_json, update_logger, update_status = True, False, False
         msg = self.send_receive_command(self.msg_command[2])
         return update_json, update_logger, update_status, msg, ['battv', 'batt_status']
 
     def set_sample_reset(self):
-        update_json, update_logger, update_status = False, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[3])
         self.prev_sample_size = -1
         self.current_sample_size = 0
         return update_json, update_logger, update_status, msg, None
 
     def get_sample_size(self):
-        update_json, update_logger, update_status = False, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[4])
         return update_json, update_logger, update_status, msg, None
 
@@ -176,18 +176,18 @@ class BluetoothReader(QObject):
         self.is_30sec = is_30sec
         self.data_size_at30sec = data_size_at30sec
         self.sample_stop_time = sample_stop_time
-        update_json, update_logger, update_status = True, True, True, True
+        update_json, update_logger, update_status = True, True, True
         msg = self.send_receive_command(self.msg_command[5], True)
         keys = ["do", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
         return update_json, update_logger, update_status, msg, keys
     
     def set_calibration_pressure(self):
-        update_json, update_logger, update_status = False, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[6])
         return update_json, update_logger, update_status, msg, None
 
     def set_calibration_do(self):
-        update_json, update_logger, update_status = False, False, False, False
+        update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[7])
         return update_json, update_logger, update_status, msg, None
 
