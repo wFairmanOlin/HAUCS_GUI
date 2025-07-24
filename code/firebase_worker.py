@@ -32,7 +32,7 @@ class FirebaseWorker(QThread):
     database_folder = "database_truck"
     unsaved_json = "unsaved_json"
     completed_upload = "completed_json"
-    key=['sid', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'batt_v', 'lng', 'lat', 'message_time', 'ysi_do']
+    key=['sid', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'batt_v', 'lng', 'lat', 'message_time', 'ysi_do_mgl']
     sdatas = []
 
     def __init__(self):

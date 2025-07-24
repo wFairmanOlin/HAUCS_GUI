@@ -127,7 +127,7 @@ class HistoryLogWindow(QDialog):
                             hboi_display = hboi_mgl
                             ysi_display = ysi_mgl
                         else:
-                            hboi_display = round(float(hboi), 2) if self.is_number(hboi) else hboi
+                            hboi_display = round(100 * float(hboi), 2) if self.is_number(hboi) else hboi
                             ysi_display = round(float(ysi), 2) if self.is_number(ysi) else ysi
 
                         rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, press))

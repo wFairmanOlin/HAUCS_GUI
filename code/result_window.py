@@ -315,73 +315,41 @@ class ResultWindow(QWidget):
                 self.img_label.setText("Cannot be calculated\nPond ID has been changed")
                 self.img_label.setAlignment(Qt.AlignCenter)
 
+
     def exp_func(self, x, a, b, c):
         return a * np.exp(-b * x) + c
 
-    # def calculate_do_and_fit(self, do_vals):
-    #     is_30sec = self.is_30sec
-    #     data_size_at30sec = self.data_size_at30sec
-    #     sample_stop_time = self.sample_stop_time
-
-    #     # ✅ ปรับ scale ของ s_vals ตามกรณี
-    #     if is_30sec:
-    #         s_vals = np.linspace(0, 30, data_size_at30sec)
-    #     else:
-    #         s_vals = np.linspace(0, sample_stop_time, len(do_vals))
-
-    #     x_plot = np.linspace(0, 30, 100)
-    #     y_fit = np.zeros_like(x_plot)
-    #     y_at_30 = None
-
-    #     try:
-    #         popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
-    #         y_fit = self.exp_func(x_plot, *popt)
-    #         y_at_30 = self.exp_func(30, *popt)
-    #     except Exception as e:
-    #         print("Curve fit failed:", e)
-    #         y_fit = np.interp(x_plot, s_vals, do_vals)
-    #         if 30 <= s_vals[-1]:
-    #             y_at_30 = np.interp(30, s_vals, do_vals)
-    #         else:
-    #             y_at_30 = np.mean(do_vals)
-
-    #     # print(f"y_fit at x=30s: {y_at_30}")
-    #     return y_fit, x_plot, y_at_30, do_vals, s_vals
 
     def calculate_do_and_fit(self, do_vals, max_time = 30):
-        s_vals = np.arange(len(do_vals))  # x จริงตามเวลาจริง (เช่น 0,1,...)
 
-        # สร้างแกน x_plot ที่ครอบคลุมถึง 30 วินาที (เสมอ)
-        x_plot = np.linspace(0, 30, 100)
+        do_vals *= 100 #CONVERT DO TO PERCENT SATURATION
+
+        s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
+
+        x_plot = np.linspace(0, max_time, max_time * 10)
 
         # default fallback
         y_fit = np.zeros_like(x_plot)
         y_at_30 = None
 
         try:
-            # ✅ Fit exponential curve กับเท่าที่มีข้อมูล
-            popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
-
-            # ✅ สร้าง y_fit ให้มีค่าครอบคลุม x_plot ถึง 30s
+            popt, _ = curve_fit(self.exp_func, s_time, do_vals)
             y_fit = self.exp_func(x_plot, *popt)
-
-            # ✅ คำนวณ y ที่ x=30 วินาที (แม้ข้อมูลจริงจะน้อยกว่านั้น)
             y_at_30 = self.exp_func(30, *popt)
 
         except Exception as e:
             print("Curve fit failed:", e)
 
-            # fallback: linear interpolation (ถ้ามีข้อมูลน้อย)
-            y_fit = np.interp(x_plot, s_vals, do_vals)
+            p = np.polyfit(s_time, do_vals, 2)
+            y_fit = np.polyval(p, x_plot)
+            y_at_30 = np.polyval(p, 30)
+        
+        if y_at_30 < 0:
+            print("oops broke physics, predicted DO below 0%")
+            y_at_30 = 0
 
-            # คำนวณ y_at_30 เฉพาะกรณีที่ข้อมูลถึง 30 วิ
-            if 30 <= s_vals[-1]:
-                y_at_30 = np.interp(30, s_vals, do_vals)
-            else:
-                y_at_30 = np.mean(do_vals)
+        return y_fit, x_plot, y_at_30, do_vals, s_time
 
-        # print(f"y_fit at x=30s: {y_at_30}")
-        return y_fit, x_plot, y_at_30, do_vals, s_vals
 
     def set_do_temp_pressure(self, do_vals, temp_vals, pressure_vals, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
         self.do_vals = do_vals

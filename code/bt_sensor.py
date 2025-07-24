@@ -336,37 +336,3 @@ class BluetoothReader(QObject):
             self.update_logger("warning", f"Failed to create csv file {csvfile} {str(e)}")
 
         return csvFile
-
-    def exp_func(self, x, a, b, c):
-        return a * np.exp(-b * x) + c
-
-
-    def calculate_do_and_fit(self, do_vals, max_time = 30):
-        s_vals = np.arange(len(do_vals)) 
-
-        x_plot = np.linspace(0, 30, 100)
-
-        # default fallback
-        y_fit = np.zeros_like(x_plot)
-        y_at_30 = None
-
-        try:
-            popt, _ = curve_fit(self.exp_func, s_vals, do_vals)
-
-            y_fit = self.exp_func(x_plot, *popt)
-
-            y_at_30 = self.exp_func(30, *popt)
-
-        except Exception as e:
-            print("Curve fit failed:", e)
-
-            # fallback: linear interpolation (ถ้ามีข้อมูลน้อย)
-            y_fit = np.interp(x_plot, s_vals, do_vals)
-
-            if 30 <= s_vals[-1]:
-                y_at_30 = np.interp(30, s_vals, do_vals)
-            else:
-                y_at_30 = np.mean(do_vals)
-
-        # print(f"y_fit at x=30s: {y_at_30}")
-        return y_fit, x_plot, y_at_30, do_vals
