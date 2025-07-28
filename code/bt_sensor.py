@@ -54,6 +54,7 @@ class BluetoothReader(QObject):
         's_print': {'tx':'sample print', 'rx':'dstart', 'end':'dfinish'},
         'cal_do' : {'tx':'cal do', 'rx':'init do'},
         'cal_ps' : {'tx':'cal ps', 'rx':'init p'},
+        'xmas'   : {'tx':'set light xmas', 'rx':''},
     }
     msg_command = ["get init_do", 'get init_p', 'batt', 'sample reset', 'sample size', 'sample print', 'cal ps', 'cal do']
 
@@ -90,23 +91,22 @@ class BluetoothReader(QObject):
                     self.status_string = "connected to: " + adv.complete_name
                     self.sensor_name = adv.complete_name
                     self.sdata['name'] = adv.complete_name[9:]
-                    break
-
+                    return True   
         self.ble.stop_scan()
+        return False
 
     def run_connection_first(self):
         # os.popen('sudo hciconfig hci0 reset')
         # self.status_string = "doing hciconfig hci0 reset"
         # time.sleep(5)
-        try:
-            self.connect()
-            self.send_sensor("set light xmas")
+        if self.connect():
+            self.send_receive_command(self.command['xmas'])
             self.connection_status = "connected"
             self.sdata['connection'] = self.connection_status
             self.update_logger("info", 'first time connected to the payload (boot up)')
             update_json, update_logger, update_status, msg = True, True, True, True
             return update_json, update_logger, update_status, msg, ['name', 'connection']
-        except:
+        else:
             self.update_logger("warning", "BLE connect failed")
             #fails['ble'] += 1
             self.status_string = "BLE connect failed"
@@ -133,8 +133,7 @@ class BluetoothReader(QObject):
                 update_json = True
                 
             self.status_string = "trying to reconnect"
-            try:
-                self.connect()
+            if self.connect():
                 self.connection_status = "connected"
                 self.sdata['connection'] = self.connection_status
                 update_json = True
@@ -144,7 +143,7 @@ class BluetoothReader(QObject):
                 # self.check_size = 1
                 update_logger, update_status, msg = True, True, True
                 return update_json, update_logger, update_status, msg, ['connection']
-            except:
+            else:
                 self.update_logger("warning", "BLE connect failed - maybe underwater")
                 #fails['ble'] += 1
                 self.status_string = "BLE connect failed - maybe underwater"
@@ -189,7 +188,7 @@ class BluetoothReader(QObject):
         self.data_size_at30sec = data_size_at30sec
         self.sample_stop_time = sample_stop_time
         update_json, update_logger, update_status = True, True, True
-        msg = self.send_receive_command(self.commands['s_print'], timeout=3)
+        msg = self.send_receive_command(self.commands['s_print'], timeout=5)
         keys = ["do", "do_mgl", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
         return update_json, update_logger, update_status, msg, keys
     
@@ -277,7 +276,7 @@ class BluetoothReader(QObject):
         start_time = time.time()
         if not self.uart_connection:
             return ""
-        if not self.uart_connetion.connected:
+        if not self.uart_connection.connected:
             return ""
         
         #handle commands with multiple responses expected
@@ -311,49 +310,6 @@ class BluetoothReader(QObject):
 
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
-    
-    def send_receive_array(self, command, timeout=3):
-
-        receiving_array = False #true if response indicates array is being transmitted
-        start_time = time.time()
-
-        self.send_sensor(command['tx'])
-        # keep reading until correct message received (if response expected)
-        while (time.time()-start_time < timeout):
-            msg = self.read_sensor()
-            msg = msg.split(",")
-            if len(msg) >= 1:
-                # start of array sequence
-                if msg[0] == command['rx']:
-                    receiving_array = True
-                # extract messages part of array
-                if receiving_array:        
-                    self.extract_message(msg)
-                # end of array sequence
-                if msg[0] == command.get('end'):
-                    break
-
-        print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
-        return msg
-    
-
-    def read_sensor(self):
-        if self.uart_connection:
-            uart_service = self.uart_connection[UARTService]
-            if self.uart_connection.connected:
-                outmsg = uart_service.readline().decode()
-                outmsg = outmsg.replace("\n","")
-                outmsg = outmsg.lower()
-                return outmsg
-        return "failed"
-
-    def send_sensor(self, inmsg):
-        if self.uart_connection:
-            uart_service = self.uart_connection[UARTService]
-            if self.uart_connection.connected:
-                uart_service.write((inmsg + "\n").encode())
-            else:
-                print("failed to send")
 
     def writeCSV(self, ofile, data):
         with open(ofile,'a',newline='') as csvfile:
