@@ -410,7 +410,9 @@ class TruckSensor(QThread):
         else:
             safe_transfer("do")
             safe_transfer("ysi_do")
-
+        print(f"NEW_UNIT: {self.unit}")
+        print(f"SDATA\n {self.sdata}")
+        print(f"DATA DICT\n{self.data_dict}")
         return self.data_dict
 
     def update_logger_value(self, update_logger):

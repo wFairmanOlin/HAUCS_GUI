@@ -33,7 +33,7 @@ class BluetoothReader(QObject):
     do_vals = []
     temp_vals = []
     pressure_vals = []
-    do_val = 0
+    do = 0
     temp_val = 0
     pressure_val = 0
     csv_file = None
@@ -178,7 +178,7 @@ class BluetoothReader(QObject):
         self.sample_stop_time = sample_stop_time
         update_json, update_logger, update_status = True, True, True
         msg = self.send_receive_command(self.msg_command[5], True)
-        keys = ["do", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
+        keys = ["do", "do_mgl", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
         return update_json, update_logger, update_status, msg, keys
     
     def set_calibration_pressure(self):
@@ -234,13 +234,14 @@ class BluetoothReader(QObject):
             if len(self.do_vals) > 30:
                 self.do_vals = self.do_vals[:30]
 
-            self.do_val = self.do_vals[-1]
+            self.do_percent = self.do_vals[-1]
             arr = np.array(self.temp_vals)
             self.temp_val = [float(arr.mean())]
             arr = np.array(self.pressure_vals)
             self.pressure_val = [float(arr.mean())]
 
-            self.sdata["do"] = self.do_val
+            self.sdata["do"] = self.do
+            self.sdata["do_mgl"] = convert_raw_to_mgl(self.do, self.temp_val, self.init_p_val)
             self.sdata["init_do"] = self.init_do_val
             self.sdata["init_pressure"] = self.init_p_val
             self.sdata["pressure"] = self.pressure_val
@@ -253,13 +254,13 @@ class BluetoothReader(QObject):
             self.sdata["pressure_vals"] = self.pressure_vals
 
         elif key == "ts":
-            do_val = float(value[2])
+            do = float(value[2])
             temp_val = float(value[4])
             pressure_val = float(value[6])
             if self.csv_file is not None:
-                self.writeCSV(self.csv_file, [float(value[0]), do_val, temp_val, pressure_val])
+                self.writeCSV(self.csv_file, [float(value[0]), do, temp_val, pressure_val])
 
-            self.do_vals.append(do_val) # DO
+            self.do_vals.append(do) # DO
             temp_val = to_fahrenheit(temp_val)
             self.temp_vals.append(round(temp_val, 1))   # tempuerature 
             self.pressure_vals.append(pressure_val) # pressure
