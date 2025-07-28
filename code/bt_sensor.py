@@ -270,31 +270,13 @@ class BluetoothReader(QObject):
             self.pressure_vals.append(pressure_val) # pressure
             self.data_counter = self.data_counter + 1  
 
-    def send_receive_command(self, command, timeout=3):
-        '''
-        Returns immediately if not connected
-        '''
-        start_time = time.time()
-        if not self.uart_connection:
-            return ""
-        if not self.uart_connection.connected:
-            return ""
-        
-        uart_service = self.uart_connection[UARTService]
-        uart_service.write(command['tx'].encode())
+    def send_receive_command(self, command, timeout=1):
+
         msg = "" # return nothing if tx only
-        # keep reading until correct message received (if response expected)
+        start_time = time.time()
+        self.send_sensor(command['tx'])
         while (time.time()-start_time < timeout) and len(command['rx']) > 0:
-            # wait till buffer has something
-            if not uart_service.in_waiting:
-                continue
-            elif uart_service.in_waiting > 0:
-                print("uart in waiting: ", uart_service.in_waiting)
-            msg = uart_service.readline().decode()
-            msg = msg.replace("\n","")
-            msg = msg.lower()
-            if msg:
-                print(msg, msg.split(","))
+            msg = self.read_sensor()
             msg = msg.split(",")
             if len(msg) >= 1:
                 if msg[0] == command['rx']:
@@ -304,20 +286,12 @@ class BluetoothReader(QObject):
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
-    def send_receive_array(self, command, timeout=30):
-        '''
-        Returns immediately if not connected
-        '''
-        start_time = time.time()
-        if not self.uart_connection:
-            return ""
-        if not self.uart_connection.connected:
-            return ""
-        
-        uart_service = self.uart_connection[UARTService]
-        uart_service.write(command['tx'].encode())
+    def send_receive_array(self, command, timeout=3):
+
         receiving_array = False #true if response indicates array is being transmitted
-        msg = ""
+        start_time = time.time()
+
+        self.send_sensor(command['tx'])
         # keep reading until correct message received (if response expected)
         while (time.time()-start_time < timeout):
             msg = self.read_sensor()
@@ -349,11 +323,9 @@ class BluetoothReader(QObject):
 
     def send_sensor(self, inmsg):
         if self.uart_connection:
-            # self.status_string = "sending: " + inmsg
             uart_service = self.uart_connection[UARTService]
             if self.uart_connection.connected:
-                # print(inmsg)
-                uart_service.write(inmsg.encode())
+                uart_service.write((inmsg + "\n").encode())
             else:
                 print("failed to send")
 
