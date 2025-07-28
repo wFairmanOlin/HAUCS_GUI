@@ -271,12 +271,23 @@ class BluetoothReader(QObject):
             self.data_counter = self.data_counter + 1  
 
     def send_receive_command(self, command, timeout=1):
+        '''
+        Returns immediately if not connected
+        '''
         start_time = time.time()
-        self.send_sensor(command['tx'])
+        if not self.uart_connection:
+            return ""
+        if not self.uart_connection.connected:
+            return ""
+        
+        uart_service = self.uart_connection[UARTService]
+        uart_service.write(command['tx'].encode())
         msg = "" # return nothing if tx only
         # keep reading until correct message received (if response expected)
         while (time.time()-start_time < timeout) and len(command['rx']) > 0:
-            msg = self.read_sensor()
+            msg = uart_service.readline().decode()
+            msg = msg.replace("\n","")
+            msg = msg.lower()
             if msg:
                 print(msg, msg.split(","))
             msg = msg.split(",")
@@ -289,10 +300,19 @@ class BluetoothReader(QObject):
         return msg
     
     def send_receive_array(self, command, timeout=3):
+        '''
+        Returns immediately if not connected
+        '''
         start_time = time.time()
-        self.send_sensor(command['tx'])
-        receiving_array = False #true if response indicates array is being transmitted
+        if not self.uart_connection:
+            return ""
+        if not self.uart_connection.connected:
+            return ""
         
+        uart_service = self.uart_connection[UARTService]
+        uart_service.write(command['tx'].encode())
+        receiving_array = False #true if response indicates array is being transmitted
+        msg = ""
         # keep reading until correct message received (if response expected)
         while (time.time()-start_time < timeout):
             msg = self.read_sensor()
@@ -327,7 +347,7 @@ class BluetoothReader(QObject):
             # self.status_string = "sending: " + inmsg
             uart_service = self.uart_connection[UARTService]
             if self.uart_connection.connected:
-                print(inmsg)
+                # print(inmsg)
                 uart_service.write(inmsg.encode())
             else:
                 print("failed to send")
