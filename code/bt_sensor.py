@@ -242,7 +242,8 @@ class BluetoothReader(QObject):
 
             self.sdata["do"] = self.do
             print(f"do_mgl: {self.do}, {self.temp_val}, {self.init_p_val}")
-            self.sdata["do_mgl"] = convert_raw_to_mgl(self.do, self.temp_val, self.init_p_val)
+            #TODO: WHY IS temp_val AN ARRAY?
+            self.sdata["do_mgl"] = convert_raw_to_mgl(self.do, self.temp_val[0], self.init_p_val)
             self.sdata["init_do"] = self.init_do_val
             self.sdata["init_pressure"] = self.init_p_val
             self.sdata["pressure"] = self.pressure_val

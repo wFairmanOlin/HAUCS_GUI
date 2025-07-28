@@ -324,10 +324,6 @@ class DOApp(QWidget):
 
     def on_data_update(self, data_dict):
         if 'battv' in data_dict:
-            # if data_dict["battv"] <= self.batt_low_v and "not charging" == data_dict['batt_status'][:12]:
-            #     self.update_value("SB", str(data_dict["battv"]) + "V " + "Battery low")
-            # else:
-            #     self.update_value("SB", str(data_dict["battv"]) + "V " + data_dict['batt_status'])
             batt_percent = int((data_dict["battv"] - self.batt_empty) / (self.batt_full - self.batt_empty) * 100)
             if batt_percent > 100:
                 batt_percent = 100
@@ -353,15 +349,20 @@ class DOApp(QWidget):
             self.update_value("PID", data_dict["pid"])
             # self.update_value("GPS", str(data_dict["lat"]) + ", " + str(data_dict["lng"]))
         if 'do' in data_dict:
-            self.update_value("SDL", f"{data_dict['do']:.2f}")
             if self.unit == "percent":
-                t = to_celcius(self.thread.sdata["temp"][0])
-                p = self.thread.sdata["pressure"][0]
-                do_val = convert_raw_to_mgl(data_dict['do'], t, p)
+                self.update_value("SDL", f"{data_dict['do']:.2f}")
             else:
-                do_val = round(100 * data_dict['do'])
-            key = "SDL"
+                self.update_value("SDL", f"{data_dict['do_mgl']:.2f}")
+            # self.update_value("SDL", f"{data_dict['do']:.2f}")
+            # if self.unit == "percent":
+            #     t = to_celcius(self.thread.sdata["temp"][0])
+            #     p = self.thread.sdata["pressure"][0]
+            #     do_val = convert_raw_to_mgl(data_dict['do'], t, p)
+            # else:
+            #     do_val = round(100 * data_dict['do'])
+            # key = "SDL"
             # print("do_val", do_val)
+            do_val = data_dict['do_mgl']
             if do_val < self.min_do:
                 self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
             elif self.min_do <= do_val < self.good_do:

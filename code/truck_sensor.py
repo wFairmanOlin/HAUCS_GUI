@@ -381,38 +381,38 @@ class TruckSensor(QThread):
         self.update_data.emit(self.data_dict)
 
     def check_unit(self):
-        def safe_convert(key):
-            if key in self.sdata:
-                try:
-                    if key == "ysi_do":
-                        val = float(self.sdata[key])
-                        self.data_dict["ysi"] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
-                    else:
-                        val = float(self.sdata[key])
-                        self.data_dict[key] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
-                except (ValueError, TypeError):
-                    pass
+        # def safe_convert(key):
+        #     if key in self.sdata:
+        #         try:
+        #             if key == "ysi_do":
+        #                 val = float(self.sdata[key])
+        #                 self.data_dict["ysi"] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
+        #             else:
+        #                 val = float(self.sdata[key])
+        #                 self.data_dict[key] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
+        #         except (ValueError, TypeError):
+        #             pass
 
-        def safe_transfer(key):
-            if key in self.sdata:
-                try:
-                    val = float(self.sdata[key])
-                    if key == "ysi_do":
-                        self.data_dict["ysi"] = val
-                    else:
-                        self.data_dict[key] = val
-                except (ValueError, TypeError):
-                    pass
+        # def safe_transfer(key):
+        #     if key in self.sdata:
+        #         try:
+        #             val = float(self.sdata[key])
+        #             if key == "ysi_do":
+        #                 self.data_dict["ysi"] = val
+        #             else:
+        #                 self.data_dict[key] = val
+        #         except (ValueError, TypeError):
+        #             pass
 
-        if self.unit == "mgl":
-            safe_convert("do")
-            safe_convert("ysi_do")
-        else:
-            safe_transfer("do")
-            safe_transfer("ysi_do")
-        print(f"NEW_UNIT: {self.unit}")
-        print(f"SDATA\n {self.sdata}")
-        print(f"DATA DICT\n{self.data_dict}")
+        # if self.unit == "mgl":
+        #     safe_convert("do")
+        #     safe_convert("ysi_do")
+        # else:
+        #     safe_transfer("do")
+        #     safe_transfer("ysi_do")
+        # print(f"NEW_UNIT: {self.unit}")
+        # print(f"SDATA\n {self.sdata}")
+        # print(f"DATA DICT\n{self.data_dict}")
         return self.data_dict
 
     def update_logger_value(self, update_logger):
