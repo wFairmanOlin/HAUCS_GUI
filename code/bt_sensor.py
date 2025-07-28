@@ -283,7 +283,7 @@ class BluetoothReader(QObject):
                     self.extract_message(msg)
                     break
         
-        print(f"{command} resp {msg} time: {round((time.time() - start_time, 2))}")
+        print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
     def send_receive_array(self, command, timeout=3):
@@ -305,6 +305,8 @@ class BluetoothReader(QObject):
                 # end of array sequence
                 if msg[0] == command.get('end'):
                     break
+                
+        print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
 
