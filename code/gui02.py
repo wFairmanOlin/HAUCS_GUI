@@ -360,15 +360,14 @@ class DOApp(QWidget):
             #     do_val = convert_raw_to_mgl(data_dict['do'], t, p)
             # else:
             #     do_val = round(100 * data_dict['do'])
-            # key = "SDL"
             # print("do_val", do_val)
             do_val = data_dict['do_mgl']
             if do_val < self.min_do:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
+                self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
             elif self.min_do <= do_val < self.good_do:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
+                self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+                self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
         if 'mouse' in data_dict:
             if data_dict['mouse'] == 'normal':
                 QApplication.restoreOverrideCursor()
@@ -383,13 +382,12 @@ class DOApp(QWidget):
                 do_val = convert_raw_to_mgl(data_dict['ysi'], t, p)
             else:
                 do_val = round(100 * data_dict['ysi'])
-            key = "YSI"
             if do_val < self.min_do:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
+                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
             elif self.min_do <= do_val < self.good_do:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
+                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
-                self.data_labels[key].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
     
     def on_status_update(self, value):
         self.log_label.setText(value)
