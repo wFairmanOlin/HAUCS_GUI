@@ -377,8 +377,16 @@ class TruckSensor(QThread):
 
     def toggle_unit(self, unit):
         self.unit = unit
-        self.data_dict = self.check_unit()
+        # self.data_dict = self.check_unit()
+        self.data_dict['do'] = self.sdata['do']
+        self.data_dict['do_mgl'] = self.sdata['do_mgl']
+        self.data_dict['ysi_do'] = self.sdata['ysi_do']
+        self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
+        self.data_dict['ysi'] = self.sdata['ysi_do_mgl']
         self.update_data.emit(self.data_dict)
+        print(f"NEW_UNIT: {self.unit}")
+        print(f"SDATA\n {self.sdata}")
+        print(f"DATA DICT\n{self.data_dict}")
 
     def check_unit(self):
         # def safe_convert(key):
