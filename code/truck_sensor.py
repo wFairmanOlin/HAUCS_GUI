@@ -361,7 +361,7 @@ class TruckSensor(QThread):
                 self.do_val = self.data_dict["do"]
                 self.ysi_mgl = self.ysi_worker.get_record(time_stop)
                 self.ysi_csv = self.ysi_worker.csv_file
-                self.ysi = convert_mgl_to_raw(self.ysi, self.water_temp, self.pressure)
+                self.ysi = convert_mgl_to_raw(self.ysi_mgl, self.water_temp, self.pressure)
                 self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {100 * self.ysi} %")
                 if self.unit == "percent":
                     self.data_dict["ysi"] = self.ysi

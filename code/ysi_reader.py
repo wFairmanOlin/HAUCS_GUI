@@ -88,6 +88,7 @@ class YSIReader(QThread):
     def get_record(self, time_stop):
         self.start_record = False
         data_mgl = self.data_record
+        print(f"in ysi_reader, do_mgl:{self.data_record[-1]}") 
 
         return data_mgl[-1]
 
