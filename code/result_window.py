@@ -484,7 +484,8 @@ class ResultWindow(QWidget):
         ax = fig.add_subplot(111)
         fig.patch.set_facecolor('white')
         ax.set_facecolor('white')
-        ax.bar(x_labels, (100 if self.unit == 'percent' else 1) * y_vals[self.unit], color=colors) #scale data if units are percent
+        y = [(100 if self.unit == 'percent' else 1) * i for i in y_vals[self.unit]]
+        ax.bar(x_labels, y, color=colors)
         ax.set_xlabel("Hour", fontsize=12)
         ax.set_ylabel("HBOI DO" + ("%" if self.unit == 'percent' else "mg/l"), fontsize=12)
         ax.set_title("Hourly HBOI DO (with 6-hr Prediction)", fontsize=14)
