@@ -87,13 +87,9 @@ class YSIReader(QThread):
 
     def get_record(self, time_stop):
         self.start_record = False
-        # CONVERT DO TO RAW
-        # TODO: NEED TEMPERATURE
-        data_raw = convert_mgl_to_raw(self.data_record, t=25)
-        print("ysi temperature not given")
-        _, _, send_data, _, _ = calculate_do_and_fit(data_raw, time_stop)
-        self.data_record = []
-        return send_data
+        data_mgl = self.data_record
+
+        return data_mgl[-1]
 
     def writeCSV(self, ofile, data):
         with open(ofile,'a',newline='') as csvfile:
