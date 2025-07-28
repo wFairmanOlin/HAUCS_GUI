@@ -283,8 +283,13 @@ class BluetoothReader(QObject):
         uart_service = self.uart_connection[UARTService]
         uart_service.write(command['tx'].encode())
         msg = "" # return nothing if tx only
+        prev_waiting = 0
         # keep reading until correct message received (if response expected)
         while (time.time()-start_time < timeout) and len(command['rx']) > 0:
+            if not uart_service.in_waiting or uart_service.in_waiting > prev_waiting:
+                print("skipping") 
+                prev_waiting = uart_service.in_waiting 
+                continue
             msg = uart_service.readline().decode()
             msg = msg.replace("\n","")
             msg = msg.lower()
@@ -299,7 +304,7 @@ class BluetoothReader(QObject):
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
-    def send_receive_array(self, command, timeout=3):
+    def send_receive_array(self, command, timeout=30):
         '''
         Returns immediately if not connected
         '''
