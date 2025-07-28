@@ -354,7 +354,7 @@ class TruckSensor(QThread):
                 self.data_dict["lat"] = self.latitude
 
             if update_pond_data:
-                #TODO: This breaks when sampling rate is less than 0
+                #TODO: This breaks when sampling rate is less than 1
                 time_stop = len(self.data_dict["do_vals"])
                 self.water_temp = to_celcius(self.data_dict["temp"][0])
                 self.pressure = self.data_dict["pressure"][0]
@@ -363,21 +363,19 @@ class TruckSensor(QThread):
                 self.ysi_csv = self.ysi_worker.csv_file
                 self.ysi = convert_mgl_to_raw(self.ysi_mgl, self.water_temp, self.pressure)
                 self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {100 * self.ysi} %")
-                if self.unit == "percent":
-                    self.data_dict["ysi"] = self.ysi
-                else:
-                    self.data_dict["ysi"] = self.ysi_mgl
+                #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
                 self.sdata["ysi_do"] = self.ysi
                 self.sdata["ysi_do_mgl"] = self.ysi_mgl
-
-                self.data_dict = self.check_unit()
+                self.data_dict['ysi_do'] = self.sdata['ysi_do']
+                self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
+                self.data_dict['do'] = self.sdata['do']
+                self.data_dict['do_mgl'] = self.sdata['do_mgl']
 
                 self.update_pond_data.emit(self.data_dict)
             self.update_data.emit(self.data_dict)
 
     def toggle_unit(self, unit):
         self.unit = unit
-        # self.data_dict = self.check_unit()
         self.data_dict['do'] = self.sdata['do']
         self.data_dict['do_mgl'] = self.sdata['do_mgl']
         self.data_dict['ysi_do'] = self.sdata['ysi_do']
@@ -387,41 +385,6 @@ class TruckSensor(QThread):
         print(f"NEW_UNIT: {self.unit}")
         print(f"SDATA\n {self.sdata}")
         print(f"DATA DICT\n{self.data_dict}")
-
-    def check_unit(self):
-        # def safe_convert(key):
-        #     if key in self.sdata:
-        #         try:
-        #             if key == "ysi_do":
-        #                 val = float(self.sdata[key])
-        #                 self.data_dict["ysi"] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
-        #             else:
-        #                 val = float(self.sdata[key])
-        #                 self.data_dict[key] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
-        #         except (ValueError, TypeError):
-        #             pass
-
-        # def safe_transfer(key):
-        #     if key in self.sdata:
-        #         try:
-        #             val = float(self.sdata[key])
-        #             if key == "ysi_do":
-        #                 self.data_dict["ysi"] = val
-        #             else:
-        #                 self.data_dict[key] = val
-        #         except (ValueError, TypeError):
-        #             pass
-
-        # if self.unit == "mgl":
-        #     safe_convert("do")
-        #     safe_convert("ysi_do")
-        # else:
-        #     safe_transfer("do")
-        #     safe_transfer("ysi_do")
-        # print(f"NEW_UNIT: {self.unit}")
-        # print(f"SDATA\n {self.sdata}")
-        # print(f"DATA DICT\n{self.data_dict}")
-        return self.data_dict
 
     def update_logger_value(self, update_logger):
         if update_logger:

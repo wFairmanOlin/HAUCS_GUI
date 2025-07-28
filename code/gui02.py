@@ -349,18 +349,13 @@ class DOApp(QWidget):
             self.update_value("PID", data_dict["pid"])
             # self.update_value("GPS", str(data_dict["lat"]) + ", " + str(data_dict["lng"]))
         if 'do' in data_dict:
+
             if self.unit == "percent":
-                self.update_value("SDL", f"{data_dict['do']:.2f}")
+                self.update_value("SDL", f"{100 * data_dict['do']:.2f}")
             else:
                 self.update_value("SDL", f"{data_dict['do_mgl']:.2f}")
-            # self.update_value("SDL", f"{data_dict['do']:.2f}")
-            # if self.unit == "percent":
-            #     t = to_celcius(self.thread.sdata["temp"][0])
-            #     p = self.thread.sdata["pressure"][0]
-            #     do_val = convert_raw_to_mgl(data_dict['do'], t, p)
-            # else:
-            #     do_val = round(100 * data_dict['do'])
-            # print("do_val", do_val)
+
+            # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
             if do_val < self.min_do:
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
@@ -368,26 +363,29 @@ class DOApp(QWidget):
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
-        if 'mouse' in data_dict:
-            if data_dict['mouse'] == 'normal':
-                QApplication.restoreOverrideCursor()
-            else:
-                QApplication.setOverrideCursor(Qt.WaitCursor)
-        if 'ysi' in data_dict:
-            self.update_value("YSI", f"{data_dict['ysi']:.2f}")
-            
+        
+        if 'ysi_do' in data_dict:
+
             if self.unit == "percent":
-                t = to_celcius(self.thread.sdata["temp"][0])
-                p = self.thread.sdata["pressure"][0]
-                do_val = convert_raw_to_mgl(data_dict['ysi'], t, p)
+                self.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
             else:
-                do_val = round(100 * data_dict['ysi'])
+                self.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
+
+            # update label color based on mgl value in setting.setting
+            do_val = data_dict['ysi_do_mgl']
             if do_val < self.min_do:
                 self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
             elif self.min_do <= do_val < self.good_do:
                 self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
                 self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+
+        if 'mouse' in data_dict:
+            if data_dict['mouse'] == 'normal':
+                QApplication.restoreOverrideCursor()
+            else:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+
     
     def on_status_update(self, value):
         self.log_label.setText(value)
@@ -431,7 +429,6 @@ class DOApp(QWidget):
         self.result_window.good_do = self.good_do
         self.result_window.min_do = self.min_do
 
-        # ตั้งค่า
         if 'pid' in data_dict:
             self.result_window.update_value("PID", data_dict["pid"])
             self.result_window.pond_id = data_dict["pid"]
@@ -444,19 +441,21 @@ class DOApp(QWidget):
             self.result_window.pressure = data_dict['pressure'][0]
             self.result_window.update_value("Press", f"{data_dict['pressure'][0]:.2f} HPA")
         if 'do' in data_dict:
-            self.result_window.do_val_current = data_dict["do"]
-            if self.unit == "mgl":
-                self.result_window.do_val_current = data_dict["do"]
+            if self.unit == "percent":
+                self.result_window.do_val_current = f"{100 * data_dict["do"]:.2f}"
             else:
-                self.result_window.do_val_current = convert_raw_to_mgl(data_dict["do"], self.result_window.temp_c, self.result_window.pressure)
+                self.result_window.do_val_current = f"{data_dict["do_mgl"]:.2f}"
+            
+            #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
             self.result_window.update_value("HBOI", f"{data_dict['do']:.2f}")
-        if 'ysi' in data_dict:
-            if self.unit == "mgl":
-                self.result_window.ysi_val_current = data_dict["ysi"]
+            
+        if 'ysi_do' in data_dict:
+            if self.unit == "percent":
+                self.result_window.do_val_current = f"{100 * data_dict["ysi_do"]:.2f}"
             else:
-                self.result_window.ysi_val_current = convert_raw_to_mgl(data_dict["ysi"], self.result_window.temp_c, self.result_window.pressure)
-
-            self.result_window.update_value("YSI", f"{data_dict['ysi']:.2f}")
+                self.result_window.do_val_current = f"{data_dict["ysi_do_mgl"]:.2f}"
+            #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
+            self.result_window.update_value("YSI", f"{data_dict['ysi_do']:.2f}")
 
         self.result_window.update_value("SD", str(self.counter_time))
 
