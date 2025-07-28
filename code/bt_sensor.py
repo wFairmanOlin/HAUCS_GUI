@@ -270,7 +270,7 @@ class BluetoothReader(QObject):
             self.pressure_vals.append(pressure_val) # pressure
             self.data_counter = self.data_counter + 1  
 
-    def send_receive_command(self, command, timeout=1):
+    def send_receive_command(self, command, timeout=3):
         '''
         Returns immediately if not connected
         '''
