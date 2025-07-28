@@ -234,13 +234,14 @@ class BluetoothReader(QObject):
             if len(self.do_vals) > 30:
                 self.do_vals = self.do_vals[:30]
 
-            self.do_percent = self.do_vals[-1]
+            self.do = self.do_vals[-1]
             arr = np.array(self.temp_vals)
             self.temp_val = [float(arr.mean())]
             arr = np.array(self.pressure_vals)
             self.pressure_val = [float(arr.mean())]
 
             self.sdata["do"] = self.do
+            print(f"do_mgl: {self.do}, {self.temp_val}, {self.init_p_val}")
             self.sdata["do_mgl"] = convert_raw_to_mgl(self.do, self.temp_val, self.init_p_val)
             self.sdata["init_do"] = self.init_do_val
             self.sdata["init_pressure"] = self.init_p_val

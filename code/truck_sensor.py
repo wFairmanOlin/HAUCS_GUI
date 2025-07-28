@@ -385,24 +385,24 @@ class TruckSensor(QThread):
             if key in self.sdata:
                 try:
                     if key == "ysi_do":
-                        val = float(self.sdata[key])  # ตรวจสอบว่าเป็นตัวเลขได้
+                        val = float(self.sdata[key])
                         self.data_dict["ysi"] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
                     else:
-                        val = float(self.sdata[key])  # ตรวจสอบว่าเป็นตัวเลขได้
+                        val = float(self.sdata[key])
                         self.data_dict[key] = convert_raw_to_mgl(val, self.water_temp, self.pressure)
                 except (ValueError, TypeError):
-                    pass  # ข้ามถ้าแปลงไม่ได้ (ไม่ใช่ตัวเลข)
+                    pass
 
         def safe_transfer(key):
             if key in self.sdata:
                 try:
-                    val = float(self.sdata[key])  # ตรวจสอบว่าเป็นตัวเลขได้
+                    val = float(self.sdata[key])
                     if key == "ysi_do":
                         self.data_dict["ysi"] = val
                     else:
                         self.data_dict[key] = val
                 except (ValueError, TypeError):
-                    pass  # ข้ามถ้าแปลงไม่ได้ (ไม่ใช่ตัวเลข)
+                    pass
 
         if self.unit == "mgl":
             safe_convert("do")
