@@ -184,11 +184,22 @@ class BluetoothReader(QObject):
     def set_calibration_pressure(self):
         update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[6])
+        time.sleep(0.3)
+        msg = self.read_sensor()                        
+        msg = msg.split(",")                
+        self.extract_message(msg)
+        time.sleep(0.3)
+        msg = self.read_sensor()   
         return update_json, update_logger, update_status, msg, None
 
     def set_calibration_do(self):
         update_json, update_logger, update_status = False, False, False
         msg = self.send_receive_command(self.msg_command[7])
+        time.sleep(0.3)
+        msg = self.read_sensor()                        
+        msg = msg.split(",")                
+        self.extract_message(msg)
+        time.sleep(0.3)
         return update_json, update_logger, update_status, msg, None
 
     def extract_message(self, msg):
@@ -222,8 +233,8 @@ class BluetoothReader(QObject):
         elif "dfinish" in key:
             if len(self.do_vals) > 30:
                 self.do_vals = self.do_vals[:30]
-            y_fit, x_plot, y_at_30, do_vals, _ = calculate_do_and_fit(self.do_vals)
-            self.do_val = y_at_30
+
+            self.do_val = self.do_vals[-1]
             arr = np.array(self.temp_vals)
             self.temp_val = [float(arr.mean())]
             arr = np.array(self.pressure_vals)
@@ -236,7 +247,7 @@ class BluetoothReader(QObject):
             self.sdata["temp"] = self.temp_val
             self.sdata['battv'] = self.batt_v
             self.sdata['batt_status'] = self.batt_status
-            self.do_vals = do_vals
+            self.do_vals = self.do_vals
             self.sdata["do_vals"] = self.do_vals
             self.sdata["temp_vals"] = self.temp_vals
             self.sdata["pressure_vals"] = self.pressure_vals

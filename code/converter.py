@@ -94,6 +94,6 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     
     if y_at_30 < 0:
         print(f"oops broke physics, predicted DO below 0%, {y_at_30}")
-        y_at_30 = 0
+        y_at_30 = do_vals[-1]
 
     return y_fit, x_plot, y_at_30, do_vals, s_time
