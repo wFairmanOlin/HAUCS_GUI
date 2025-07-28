@@ -447,7 +447,7 @@ class DOApp(QWidget):
                 self.result_window.do_val_current = f"{data_dict["do_mgl"]:.2f}"
             
             #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
-            self.result_window.update_value("HBOI", f"{data_dict['do']:.2f}")
+            self.result_window.update_value("HBOI", f"{data_dict["do"]:.2f}")
             
         if 'ysi_do' in data_dict:
             if self.unit == "percent":
