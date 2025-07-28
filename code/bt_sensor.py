@@ -43,6 +43,18 @@ class BluetoothReader(QObject):
     sample_stop_time = 30
 
     do_vals_log = "DO_data/"
+
+   # dictionary of commands (tx) and expected retunrs (rx)
+    commands = {
+        'init_do': {'tx':'get init_do', 'rx':'init_do'},
+        'init_ps': {'tx':'get init_p', 'rx':'init_p'},
+        'battery': {'tx':'batt', 'rx':'v'},
+        's_reset': {'tx':'sample reset', 'rx':''},
+        's_size' : {'tx':'sample size', 'rx':'dsize'},
+        's_print': {'tx':'sample print', 'rx':'dstart', 'end':'dfinish'},
+        'cal_do' : {'tx':'cal do', 'rx':'init do'},
+        'cal_ps' : {'tx':'cal ps', 'rx':'init p'},
+    }
     msg_command = ["get init_do", 'get init_p', 'batt', 'sample reset', 'sample size', 'sample print', 'cal ps', 'cal do']
 
     ################## logger #########################
@@ -146,30 +158,30 @@ class BluetoothReader(QObject):
     def get_init_do(self):
         self.sdata["init_do"] = 0
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[0])
+        msg = self.send_receive_command(self.commands['init_do'])
         return update_json, update_logger, update_status, msg, ["init_do"]
 
     def get_init_pressure(self):
         self.sdata["init_pressure"] = 0
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[1])
+        msg = self.send_receive_command(self.commands['init_ps'])
         return update_json, update_logger, update_status, msg, ["init_pressure"]
 
     def get_battery(self):
         update_json, update_logger, update_status = True, False, False
-        msg = self.send_receive_command(self.msg_command[2])
+        msg = self.send_receive_command(self.commands['battery'])
         return update_json, update_logger, update_status, msg, ['battv', 'batt_status']
 
     def set_sample_reset(self):
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[3])
+        msg = self.send_receive_command(self.commands['s_reset'])
         self.prev_sample_size = -1
         self.current_sample_size = 0
         return update_json, update_logger, update_status, msg, None
 
     def get_sample_size(self):
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[4])
+        msg = self.send_receive_command(self.commands['s_size'])
         return update_json, update_logger, update_status, msg, None
 
     def get_sample_text(self, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
@@ -177,29 +189,18 @@ class BluetoothReader(QObject):
         self.data_size_at30sec = data_size_at30sec
         self.sample_stop_time = sample_stop_time
         update_json, update_logger, update_status = True, True, True
-        msg = self.send_receive_command(self.msg_command[5], True)
+        msg = self.send_receive_array(self.commands['s_print'])
         keys = ["do", "do_mgl", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
         return update_json, update_logger, update_status, msg, keys
     
     def set_calibration_pressure(self):
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[6])
-        time.sleep(0.3)
-        msg = self.read_sensor()                        
-        msg = msg.split(",")                
-        self.extract_message(msg)
-        time.sleep(0.3)
-        msg = self.read_sensor()   
+        msg = self.send_receive_command(self.commands['cal_ps']) 
         return update_json, update_logger, update_status, msg, None
 
     def set_calibration_do(self):
         update_json, update_logger, update_status = False, False, False
-        msg = self.send_receive_command(self.msg_command[7])
-        time.sleep(0.3)
-        msg = self.read_sensor()                        
-        msg = msg.split(",")                
-        self.extract_message(msg)
-        time.sleep(0.3)
+        msg = self.send_receive_command(self.commands['cal_do'])
         return update_json, update_logger, update_status, msg, None
 
     def extract_message(self, msg):
@@ -269,33 +270,42 @@ class BluetoothReader(QObject):
             self.pressure_vals.append(pressure_val) # pressure
             self.data_counter = self.data_counter + 1  
 
-    def send_receive_command(self, msg_command, until_no_str=False):
-        self.send_sensor(msg_command)
-        time.sleep(0.3)
-        if until_no_str:
-            summary_msg = []
+    def send_receive_command(self, command, timeout=1):
+        start_time = time.time()
+        self.send_sensor(command['tx'])
+        msg = "" # return nothing if tx only
+        # keep reading until correct message received (if response expected)
+        while (time.time()-start_time < timeout) and len(command['rx']) > 0:
             msg = self.read_sensor()
-            # print(msg)
             msg = msg.split(",")
-            self.extract_message(msg)
-
-            while msg != "failed read, no connection":
-                msg = self.read_sensor()
-                msg = msg.split(",")
-                self.extract_message(msg)
-                if msg == "failed read, no connection" or "dfinish" in msg[0]:
+            if len(msg) >= 1:
+                if msg[0] == command['rx']:
+                    self.extract_message(msg)
                     break
-                # summary_msg.append(msg)
-                
-            msg = summary_msg
-        else:
+
+        return msg
+    
+    def send_receive_array(self, command, timeout=3):
+        start_time = time.time()
+        self.send_sensor(command['tx'])
+        receiving_array = False #true if response indicates array is being transmitted
+        
+        # keep reading until correct message received (if response expected)
+        while (time.time()-start_time < timeout):
             msg = self.read_sensor()
-            if len(msg) > 0:
-                #print(msg)
-                msg = msg.split(",")
-                self.extract_message(msg)
-                return msg
-        return ""
+            msg = msg.split(",")
+            if len(msg) >= 1:
+                # start of array sequence
+                if msg[0] == command['rx']:
+                    receiving_array = True
+                # extract messages part of array
+                if receiving_array:        
+                    self.extract_message(msg)
+                # end of array sequence
+                if msg[0] == command.get('end'):
+                    break
+        return msg
+    
 
     def read_sensor(self):
         if self.uart_connection:
