@@ -442,18 +442,18 @@ class DOApp(QWidget):
             self.result_window.update_value("Press", f"{data_dict['pressure'][0]:.2f} HPA")
         if 'do' in data_dict:
             if self.unit == "percent":
-                self.result_window.do_val_current = f"{100 * data_dict["do"]:.2f}"
+                self.result_window.do_val_current = f"{100 * data_dict['do']:.2f}"
             else:
-                self.result_window.do_val_current = f"{data_dict["do_mgl"]:.2f}"
+                self.result_window.do_val_current = f"{data_dict['do_mgl']:.2f}"
             
             #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
-            self.result_window.update_value("HBOI", f"{data_dict["do"]:.2f}")
+            self.result_window.update_value("HBOI", f"{data_dict['do']:.2f}")
             
         if 'ysi_do' in data_dict:
             if self.unit == "percent":
-                self.result_window.do_val_current = f"{100 * data_dict["ysi_do"]:.2f}"
+                self.result_window.do_val_current = f"{100 * data_dict['ysi_do']:.2f}"
             else:
-                self.result_window.do_val_current = f"{data_dict["ysi_do_mgl"]:.2f}"
+                self.result_window.do_val_current = f"{data_dict['ysi_do_mgl']:.2f}"
             #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
             self.result_window.update_value("YSI", f"{data_dict['ysi_do']:.2f}")
 
