@@ -189,7 +189,7 @@ class BluetoothReader(QObject):
         self.data_size_at30sec = data_size_at30sec
         self.sample_stop_time = sample_stop_time
         update_json, update_logger, update_status = True, True, True
-        msg = self.send_receive_array(self.commands['s_print'])
+        msg = self.send_receive_command(self.commands['s_print'], timeout=3)
         keys = ["do", "do_mgl", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
         return update_json, update_logger, update_status, msg, keys
     
@@ -271,18 +271,44 @@ class BluetoothReader(QObject):
             self.data_counter = self.data_counter + 1  
 
     def send_receive_command(self, command, timeout=1):
-
-        msg = "" # return nothing if tx only
+        '''
+        Returns imediately if not connected
+        '''
         start_time = time.time()
-        self.send_sensor(command['tx'])
+        if not self.uart_connection:
+            return ""
+        if not self.uart_connetion.connected:
+            return ""
+        
+        #handle commands with multiple responses expected
+        multiple_outputs = "end" in command
+        receiving_array = False
+
+        uart_service = self.uart_connection[UARTService]
+        msg = "" # return nothing if tx only
+        uart_service.write((command['tx'] + "\n").encode())
         while (time.time()-start_time < timeout) and len(command['rx']) > 0:
-            msg = self.read_sensor()
+            # wait till buffer has something
+            if not uart_service.in_waiting:
+                continue
+            msg = uart_service.readline().decode()
+            msg = msg.replace("\n","")
+            msg = msg.lower()
             msg = msg.split(",")
             if len(msg) >= 1:
+                # handle first response
                 if msg[0] == command['rx']:
+                    receiving_array = True
                     self.extract_message(msg)
-                    break
-        
+                    # break if only one output
+                    if not multiple_outputs:
+                        break
+                # handle other responses
+                elif receiving_array:
+                    self.extract_message(msg)
+                    if msg[0] == command.get("end"):
+                        break
+
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
