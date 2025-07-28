@@ -294,6 +294,8 @@ class BluetoothReader(QObject):
         # keep reading until correct message received (if response expected)
         while (time.time()-start_time < timeout):
             msg = self.read_sensor()
+            if msg:
+                print(msg)
             msg = msg.split(",")
             if len(msg) >= 1:
                 # start of array sequence
@@ -305,7 +307,7 @@ class BluetoothReader(QObject):
                 # end of array sequence
                 if msg[0] == command.get('end'):
                     break
-                
+
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
     
