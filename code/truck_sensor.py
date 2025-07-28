@@ -413,12 +413,15 @@ class TruckSensor(QThread):
             self.status_data.emit(self.ble.status_string)
 
     def update_database(self, data_dict):
+        #TODO: data_dict is not really used
         truck_id = self.truck_id
         pid = data_dict["pid"]
         do_val = round(self.sdata.get("do", ""), 2)
-        ysi_val = round(self.sdata.get("ysi_do_mgl", ""), 2)
-        temp_val = round(self.sdata.get("temp", "")[0], 2)
-        press_val = round(self.sdata.get("pressure", "")[0], 2)
+        do_mgl_val = round(self.sdata.get("do_mgl", -1), 2)
+        ysi_do = round(self.sdata.get("ysi_do", -1), 2)
+        ysi_do_mgl = round(self.sdata.get("ysi_do_mgl", -1), 2)
+        temp_val = round(self.sdata.get("temp", [-1])[0], 2)
+        press_val = round(self.sdata.get("pressure", [-1])[0], 2)
         csv_file = self.csv_file
         message_time = self.sdata['message_time']
         self.sdata["pid"] = pid
@@ -428,7 +431,9 @@ class TruckSensor(QThread):
             "time": time_str,
             "Pond ID": pid,
             "HBOI DO": do_val,
-            "YSI DO": ysi_val,
+            "HBOI DO MGL":do_mgl_val,
+            "YSI DO": ysi_do,
+            "YSI DO MGL": ysi_do_mgl,
             "Temperature": temp_val,
             "Pressure": press_val,
             "do csv": csv_file,

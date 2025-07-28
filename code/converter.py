@@ -71,7 +71,6 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     def exp_func(x, a, b, c):
         return a * np.exp(-b * x) + c
     
-    do_vals = [100 * i for i in do_vals] #CONVERT TO PERCENT SATURATION
     s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
 
     x_plot = np.linspace(0, max_time, max_time * 10)
@@ -95,5 +94,7 @@ def calculate_do_and_fit(do_vals, max_time= 30):
     if y_at_30 < 0:
         print(f"oops broke physics, predicted DO below 0%, {y_at_30}")
         y_at_30 = do_vals[-1]
+    
+    print("ESTIMATED Y: ", y_at_30)
 
     return y_fit, x_plot, y_at_30, do_vals, s_time

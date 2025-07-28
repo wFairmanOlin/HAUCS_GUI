@@ -441,22 +441,22 @@ class DOApp(QWidget):
             self.result_window.pressure = data_dict['pressure'][0]
             self.result_window.update_value("Press", f"{data_dict['pressure'][0]:.2f} HPA")
         if 'do' in data_dict:
-            if self.unit == "percent":
-                self.result_window.do_val_current = 100 * data_dict['do']
-            else:
-                self.result_window.do_val_current = data_dict['do_mgl']
-            
-            #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
-            self.result_window.update_value("HBOI", f"{data_dict['do_mgl']:.2f}")
-            
-        if 'ysi_do' in data_dict:
-            if self.unit == "percent":
-                self.result_window.ysi_val_current = 100 * data_dict['ysi_do']
-            else:
-                self.result_window.ysi_val_current = data_dict['ysi_do_mgl']
-            #TODO: THIS DOESN'T CHANGE ON UNIT SELECTION
-            self.result_window.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
+            self.result_window.do_current = data_dict['do']
+            self.result_window.do_mgl_current = data_dict['do_mgl']
 
+            if self.unit == "percent":
+                self.result_window.update_value("HBOI", f"{100 * data_dict['do']:.2f}")
+            else:
+                self.result_window.update_value("HBOI", f"{data_dict['do_mgl']:.2f}")
+           
+        if 'ysi_do' in data_dict:
+            self.result_window.ysi_current = data_dict['ysi_do']
+            self.result_window.ysi_mgl_current = data_dict['ysi_do_mgl']
+            if self.unit == "percent":
+                self.result_window.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
+            else:
+                self.result_window.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
+            
         self.result_window.update_value("SD", str(self.counter_time))
 
         now = datetime.now()
