@@ -114,7 +114,7 @@ class TruckSensor(QThread):
         logging.info('Attempting to restart Firebase Connection')
         if in_app is not None:
             firebase_admin.delete_app(in_app)
-            sleep(60)
+            time.sleep(60)
         if os.path.exists(self.fb_key) and self.cred is None:
             self.cred = credentials.Certificate(self.fb_key)
             self.update_logger_text("warning", 'Firebase initialize failed, no fb_key')
@@ -195,18 +195,17 @@ class TruckSensor(QThread):
             print(self.pond_id, self.longitude, self.latitude)
         
     def calibrate_DO(self):
-        self.msleep(1000)
         update_json, update_logger, update_status, msg, sdata_key = self.ble.set_calibration_do()
         self.update_logger_text("info", f"Calibration DO complete")
         self.status_data.emit("Calibration DO complete")
-        self.msleep(1000)
 
     def run(self):
         self._abort = False
+        # Wait for First Connection
         while self.ble is None or not self.ble.check_connection_status():
             self.init_ble()
-            self.msleep(2500)
-            msgs = self.init_sensor_status()
+            self.msleep(500)
+            self.init_sensor_status()
             self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure, battery")
         # print(msgs)
         self.update_gps()
@@ -221,7 +220,7 @@ class TruckSensor(QThread):
         update_json, update_logger, update_status, msg, sdata_key = self.ble.set_sample_reset()
 
         # self.restore_unsaved_from_json()
-
+        # Main Loop
         while not self._abort:
             # self.update_logger_text("info", f"abort {self._abort}")
             connected = self.ble.check_connection_status()
@@ -240,7 +239,7 @@ class TruckSensor(QThread):
 
             connected = self.reconnection(just_reconnect)
             if not connected:
-                self.msleep(500)
+                self.msleep(100)
                 continue
 
             if just_reconnect:
