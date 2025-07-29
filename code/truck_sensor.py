@@ -218,15 +218,16 @@ class TruckSensor(QThread):
 
         connection_count = 0
         just_reconnect = False
-        underwater_alert = False
 
         # reset all buffer in system
-        update_json, msg, sdata_key = self.ble.set_sample_reset()
+        self.ble.set_sample_reset()
 
-        # self.restore_unsaved_from_json()
         # Main Loop
         while not self._abort:
-            # self.update_logger_text("info", f"abort {self._abort}")
+
+            # ADD NONE BLE SENSOR UPDATES FIRST
+            self.update_gps()
+
             connected = self.ble.check_connection_status()
             if not connected:
                 if connection_count == 0:
@@ -253,48 +254,31 @@ class TruckSensor(QThread):
             just_reconnect = False
             connection_count = 0
 
-            # counter += 1
-
-            self.update_gps()
-
-            # check and transmit messages on fixed intervals
             self.send_scheduled_messages()
 
             # read until buffer size stable
             if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
-
                 if self.is_30sec:
                     self.data_size_at30sec = self.ble.current_sample_size
-                if self.ble.current_sample_size > 0 and self.ble.prev_sample_size <= 0 and not underwater_alert:
-                    self.update_logger_text("info", f"Sensor is underwater, while still connecting. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
-                    underwater_alert = True
+                if self.ble.current_sample_size > 0 and self.ble.prev_sample_size <= 0:
+                    self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
                     self.is_30sec = False
-                if self.ble.current_sample_size > self.ble.prev_sample_size and self.ble.current_sample_size > 0:
+                if self.ble.current_sample_size > self.ble.prev_sample_size:
                     self.ysi_worker.set_record()
                     print("counter started bc sample size increased")
                     self.counter_is_running.emit("True")
                     self.status_data.emit("Collecting data")
-                    just_reconnect = False
-                    self.msleep(100)
-                    continue
-                elif self.ble.current_sample_size <= 0 and just_reconnect:
-                    self.ysi_worker.stop_record(reset=True)
-                    print("counter stopped but not data available")
-                    self.counter_is_running.emit("False")
-                    self.update_logger_text("warning", "Sensor reconnected, no data stored")
-                    just_reconnect = False
-                    self.is_30sec = False
                     continue
                 elif self.ble.current_sample_size == self.ble.prev_sample_size and self.ble.current_sample_size > 0:
                     self.status_data.emit("data is ready, starting to read")
                 else:
                     continue
-            just_reconnect = False
-            underwater_alert = False
+
+            # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
+
             self.ysi_worker.stop_record()
             print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
-            self.msleep(500)
 
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
@@ -309,7 +293,7 @@ class TruckSensor(QThread):
             do_val = self.ble.sdata["do"]
             self.update_logger_text("info", f"Data collected: {self.pond_id}, DO:{do_val}")
             self.csv_file = self.ble.csv_file
-            self.msleep(100)
+            
             update_json, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
             
