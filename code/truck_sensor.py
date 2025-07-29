@@ -219,9 +219,9 @@ class TruckSensor(QThread):
                 if connection_count == 0:
                     self.is_30sec = False
                     self.status_data.emit("BLE connection failed - maybe underwater")
-                    data_dict = {}
-                    data_dict['connection'] = self.ble.sdata['connection']
+                    data_dict = {'connection' : self.ble.sdata['connection']}
                     self.update_data.emit(data_dict)
+                    print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
                     self.ysi_worker.set_record()
                     self.update_logger_value()
@@ -264,6 +264,7 @@ class TruckSensor(QThread):
                     self.is_30sec = False
                 if self.ble.current_sample_size > self.ble.prev_sample_size and self.ble.current_sample_size > 0:
                     self.ysi_worker.set_record()
+                    print("counter started bc sample size increased")
                     self.counter_is_running.emit("True")
                     self.status_data.emit("Collecting data")
                     just_reconnect = False
@@ -271,8 +272,9 @@ class TruckSensor(QThread):
                     continue
                 elif self.ble.current_sample_size <= 0 and just_reconnect:
                     self.ysi_worker.stop_record(reset=True)
-                    self.counter_is_running.emit("False, overground")
-                    self.update_logger_text("warning", "Sensor has been reconnect over water, check bluetooth sensor")
+                    print("counter stopped but not data available")
+                    self.counter_is_running.emit("False")
+                    self.update_logger_text("warning", "Sensor reconnected, no data stored")
                     just_reconnect = False
                     self.is_30sec = False
                     continue
@@ -283,6 +285,7 @@ class TruckSensor(QThread):
             just_reconnect = False
             underwater_alert = False
             self.ysi_worker.stop_record()
+            print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
             self.msleep(500)
 
