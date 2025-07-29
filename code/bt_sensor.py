@@ -100,7 +100,7 @@ class BluetoothReader(QObject):
         # self.status_string = "doing hciconfig hci0 reset"
         # time.sleep(5)
         if self.connect():
-            self.send_receive_command(self.command['xmas'])
+            self.send_receive_command(self.commands['xmas'])
             self.connection_status = "connected"
             self.sdata['connection'] = self.connection_status
             self.update_logger("info", 'first time connected to the payload (boot up)')
