@@ -66,14 +66,12 @@ class FirebaseWorker(QThread):
         return None
 
     def convert_datadict_for_save(self, sdata, key):
-        print(sdata)
         truck_id = sdata.get(key[0], "-1")
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
         pond_id = sdata.get(key[3])
         
         stored_do = np.array(sdata.get(key[4], [-1])).tolist()
-        print(f"STORED DO {stored_do}")
         if not isinstance(stored_do, list):
             stored_do = [stored_do]
 
@@ -174,14 +172,11 @@ class FirebaseWorker(QThread):
         safe_time = sdata['message_time'].replace(":", "-")
         sensor_file = os.path.join(self.unsaved_json, safe_time + ".json")
 
-        print(sensor_file)
+        # print(sensor_file)
         try:
             os.makedirs(self.unsaved_json, exist_ok=True)
             with open(sensor_file, 'w') as outfile:
-                print("here")
-                print(sdata)
                 json.dump(sdata, outfile, default=str)
-                print("done writing")
         except Exception as e:
             self.logger_data.emit("error", f"Failed to write JSON: {sensor_file} — {e}")
 

@@ -135,45 +135,40 @@ class TruckSensor(QThread):
         self.ble = BluetoothReader()
         self.ble.do_vals_log = self.do_vals_log
         print("connect ble")
-        update_json, update_logger, msg, sdata_key = self.ble.run_connection_first()
+        update_json, msg, sdata_key = self.ble.run_connection_first()
         if msg:
             self.status_data.emit("Sensor Connection complete")
 
         self.update_sdata_value(sdata_key)
-        self.update_logger_value(update_logger)
+        self.update_logger_value()
 
     def init_sensor_status(self):
-        update_json, update_logger, msg, sdata_key = self.ble.set_calibration_pressure()
+        update_json, msg, sdata_key = self.ble.set_calibration_pressure()
         self.update_logger_text("info", f"Calibration Pressure complete")
 
         msgs = []
-        update_json, update_logger, msg, sdata_key = self.ble.get_init_do()
-        tell_logger = update_logger
+        update_json, msg, sdata_key = self.ble.get_init_do()
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
 
-        update_json, update_logger, msg, sdata_key = self.ble.get_init_pressure()
-        tell_logger |= update_logger
+        update_json, msg, sdata_key = self.ble.get_init_pressure()
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
 
-        update_json, update_logger, msg, sdata_key = self.ble.get_battery()
-        tell_logger |= update_logger
+        update_json, msg, sdata_key = self.ble.get_battery()
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
-
-        self.update_logger_value(tell_logger)
         
         return msgs
 
     def reconnection(self, just_reconnect):
-        update_json, update_logger, msg, sdata_key = self.ble.reconnect()
+        update_json, msg, sdata_key = self.ble.reconnect()
         if sdata_key is None:
             return True
         self.update_any(sdata_key, update_json)
         self.status_data.emit(self.ble.status_string)
-        if update_logger is not None and just_reconnect:
-            self.update_logger_value(update_logger)
+        if just_reconnect:
+            self.update_logger_value()
         return msg
 
     def update_gps(self):
@@ -229,7 +224,7 @@ class TruckSensor(QThread):
                     self.update_data.emit(data_dict)
                     self.counter_is_running.emit("True")
                     self.ysi_worker.set_record()
-                    self.update_logger_value(True)
+                    self.update_logger_value()
                 connection_count += 1
                 just_reconnect = True
 
@@ -252,14 +247,13 @@ class TruckSensor(QThread):
 
             if check_batt_counter >= 5:
                 check_batt_counter = 0
-                update_json, update_logger, msg, sdata_key = self.ble.get_battery()
+                update_json, msg, sdata_key = self.ble.get_battery()
                 self.update_any(sdata_key, update_json)
-                self.update_logger_value(update_logger)
                 self.msleep(100)
 
             # read until buffer size stable
             if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
-                update_json, update_logger, msg, sdata_key = self.ble.get_sample_size()
+                update_json, msg, sdata_key = self.ble.get_sample_size()
                 # self.status_data.emit("prev " + str(self.ble.prev_sample_size) + " current " + str(self.ble.current_sample_size) + " step " + str(counter))
                 # print("prev " + str(self.ble.prev_sample_size) + " current " + str(self.ble.current_sample_size) + " step " + str(counter))
                 if self.is_30sec:
@@ -381,16 +375,15 @@ class TruckSensor(QThread):
         print(f"DATA DICT\n{self.data_dict}")
 
     def update_logger_value(self, update_logger):
-        if update_logger:
-            log = {}
-            log["status"] = self.ble.logger_status
-            log["message"] = self.ble.logger_string
-            print(self.ble.logger_status, self.ble.logger_string)
-            if log["status"] == "info":
-                self.logger.info(log["message"])
-            elif log["status"] == "warning":
-                self.logger.warning(log["message"])
-            self.logger_data.emit(log)
+        log = {}
+        log["status"] = self.ble.logger_status
+        log["message"] = self.ble.logger_string
+        print(self.ble.logger_status, self.ble.logger_string)
+        if log["status"] == "info":
+            self.logger.info(log["message"])
+        elif log["status"] == "warning":
+            self.logger.warning(log["message"])
+        self.logger_data.emit(log)
 
     def update_logger_text(self, logger_status, logger_string):
         log = {}
