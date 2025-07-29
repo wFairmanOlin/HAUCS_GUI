@@ -38,6 +38,7 @@ class GPS_sensor:
             self.fails = 0
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
+            print(f"while loop: {time.time() - gps_time:.2f}")
             return True
         except:
             self.fails += 1
