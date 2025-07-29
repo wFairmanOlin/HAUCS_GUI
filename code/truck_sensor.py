@@ -156,6 +156,8 @@ class TruckSensor(QThread):
         update_json, msg, sdata_key = self.ble.get_init_pressure()
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
+
+        self.update_battery()
         
         return msgs
     
@@ -168,7 +170,7 @@ class TruckSensor(QThread):
     def init_message_scheduler(self):
         self.scheduled_msgs = {}
         self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
-        self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':5, 'timer':0}
+        self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':10, 'timer':0}
 
     def send_scheduled_messages(self):
         if self.messaging_active:
@@ -228,7 +230,7 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
-            self.msleep(1) # do nothing for Alisa
+            # self.msleep(1) # do nothing for Alisa
 
             # ADD NONE-BLE SENSOR UPDATES FIRST
             self.update_gps()

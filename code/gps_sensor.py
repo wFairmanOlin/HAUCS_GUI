@@ -34,13 +34,10 @@ class GPS_sensor:
         try:
             while time.time() - gps_time < inp_t:
                 self.gps.update()
-                time.sleep(1)
+                time.sleep(0.01)
             self.fails = 0
             if self.gps.satellites is not None:
-                self.numsat = gps.satellites
-                print(f"satellites in view: {numsat}")
-            #else:
-            #    print("No satellite data available.")
+                self.numsat = self.gps.satellites
             return True
         except:
             self.fails += 1
@@ -50,7 +47,6 @@ class GPS_sensor:
 
     def get_GPS_pond(self):
         self.update_GPS(1)
-        time.sleep(1)
         self.longitude = self.gps.longitude
         self.latitude = self.gps.latitude
         self.get_pond_id()
