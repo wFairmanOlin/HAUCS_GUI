@@ -20,12 +20,12 @@ class GPS_sensor:
 
     def __init__(self, timeout=1):
         i2c = board.I2C()
-        self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=1)
+        self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=2)
         self.gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         #TODO: Make update rate variable
         self.gps.send_command(b"PMTK220,8000")
         # clear stale data
-        self.update_GPS()
+        self.update_GPS(timeout=5)
         self.df = pd.read_csv('sampling_points.csv')
         self.pond_ids = self.df.pop('pond')
         self.pond_gps = self.df.to_numpy()
@@ -50,11 +50,9 @@ class GPS_sensor:
 
     def get_GPS_pond(self):
         self.update_GPS()
-        self.longitude = self.gps.longitude
-        self.latitude = self.gps.latitude
         self.get_pond_id()
 
-        return self.pond_id, self.latitude, self.longitude
+        return self.pond_id, self.gps.latitude, self.gps.longitude
 
     def get_pond_id(self, lat = None, lng = None):
         if lat is None:
