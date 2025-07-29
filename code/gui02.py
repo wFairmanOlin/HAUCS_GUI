@@ -406,8 +406,8 @@ class DOApp(QWidget):
         if self.timer_active:
             if hasattr(self, 'result_window') and self.result_window is not None:
                 if self.result_window.isVisible():
-                    self.result_window.close()  # ✅ ปิดเฉพาะถ้ายังเปิดอยู่
-                self.result_window = None  # 🔄 reset ตัวแปร เพื่อให้รู้ว่าไม่มีแล้ว
+                    self.result_window.close()
+                self.result_window = None
 
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time

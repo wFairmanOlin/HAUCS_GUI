@@ -14,7 +14,7 @@ class BigSpinBox(QWidget):
         # ---- Layout ----
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(30)  # ระยะห่างระหว่าง textbox กับปุ่ม up/down
+        layout.setSpacing(30)
 
         # ---- Line Edit ----
         self.line_edit = QLineEdit(str(self.value))

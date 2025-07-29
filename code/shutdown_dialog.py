@@ -8,14 +8,13 @@ class ShutdownDialog(QDialog):
         self.setModal(True)
         self.setFixedSize(1200, 400)
 
-        # 🌈 ปรับสไตล์ทั้งหมด
         self.setStyleSheet("""
             QDialog {
-                background-color: #2c2c2c;  /* พื้นหลังเทาเข้ม */
+                background-color: #2c2c2c;
                 font-size: 40px;
             }
             QLabel {
-                color: white;               /* ปรับให้ข้อความเป็นสีขาว */
+                color: white;            
                 font-weight: bold;
                 font-size: 48px;
             }
@@ -29,9 +28,9 @@ class ShutdownDialog(QDialog):
             }
             QPushButton {
                 padding: 10px 20px;
-                font-size: 48px;            /* ขนาดใหญ่ขึ้น */
-                color: black;               /* ฟอนต์สีดำ */
-                background-color: #dcdcdc;  /* สีเทาจาง */
+                font-size: 48px;
+                color: black;
+                background-color: #dcdcdc; 
                 border: 1px solid #aaa;
                 border-radius: 6px;
                 min-width: 250px; 
@@ -77,12 +76,15 @@ class ShutdownDialog(QDialog):
         self.btn_cancel.clicked.connect(self.reject)
 
     def try_close(self):
-        if self.password_input.text() == "98765":
-            self.result = "close"
-            self.accept()
-        else:
-            self.label.setText("❌ Incorrect password. Try again or press Cancel.")
-            self.password_input.clear()
+        #TODO UNCOMMENT WHEN DEPLOYED
+        self.result = "close"
+        self.accept()
+        # if self.password_input.text() == "98765":
+        #     self.result = "close"
+        #     self.accept()
+        # else:
+        #     self.label.setText("❌ Incorrect password. Try again or press Cancel.")
+        #     self.password_input.clear()
 
     def shutdown(self):
         self.result = "shutdown"
