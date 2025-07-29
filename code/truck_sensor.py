@@ -202,7 +202,7 @@ class TruckSensor(QThread):
 
     def run(self):
         self._abort = False
-        self.init_message_scheduler()
+        
         # Wait for First Connection
         while self.ble is None or not self.ble.check_connection_status():
             self.init_ble()
@@ -211,6 +211,7 @@ class TruckSensor(QThread):
             self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure, battery")
         # print(msgs)
         self.update_gps()
+        self.init_message_scheduler()
 
         # counter = 0
         check_batt_counter = 0
@@ -267,7 +268,6 @@ class TruckSensor(QThread):
 
             # read until buffer size stable
             if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
-                update_json, msg, sdata_key = self.ble.get_sample_size()
 
                 if self.is_30sec:
                     self.data_size_at30sec = self.ble.current_sample_size
