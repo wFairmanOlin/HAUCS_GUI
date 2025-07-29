@@ -157,10 +157,16 @@ class TruckSensor(QThread):
         
         return msgs
     
+    def update_battery(self):
+        #TODO: This function should be removed
+        update_json, msg, sdata_key = self.ble.get_battery()
+        self.update_any(sdata_key, update_json)
+
+    
     def init_message_scheduler(self):
         self.scheduled_msgs = {}
         self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
-        self.scheduled_msgs['batt']   = {'callback':self.}
+        self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':5, 'timer':0}
 
     def send_scheduled_messages(self):
         for message in self.scheduled_msgs.values():
@@ -205,13 +211,11 @@ class TruckSensor(QThread):
             self.init_ble()
             self.msleep(500)
             self.init_sensor_status()
-            self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure, battery")
+            self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure")
         # print(msgs)
         self.update_gps()
         self.init_message_scheduler()
 
-        # counter = 0
-        check_batt_counter = 0
         connection_count = 0
         just_reconnect = False
         underwater_alert = False
@@ -250,18 +254,11 @@ class TruckSensor(QThread):
             connection_count = 0
 
             # counter += 1
-            check_batt_counter += 1
 
             self.update_gps()
 
             # check and transmit messages on fixed intervals
             self.send_scheduled_messages()
-
-            if check_batt_counter >= 5:
-                check_batt_counter = 0
-                update_json, msg, sdata_key = self.ble.get_battery()
-                self.update_any(sdata_key, update_json)
-                self.msleep(100)
 
             # read until buffer size stable
             if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
@@ -315,7 +312,6 @@ class TruckSensor(QThread):
             self.msleep(100)
             update_json, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
-            counter = 0
             
         self.update_logger_text("info", f"ble thread abort {self._abort}")
         self.finished.emit()
