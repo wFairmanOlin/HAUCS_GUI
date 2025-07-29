@@ -253,9 +253,9 @@ class DOApp(QWidget):
                     background-color: #2ecc71;
                 }}
             """)
-            btn.clicked.connect(handler)  # ? ?????? handler ?????????
+            btn.clicked.connect(handler)
             if label in ["Manual/Auto\nPond ID", "Set\nPond ID"]:
-                btn.setVisible(False)  # 👈 ซ่อนไว้ก่อน
+                btn.setVisible(False)
             btn_layout.addWidget(btn)
 
         main_layout.addLayout(btn_layout)
@@ -263,7 +263,7 @@ class DOApp(QWidget):
 
         # ==== Log Display (Below Buttons) ====
         log_layout = QHBoxLayout()
-        log_layout.setContentsMargins(0, 0, 0, 0)  # ลบขอบ
+        log_layout.setContentsMargins(0, 0, 0, 0)
         log_layout.setSpacing(0)
 
         # Container widget layout
@@ -516,15 +516,19 @@ class DOApp(QWidget):
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self.thread.abort()
             while not self.thread._abort:
+                print("still not finish")
                 time.sleep(0.2)
+            print("ok, calibrate")
             self.thread.calibrate_DO()
             # restart after calibrate done
+            print("restart mainprogram")
             self.thread.start()
             # self.ble_running = True
             QApplication.restoreOverrideCursor()
+            print("Thread should start again")
 
             now = datetime.now()
-            formatted_time = now.strftime("%b %d, %Y %I:%M %p")  # <== รูปแบบตามที่คุณต้องการ
+            formatted_time = now.strftime("%b %d, %Y %I:%M %p") 
             self.last_calibration = formatted_time
 
             self.update_value("Date Time", self.last_calibration)

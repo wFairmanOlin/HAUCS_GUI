@@ -143,7 +143,7 @@ class TruckSensor(QThread):
         self.update_logger_value()
 
     def init_sensor_status(self):
-        update_json, msg, sdata_key = self.ble.set_calibration_pressure()
+        self.ble.set_calibration_pressure()
         self.update_logger_text("info", f"Calibration Pressure complete")
 
         msgs = []
@@ -199,7 +199,7 @@ class TruckSensor(QThread):
             print(self.pond_id, self.longitude, self.latitude)
         
     def calibrate_DO(self):
-        update_json, msg, sdata_key = self.ble.set_calibration_do()
+        self.ble.set_calibration_do()
         self.update_logger_text("info", f"Calibration DO complete")
         self.status_data.emit("Calibration DO complete")
 
@@ -225,7 +225,7 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
-            # ADD NONE BLE SENSOR UPDATES FIRST
+            # ADD NONE-BLE SENSOR UPDATES FIRST
             self.update_gps()
 
             connected = self.ble.check_connection_status()
@@ -268,10 +268,12 @@ class TruckSensor(QThread):
                     print("counter started bc sample size increased")
                     self.counter_is_running.emit("True")
                     self.status_data.emit("Collecting data")
+                    self.msleep(100)
                     continue
                 elif self.ble.current_sample_size == self.ble.prev_sample_size and self.ble.current_sample_size > 0:
                     self.status_data.emit("data is ready, starting to read")
                 else:
+                    self.msleep(100)
                     continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
@@ -296,6 +298,7 @@ class TruckSensor(QThread):
             
             update_json, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
+            self.msleep(100)
             
         self.update_logger_text("info", f"ble thread abort {self._abort}")
         self.finished.emit()

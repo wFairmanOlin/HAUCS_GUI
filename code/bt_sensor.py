@@ -29,7 +29,7 @@ class BluetoothReader(QObject):
     previous_connect = False
     sensor_name = "xyz"
     current_sample_size = -1
-    prev_sample_size = -1
+    prev_sample_size = 0
     do_vals = []
     temp_vals = []
     pressure_vals = []
@@ -173,7 +173,7 @@ class BluetoothReader(QObject):
     def set_sample_reset(self):
         update_json = False
         msg = self.send_receive_command(self.commands['s_reset'])
-        self.prev_sample_size = -1
+        self.prev_sample_size = 0
         self.current_sample_size = 0
         return update_json, msg, None
 
@@ -190,14 +190,10 @@ class BluetoothReader(QObject):
         return update_json, msg, keys
     
     def set_calibration_pressure(self):
-        update_json = False
-        msg = self.send_receive_command(self.commands['cal_ps']) 
-        return update_json, msg, None
+        return self.send_receive_command(self.commands['cal_ps']) 
 
     def set_calibration_do(self):
-        update_json = False
-        msg = self.send_receive_command(self.commands['cal_do'])
-        return update_json, msg, None
+        return self.send_receive_command(self.commands['cal_do'])
 
     def extract_message(self, msg):
         # print(f"extract: {msg}")
