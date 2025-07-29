@@ -39,6 +39,8 @@ class TruckSensor(QThread):
     cred = None
     fail_counter = 0
 
+    messaging_active = True #semaphore for scheduled messages
+
     is_30sec = False
     data_size_at30sec = 30
     sample_stop_time = 30
@@ -169,10 +171,11 @@ class TruckSensor(QThread):
         self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':5, 'timer':0}
 
     def send_scheduled_messages(self):
-        for message in self.scheduled_msgs.values():
-            if time.time() - message['timer'] > message['period']:
-                message['timer'] = time.time()
-                message['callback']()
+        if self.messaging_active:
+            for message in self.scheduled_msgs.values():
+                if time.time() - message['timer'] > message['period']:
+                    message['timer'] = time.time()
+                    message['callback']()
 
     def reconnection(self, just_reconnect):
         update_json, msg, sdata_key = self.ble.reconnect()
@@ -225,6 +228,8 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
+            self.msleep(1) # do nothing for Alisa
+
             # ADD NONE-BLE SENSOR UPDATES FIRST
             self.update_gps()
 
@@ -268,12 +273,10 @@ class TruckSensor(QThread):
                     print("counter started bc sample size increased")
                     self.counter_is_running.emit("True")
                     self.status_data.emit("Collecting data")
-                    self.msleep(100)
                     continue
                 elif self.ble.current_sample_size == self.ble.prev_sample_size and self.ble.current_sample_size > 0:
                     self.status_data.emit("data is ready, starting to read")
                 else:
-                    self.msleep(100)
                     continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
@@ -298,7 +301,6 @@ class TruckSensor(QThread):
             
             update_json, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
-            self.msleep(100)
             
         self.update_logger_text("info", f"ble thread abort {self._abort}")
         self.finished.emit()

@@ -514,19 +514,12 @@ class DOApp(QWidget):
 
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            # self.thread.abort()
-            # while not self.thread._abort:
-            #     print("still not finish")
-            #     time.sleep(0.2)
             print("ok, calibrate")
+            self.thread.messaging_active = False
             self.thread.calibrate_DO()
-            # restart after calibrate done
-            print("restart mainprogram")
-            # self.thread.start()
-            # self.ble_running = True
             QApplication.restoreOverrideCursor()
-            print("Thread should start again")
 
+            self.thread.messaging_active = True
             now = datetime.now()
             formatted_time = now.strftime("%b %d, %Y %I:%M %p") 
             self.last_calibration = formatted_time
@@ -561,18 +554,6 @@ class DOApp(QWidget):
             self.update_setting("autoclose_sec", self.auto_close_time)
             self.save_settings()
             # print("Updated:", new_values)
-
-    # def closeEvent(self, event):
-    #     self.thread.stop_ysi()
-    #     self.thread.abort()
-    #     self.thread.stop_firebase()
-    #     if hasattr(self, 'result_window') and self.result_window is not None:
-    #         if self.result_window.isVisible():
-    #             self.result_window.close()  # ✅ ปิดเฉพาะถ้ายังเปิดอยู่
-    #         self.result_window = None  # 🔄 reset ตัวแปร เพื่อให้รู้ว่าไม่มีแล้ว
-    #     self.thread.update_logger_text("info", "Program close.")
-    #     print("Program close")
-    #     super().closeEvent(event)
 
     def closeEvent(self, event):
         dialog = ShutdownDialog(self)
