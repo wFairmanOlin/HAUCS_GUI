@@ -115,12 +115,23 @@ class BluetoothReader(QObject):
         return update_json, msg, None
 
     def check_connection_status(self):
+        # prioritize status from uart connection 
+        connected = False
         if not (self.uart_connection and self.uart_connection.connected):
             self.update_logger("warning", "BLE connect failed - maybe underwater")
             self.connection_status = "not connected"
             self.sdata['connection'] = self.connection_status
             self.previous_connect = False
-        return (self.uart_connection and self.uart_connection.connected)
+        # use timeouts to predict disconnect
+        elif self.transmission_timeouts > 0:
+            self.update_logger("warning", "BLE transmission timeout - maybe disconnected")
+            self.connection_status = "not connected"
+            self.sdata['connection'] = self.connection_status
+            self.previous_connect = False
+        # sensor is connected
+        else:
+            connected = True
+        return connected
 
     def reconnect(self):
         if not (self.uart_connection and self.uart_connection.connected):
@@ -279,7 +290,11 @@ class BluetoothReader(QObject):
         uart_service = self.uart_connection[UARTService]
         msg = "" # return nothing if tx only
         uart_service.write((command['tx'] + "\n").encode())
-        while (time.time()-start_time < timeout) and len(command['rx']) > 0:
+        while len(command['rx']) > 0:
+            # check timeout
+            if (time.time() - start_time > timeout):
+                self.transmission_timeouts += 1
+                return ""
             # wait till buffer has something
             if not uart_service.in_waiting:
                 continue
@@ -300,7 +315,8 @@ class BluetoothReader(QObject):
                     self.extract_message(msg)
                     if msg[0] == command.get("end"):
                         break
-
+        # reset transmission timeouts on successfull transmission 
+        self.tranmission_timeouts = 0
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
 
