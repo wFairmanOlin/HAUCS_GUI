@@ -178,9 +178,7 @@ class BluetoothReader(QObject):
         return update_json, msg, None
 
     def get_sample_size(self):
-        update_json = False
-        msg = self.send_receive_command(self.commands['s_size'])
-        return update_json, msg, None
+        return self.send_receive_command(self.commands['s_size'])
 
     def get_sample_text(self, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
         self.is_30sec = is_30sec
