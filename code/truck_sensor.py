@@ -171,6 +171,7 @@ class TruckSensor(QThread):
         self.scheduled_msgs = {}
         self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
         self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':10, 'timer':0}
+        self.scheduled_msgs['gps']    = {'callback':self.update_gps, 'period':5, 'timer':0}
 
     def send_scheduled_messages(self):
         if self.messaging_active:
@@ -190,6 +191,8 @@ class TruckSensor(QThread):
         return msg
 
     def update_gps(self):
+        gps_time = time.time()
+            
         self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
         self.sdata["prev_pid"] = self.sdata["pid"]
         self.sdata["pid"] = self.pond_id
@@ -202,6 +205,9 @@ class TruckSensor(QThread):
         if self.sdata["prev_pid"] != self.sdata["pid"]:
             self.update_logger_text("info", f"move to pond ID: {self.pond_id}")
             print(self.pond_id, self.longitude, self.latitude)
+        
+        print(f"{self.latitude} {self.longitude}")
+        print(f"gps update time: {round(time.time() - gps_time, 2)}")
         
     def calibrate_DO(self):
         self.ble.set_calibration_do()
@@ -217,8 +223,7 @@ class TruckSensor(QThread):
             self.msleep(500)
             self.init_sensor_status()
             self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure")
-        # print(msgs)
-        self.update_gps()
+
         self.init_message_scheduler()
 
         connection_count = 0
@@ -233,9 +238,6 @@ class TruckSensor(QThread):
             # self.msleep(1) # do nothing for Alisa
 
             # ADD NONE-BLE SENSOR UPDATES FIRST
-            gps_time = time.time()
-            self.update_gps()
-            print(f"gps update time: {round(time.time() - gps_time, 2)}")
 
             connected = self.ble.check_connection_status()
             if not connected:

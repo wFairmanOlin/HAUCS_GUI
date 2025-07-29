@@ -20,25 +20,21 @@ class GPS_sensor:
 
     def __init__(self):
         i2c = board.I2C()
-        self.gps = adafruit_gps.GPS_GtopI2C(i2c)
+        self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=1)
         self.gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        #TODO: Make update rate variable
         self.gps.send_command(b"PMTK220,8000")
         self.update_GPS(5)
         self.df = pd.read_csv('sampling_points.csv')
         self.pond_ids = self.df.pop('pond')
         self.pond_gps = self.df.to_numpy()
 
-    def update_GPS(self, inp_t):
-        gps_time = time.time()
-        # noinspection PyBroadException
+    def update_GPS(self):
         try:
-            while (time.time() - gps_time) < inp_t:
-                self.gps.update()
-                # time.sleep(0.01)
+            self.gps.update()
             self.fails = 0
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
-            print(f"while loop: {time.time() - gps_time:.2f}")
             return True
         except:
             self.fails += 1
@@ -47,7 +43,7 @@ class GPS_sensor:
             return False
 
     def get_GPS_pond(self):
-        self.update_GPS(1)
+        self.update_GPS()
         self.longitude = self.gps.longitude
         self.latitude = self.gps.latitude
         self.get_pond_id()
