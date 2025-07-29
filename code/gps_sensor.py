@@ -34,14 +34,19 @@ class GPS_sensor:
         try:
             counter = 0
             start_time = time.time()
-            while self.gps.update()  and ((time.time() - start_time) < timeout):
-                counter += 1
-                time.sleep(0.01)
-            self.fails = 0
-            print("messages parsed = " + str(counter))
-            if self.gps.satellites is not None:
-                self.numsat = self.gps.satellites
-            return True
+            while time.time() - start_time < timeout:
+                while self.gps.update():
+                    counter += 1
+                    time.sleep(0.01)
+                self.fails = 0
+                print("messages parsed = " + str(counter))
+                if counter > 0:
+                    print(f"Latitude: {self.gps.latitude:.6f} degrees")
+                    print(f"Longitude: {self.gps.longitude:.6f} degrees")
+                    print(f"num sats {self.gps.satellites}")
+                if self.gps.satellites is not None:
+                    self.numsat = self.gps.satellites
+                return True
         except:
             self.fails += 1
             print('GPS update failed')
