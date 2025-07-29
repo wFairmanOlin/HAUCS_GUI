@@ -514,15 +514,15 @@ class DOApp(QWidget):
 
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            self.thread.abort()
-            while not self.thread._abort:
-                print("still not finish")
-                time.sleep(0.2)
+            # self.thread.abort()
+            # while not self.thread._abort:
+            #     print("still not finish")
+            #     time.sleep(0.2)
             print("ok, calibrate")
             self.thread.calibrate_DO()
             # restart after calibrate done
             print("restart mainprogram")
-            self.thread.start()
+            # self.thread.start()
             # self.ble_running = True
             QApplication.restoreOverrideCursor()
             print("Thread should start again")
