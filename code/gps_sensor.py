@@ -34,9 +34,9 @@ class GPS_sensor:
         try:
             counter = 0
             start_time = time.time()
-            while self.gps.update()  and (time.time() - start_time) < timeout:
+            while self.gps.update()  and ((time.time() - start_time) < timeout):
                 counter += 1
-                pass # clear buffer
+                time.sleep(0.01)
             self.fails = 0
             print("messages parsed = " + str(counter))
             if self.gps.satellites is not None:
