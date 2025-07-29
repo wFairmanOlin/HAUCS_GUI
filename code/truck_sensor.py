@@ -171,7 +171,7 @@ class TruckSensor(QThread):
         self.scheduled_msgs = {}
         self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
         self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':10, 'timer':0}
-        self.scheduled_msgs['gps']    = {'callback':self.update_gps, 'period':5, 'timer':0}
+        self.scheduled_msgs['gps']    = {'callback':self.update_gps, 'period':10, 'timer':0}
 
     def send_scheduled_messages(self):
         if self.messaging_active:
