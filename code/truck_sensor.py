@@ -135,7 +135,7 @@ class TruckSensor(QThread):
         self.ble = BluetoothReader()
         self.ble.do_vals_log = self.do_vals_log
         print("connect ble")
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.run_connection_first()
+        update_json, update_logger, msg, sdata_key = self.ble.run_connection_first()
         if msg:
             self.status_data.emit("Sensor Connection complete")
 
@@ -143,39 +143,35 @@ class TruckSensor(QThread):
         self.update_logger_value(update_logger)
 
     def init_sensor_status(self):
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.set_calibration_pressure()
+        update_json, update_logger, msg, sdata_key = self.ble.set_calibration_pressure()
         self.update_logger_text("info", f"Calibration Pressure complete")
 
         msgs = []
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.get_init_do()
-        tell_status = update_status
+        update_json, update_logger, msg, sdata_key = self.ble.get_init_do()
         tell_logger = update_logger
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
 
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.get_init_pressure()
-        tell_status |= update_status
+        update_json, update_logger, msg, sdata_key = self.ble.get_init_pressure()
         tell_logger |= update_logger
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
 
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.get_battery()
-        tell_status |= update_status
+        update_json, update_logger, msg, sdata_key = self.ble.get_battery()
         tell_logger |= update_logger
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
 
-        self.update_status_value(tell_status)
         self.update_logger_value(tell_logger)
         
         return msgs
 
     def reconnection(self, just_reconnect):
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.reconnect()
+        update_json, update_logger, msg, sdata_key = self.ble.reconnect()
         if sdata_key is None:
             return True
         self.update_any(sdata_key, update_json)
-        self.update_status_value(update_status)
+        self.status_data.emit(self.ble.status_string)
         if update_logger is not None and just_reconnect:
             self.update_logger_value(update_logger)
         return msg
@@ -195,7 +191,7 @@ class TruckSensor(QThread):
             print(self.pond_id, self.longitude, self.latitude)
         
     def calibrate_DO(self):
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.set_calibration_do()
+        update_json, update_logger, msg, sdata_key = self.ble.set_calibration_do()
         self.update_logger_text("info", f"Calibration DO complete")
         self.status_data.emit("Calibration DO complete")
 
@@ -210,14 +206,14 @@ class TruckSensor(QThread):
         # print(msgs)
         self.update_gps()
 
-        counter = 0
+        # counter = 0
         check_batt_counter = 0
         connection_count = 0
         just_reconnect = False
         underwater_alert = False
 
         # reset all buffer in system
-        update_json, update_logger, update_status, msg, sdata_key = self.ble.set_sample_reset()
+        update_json, update_logger, msg, sdata_key = self.ble.set_sample_reset()
 
         # self.restore_unsaved_from_json()
         # Main Loop
@@ -249,22 +245,21 @@ class TruckSensor(QThread):
             just_reconnect = False
             connection_count = 0
 
-            counter += 1
+            # counter += 1
             check_batt_counter += 1
 
             self.update_gps()
 
             if check_batt_counter >= 5:
                 check_batt_counter = 0
-                update_json, update_logger, update_status, msg, sdata_key = self.ble.get_battery()
+                update_json, update_logger, msg, sdata_key = self.ble.get_battery()
                 self.update_any(sdata_key, update_json)
-                self.update_status_value(update_status)
                 self.update_logger_value(update_logger)
                 self.msleep(100)
 
             # read until buffer size stable
             if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
-                update_json, update_logger, update_status, msg, sdata_key = self.ble.get_sample_size()
+                update_json, update_logger, msg, sdata_key = self.ble.get_sample_size()
                 # self.status_data.emit("prev " + str(self.ble.prev_sample_size) + " current " + str(self.ble.current_sample_size) + " step " + str(counter))
                 # print("prev " + str(self.ble.prev_sample_size) + " current " + str(self.ble.current_sample_size) + " step " + str(counter))
                 if self.is_30sec:
@@ -300,7 +295,7 @@ class TruckSensor(QThread):
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
 
-            update_json, update_logger, update_status, msg, sdata_key = self.ble.get_sample_text(self.is_30sec, self.data_size_at30sec, self.sample_stop_time)
+            update_json, update_logger, msg, sdata_key = self.ble.get_sample_text(self.is_30sec, self.data_size_at30sec, self.sample_stop_time)
             if self.ble.logger_status == "warning":
                 self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
             self.status_data.emit("Read data finished")
@@ -311,7 +306,7 @@ class TruckSensor(QThread):
             self.update_logger_text("info", f"Data collected: {self.pond_id}, DO:{do_val}")
             self.csv_file = self.ble.csv_file
             self.msleep(100)
-            update_json, update_logger, update_status, msg, sdata_key = self.ble.set_sample_reset()
+            update_json, update_logger, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
             counter = 0
             
@@ -406,10 +401,6 @@ class TruckSensor(QThread):
         elif log["status"] == "warning":
             self.logger.warning(log["message"])
         self.logger_data.emit(log)
-
-    def update_status_value(self, update_status):
-        if update_status:
-            self.status_data.emit(self.ble.status_string)
 
     def update_database(self, data_dict):
         #TODO: data_dict is not really used
