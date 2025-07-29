@@ -25,17 +25,20 @@ class GPS_sensor:
         #TODO: Make update rate variable
         self.gps.send_command(b"PMTK220,8000")
         # clear stale data
-        start = time.time()
-        while (time.time() - start) < (3 * timeout):
-            self.update_GPS()
+        self.update_GPS()
         self.df = pd.read_csv('sampling_points.csv')
         self.pond_ids = self.df.pop('pond')
         self.pond_gps = self.df.to_numpy()
 
-    def update_GPS(self):
+    def update_GPS(self, timeout=2):
         try:
-            self.gps.update()
+            counter = 0
+            start_time = time.time()
+            while self.gps.update()  and (time.time() - start_time) < timeout:
+                counter += 1
+                pass # clear buffer
             self.fails = 0
+            print("messages parsed = " + str(counter))
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
             return True
