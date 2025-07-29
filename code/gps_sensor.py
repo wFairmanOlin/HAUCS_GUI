@@ -24,7 +24,9 @@ class GPS_sensor:
         self.gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         #TODO: Make update rate variable
         self.gps.send_command(b"PMTK220,8000")
-        self.update_GPS(5)
+        # clear stale data
+        for i in range(5):
+            self.update_GPS()
         self.df = pd.read_csv('sampling_points.csv')
         self.pond_ids = self.df.pop('pond')
         self.pond_gps = self.df.to_numpy()

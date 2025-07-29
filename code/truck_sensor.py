@@ -192,7 +192,6 @@ class TruckSensor(QThread):
 
     def update_gps(self):
         gps_time = time.time()
-            
         self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
         self.sdata["prev_pid"] = self.sdata["pid"]
         self.sdata["pid"] = self.pond_id
