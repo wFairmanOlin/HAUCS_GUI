@@ -186,7 +186,7 @@ class TruckSensor(QThread):
             print(self.pond_id, self.longitude, self.latitude)
         
     def calibrate_DO(self):
-        update_json, update_logger, msg, sdata_key = self.ble.set_calibration_do()
+        update_json, msg, sdata_key = self.ble.set_calibration_do()
         self.update_logger_text("info", f"Calibration DO complete")
         self.status_data.emit("Calibration DO complete")
 
@@ -208,7 +208,7 @@ class TruckSensor(QThread):
         underwater_alert = False
 
         # reset all buffer in system
-        update_json, update_logger, msg, sdata_key = self.ble.set_sample_reset()
+        update_json, msg, sdata_key = self.ble.set_sample_reset()
 
         # self.restore_unsaved_from_json()
         # Main Loop
@@ -289,7 +289,7 @@ class TruckSensor(QThread):
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
 
-            update_json, update_logger, msg, sdata_key = self.ble.get_sample_text(self.is_30sec, self.data_size_at30sec, self.sample_stop_time)
+            update_json, msg, sdata_key = self.ble.get_sample_text(self.is_30sec, self.data_size_at30sec, self.sample_stop_time)
             if self.ble.logger_status == "warning":
                 self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
             self.status_data.emit("Read data finished")
@@ -300,7 +300,7 @@ class TruckSensor(QThread):
             self.update_logger_text("info", f"Data collected: {self.pond_id}, DO:{do_val}")
             self.csv_file = self.ble.csv_file
             self.msleep(100)
-            update_json, update_logger, msg, sdata_key = self.ble.set_sample_reset()
+            update_json, msg, sdata_key = self.ble.set_sample_reset()
             self.update_logger_text("info", f"Reset sample")
             counter = 0
             
