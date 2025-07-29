@@ -154,19 +154,16 @@ class TruckSensor(QThread):
         update_json, msg, sdata_key = self.ble.get_init_pressure()
         self.update_any(sdata_key, update_json)
         msgs.append(msg)
-
-        update_json, msg, sdata_key = self.ble.get_battery()
-        self.update_any(sdata_key, update_json)
-        msgs.append(msg)
         
         return msgs
     
     def init_message_scheduler(self):
         self.scheduled_msgs = {}
-        self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':0.5, 'timer':time.time()}
+        self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
+        self.scheduled_msgs['batt']   = {'callback':self.}
 
     def send_scheduled_messages(self):
-        for message in self.scheduled_msgs:
+        for message in self.scheduled_msgs.values():
             if time.time() - message['timer'] > message['period']:
                 message['timer'] = time.time()
                 message['callback']()
