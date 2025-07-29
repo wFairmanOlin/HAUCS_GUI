@@ -32,9 +32,9 @@ class GPS_sensor:
         gps_time = time.time()
         # noinspection PyBroadException
         try:
-            while time.time() - gps_time < inp_t:
+            while (time.time() - gps_time) < inp_t:
                 self.gps.update()
-                time.sleep(0.01)
+                # time.sleep(0.01)
             self.fails = 0
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
