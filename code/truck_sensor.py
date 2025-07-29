@@ -233,7 +233,9 @@ class TruckSensor(QThread):
             # self.msleep(1) # do nothing for Alisa
 
             # ADD NONE-BLE SENSOR UPDATES FIRST
+            gps_time = time.time()
             self.update_gps()
+            print(f"gps update time: {round(time.time() - gps_time, 2)}")
 
             connected = self.ble.check_connection_status()
             if not connected:
