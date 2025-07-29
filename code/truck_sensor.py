@@ -374,7 +374,7 @@ class TruckSensor(QThread):
         print(f"SDATA\n {self.sdata}")
         print(f"DATA DICT\n{self.data_dict}")
 
-    def update_logger_value(self, update_logger):
+    def update_logger_value(self):
         log = {}
         log["status"] = self.ble.logger_status
         log["message"] = self.ble.logger_string
