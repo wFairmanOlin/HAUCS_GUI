@@ -316,7 +316,7 @@ class BluetoothReader(QObject):
                     if msg[0] == command.get("end"):
                         break
         # reset transmission timeouts on successfull transmission 
-        self.tranmission_timeouts = 0
+        self.transmission_timeouts = 0
         print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
 
