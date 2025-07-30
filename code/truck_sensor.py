@@ -118,8 +118,10 @@ class TruckSensor(QThread):
     def underwater_status(self, value):
         if value == "True":
             self.underwater = True
+            self.ysi_worker.set_record()
         else:
             self.underwater = False
+
         print(f"I am {'' if self.underwater else 'not'} underwater!")
         
 
@@ -251,6 +253,7 @@ class TruckSensor(QThread):
 
             connected = self.ble.check_connection_status()
             if not connected:
+                # first disconnect event
                 if connection_count == 0:
                     self.is_30sec = False
                     self.status_data.emit("BLE connection failed - maybe underwater")
@@ -258,15 +261,11 @@ class TruckSensor(QThread):
                     self.update_data.emit(data_dict)
                     print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
-                    self.ysi_worker.set_record()
                     self.update_logger_value()
+                # do not try to reconnect for first 1000 ms
+                elif connection_count > 10:
+                    connected = self.reconnection(just_reconnect)
                 connection_count += 1
-                just_reconnect = True
-
-            # do not try to reconnect for first 500 ms
-            if connection_count > 5:
-                connected = self.reconnection(just_reconnect)
-            if not connected:
                 self.msleep(100)
                 continue
 
@@ -280,7 +279,7 @@ class TruckSensor(QThread):
             self.send_scheduled_messages()
 
             # sensor is connected with no data
-            if self.ble_current_sample_size <= 0:
+            if self.ble.current_sample_size <= 0:
                 # sensor reconncected with no data available
                 if self.underwater:
                     print("sensor has no data, probably disconnected without going underwater")
@@ -289,13 +288,12 @@ class TruckSensor(QThread):
             # sensor has data
             elif self.ble.current_sample_size > 0:
                 # sensor is actively collecting data
-                if self.ble.prev_sample_sample_size < self.ble.current_sample_size:
+                if self.ble.prev_sample_size < self.ble.current_sample_size:
                     # underwater, trigger any underwater events
                     if not self.underwater:
                         print("underwater, trigger first time events")
                         self.counter_is_running.emit("True")
                         self.status_data.emit("Collecting Data")
-                        self.ysi_worker.set_record()
                         self.is_30sec = False
                         self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
                     # tag 30 scecond mark
