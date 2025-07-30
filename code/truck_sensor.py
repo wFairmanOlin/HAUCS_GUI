@@ -120,7 +120,7 @@ class TruckSensor(QThread):
             self.underwater = True
         else:
             self.underwater = False
-        print(f"I am {'not' if self.underwater else ''} underwater!")
+        print(f"I am {'' if self.underwater else 'not'} underwater!")
         
 
     def restart_firebase(self, in_app):
@@ -279,29 +279,32 @@ class TruckSensor(QThread):
 
             self.send_scheduled_messages()
 
-            # read until buffer size stable
-            if self.ble.prev_sample_size <= 0 or self.ble.current_sample_size > self.ble.prev_sample_size:
-                if self.is_30sec:
-                    self.data_size_at30sec = self.ble.current_sample_size
-                if self.ble.current_sample_size > 0 and self.ble.prev_sample_size <= 0:
-                    self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
-                    self.is_30sec = False
-                if self.ble.current_sample_size > self.ble.prev_sample_size:
-                    self.ysi_worker.set_record()
-                    print("counter started bc sample size increased")
-                    self.counter_is_running.emit("True")
-                    self.status_data.emit("Collecting data")
-                    self.msleep(100)
-                    continue
-                elif self.ble.current_sample_size == self.ble.prev_sample_size and self.ble.current_sample_size > 0:
-                    self.status_data.emit("data is ready, starting to read")
-                else:
-                    self.msleep(100)
-                    continue
-                
+            # sensor is connected with no data
+            if self.ble_current_sample_size <= 0:
+                # sensor reconncected with no data available
+                if self.underwater:
+                    print("sensor has no data, probably disconnected without going underwater")
+                    self.counter_is_running.emit("False")
+                continue # continue sampling
+            # sensor has data
+            elif self.ble.current_sample_size > 0:
+                # sensor is actively collecting data
+                if self.ble.prev_sample_sample_size < self.ble.current_sample_size:
+                    # underwater, trigger any underwater events
+                    if not self.underwater:
+                        print("underwater, trigger first time events")
+                        self.counter_is_running.emit("True")
+                        self.status_data.emit("Collecting Data")
+                        self.ysi_worker.set_record()
+                        self.is_30sec = False
+                        self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
+                    # tag 30 scecond mark
+                    if self.is_30sec:
+                        self.data_size_at30sec = self.ble.current_sample_size #TODO: probably delete this
+                    continue # continue sampling
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
-
+            self.status_data.emit("data is ready, starting to read")
             self.ysi_worker.stop_record()
             print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
