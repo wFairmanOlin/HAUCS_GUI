@@ -265,9 +265,11 @@ class TruckSensor(QThread):
                 # do not try to reconnect for first 1000 ms
                 elif connection_count > 10:
                     connected = self.reconnection(just_reconnect)
-                connection_count += 1
-                self.msleep(100)
-                continue
+                # continue if still not conneted
+                if not connected:
+                    connection_count += 1
+                    self.msleep(100)
+                    continue
 
             if just_reconnect:
                 data_dict = {}
