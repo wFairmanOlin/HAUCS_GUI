@@ -395,12 +395,8 @@ class DOApp(QWidget):
             if not self.timer_active:
                 self.counter_time = 0
             self.timer_active = True
-        elif value == "False":
-            self.timer_active = False
-            # self.counter_time = 0
         else:
             self.timer_active = False
-            self.counter_time = 0
 
     def update_counter(self):
         if self.timer_active:

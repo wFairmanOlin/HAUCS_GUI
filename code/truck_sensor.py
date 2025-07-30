@@ -44,6 +44,7 @@ class TruckSensor(QThread):
     is_30sec = False
     data_size_at30sec = 30
     sample_stop_time = 30
+    underwater = False
 
     water_temp = 0 # celcius
     pressure = 0 # HPA
@@ -81,6 +82,8 @@ class TruckSensor(QThread):
         self.init_GPS()
         self.init_ysi()
         self.init_firebase()
+        # initialzie PyQt Signals
+        self.counter_is_running.connect(self.underwater_status)
 
     def init_ysi(self):
         self.ysi_worker = YSIReader()
@@ -111,6 +114,14 @@ class TruckSensor(QThread):
 
     def on_logger_update(self, level, msg):
         self.update_logger_text(level, msg)
+
+    def underwater_status(self, value):
+        if value == "True":
+            self.underwater = True
+        else:
+            self.underwater = False
+        print(f"I am {'not' if self.underwater else ''} underwater!")
+        
 
     def restart_firebase(self, in_app):
         logging.info('Attempting to restart Firebase Connection')
@@ -280,11 +291,14 @@ class TruckSensor(QThread):
                     print("counter started bc sample size increased")
                     self.counter_is_running.emit("True")
                     self.status_data.emit("Collecting data")
+                    self.msleep(100)
                     continue
                 elif self.ble.current_sample_size == self.ble.prev_sample_size and self.ble.current_sample_size > 0:
                     self.status_data.emit("data is ready, starting to read")
                 else:
+                    self.msleep(100)
                     continue
+                
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
 
