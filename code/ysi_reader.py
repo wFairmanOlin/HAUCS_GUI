@@ -13,8 +13,12 @@ from converter import calculate_do_and_fit, convert_mgl_to_raw
 
 class YSIReader(QThread):
     logger_data = pyqtSignal(str, str)
+    ysi_data = pyqtSignal(float)
 
     adc = None
+    adc_connected = False
+    reconnect_period = 5
+    reconnect_timer = 0
     start_record = False
     data_record = []
 
@@ -22,6 +26,10 @@ class YSIReader(QThread):
     ZERO_SCALE = 0
     FULL_MGL = 15
     time_pass = 0
+    ysi_do_mgl = 0
+
+    sampling_period = 1000
+    sampling_start = 0
 
     YSI_folder = "YSI_data/"
     csv_file = ""
@@ -39,46 +47,53 @@ class YSIReader(QThread):
             self.adc = ADS1x15.ADS1115(1)
             self.adc.setGain(16)
             self.logger_data.emit("info", f'YSI ADC initialize finish. YSI ADC version: {ADS1x15.__version__}')
+            self.adc_connected = True
         except Exception as error:
             self.logger_data.emit("warning", f'YSI ADC initialize failed {str(error)}')
+            self.adc_connected = False
 
     def set_record(self):
         self.start_record = True
 
     def run(self):
         self._abort = False
-
-        if self.adc is None:
-            self.logger_data.emit("warning", f'YSI ADC cannot be initialize, cannot start')
-            return
-
         csv_file = None
-        start_time = None  # ✅ กำหนดไว้ก่อน
 
         while not self._abort:
+            # try to initialize and sleep
+            if not self.adc_connected:
+                if time.time() - self.reconnect_timer > self.reconnect_period:
+                    self.reconnect_timer = time.time()
+                    self.initialize()
+
+            # try to read, default to 0
             try:
                 val = self.adc.readADC_Differential_0_1()
-                if self.start_record:
-                    if csv_file is None:
-                        csv_file = self.init_csv_file()
-                        start_time = time.time()
-                    now = time.time()
-                    delta_sec = now - start_time
-                    # print(delta_sec)
+            except:
+                val = 0
+                self.adc_connected = False
 
-                    if delta_sec <= 30:
-                        ysi = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
-                        self.data_record.append(ysi)
-                        self.writeCSV(csv_file, [len(self.data_record), ysi, val])
-                    self.csv_file = csv_file
-                else:
-                    csv_file = None
-            except Exception as error:
-                self.logger_data.emit("warning", f'YSI ADC Read Error {str(error)}')
+            # perform voltage to mgl conversion
+            self.ysi_do_mgl = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
+            # publish YSI data
+            self.ysi_data.emit(self.ysi_do_mgl)
+
+            # set to record
+            if self.start_record:
+                if csv_file is None:
+                    csv_file = self.init_csv_file()
+                    self.sampling_start = time.time()
+                # append data to csv file
+                self.data_record.append(self.ysi_do_mgl)
+                self.writeCSV(csv_file, [time.time() - self.sampling_start, self.ysi_do_mgl, val])
+                self.csv_file = csv_file
+            else:
+                csv_file = None
 
             if self._abort:
                 break
-            self.msleep(100)  # 0.1 วินาที
+            # sleep for sampling period
+            self.msleep(1000)
 
     def stop_record(self, reset=False):
         self.start_record = False
@@ -88,7 +103,7 @@ class YSIReader(QThread):
     def get_record(self, time_stop):
         self.start_record = False
         data_mgl = self.data_record
-        print(f"in ysi_reader, do_mgl:{self.data_record[-1]}") 
+        return data_mgl
 
         return data_mgl[-1]
 

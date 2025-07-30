@@ -21,6 +21,7 @@ class TruckSensor(QThread):
     counter_is_running = pyqtSignal(str)
     update_pond_data = pyqtSignal(dict)
     finished = pyqtSignal()
+    ysi_data = pyqtSignal(float)
 
     _abort = False
     sdata = {}
@@ -89,12 +90,17 @@ class TruckSensor(QThread):
         self.ysi_worker = YSIReader()
         self.ysi_worker.YSI_folder = self.YSI_folder
         self.ysi_worker.logger_data.connect(self.on_logger_update)
+        self.ysi_worker.ysi_data.connect(self.on_ysi_update)
         self.ysi_worker.initialize()
         self.ysi_worker.start()
 
     def stop_ysi(self):
         self.ysi_worker.abort()
         self.ysi_worker.wait()
+
+    def on_ysi_update(self, value):
+        print(f"publishing ysi data to gui")
+        self.ysi_data.emit(value)
 
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
@@ -124,6 +130,7 @@ class TruckSensor(QThread):
 
         print(f"I am {'' if self.underwater else 'not'} underwater!")
         
+    
 
     def restart_firebase(self, in_app):
         logging.info('Attempting to restart Firebase Connection')
@@ -369,13 +376,13 @@ class TruckSensor(QThread):
                 self.water_temp = to_celcius(self.data_dict["temp"][0])
                 self.pressure = self.data_dict["pressure"][0]
                 self.do_val = self.data_dict["do"]
-                self.ysi_mgl = self.ysi_worker.get_record(time_stop)
+                self.ysi_mgl_array = self.ysi_worker.get_record()
                 self.ysi_csv = self.ysi_worker.csv_file
-                self.ysi = convert_mgl_to_raw(self.ysi_mgl, self.water_temp, self.pressure)
-                self.update_logger_text("info", f"YSI value: {self.ysi_mgl} mgl and {100 * self.ysi} %")
+                self.ysi = convert_mgl_to_raw(self.ysi_mgl_array[-1], self.water_temp, self.pressure)
+                self.update_logger_text("info", f"YSI value: {self.ysi_mgl_array[-1]} mgl and {100 * self.ysi} %")
                 #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
                 self.sdata["ysi_do"] = self.ysi
-                self.sdata["ysi_do_mgl"] = self.ysi_mgl
+                self.sdata["ysi_do_mgl"] = self.ysi_mgl_array[-1]
                 self.data_dict['ysi_do'] = self.sdata['ysi_do']
                 self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
                 self.data_dict['do'] = self.sdata['do']
