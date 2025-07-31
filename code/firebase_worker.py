@@ -66,6 +66,7 @@ class FirebaseWorker(QThread):
         return None
 
     def convert_datadict_for_save(self, sdata, key):
+        print(f"CONVERT DATA DICT FOR SAVE\n{key}\n{sdata}")
         truck_id = sdata.get(key[0], "-1")
         init_DO = sdata.get(key[1], "-1")
         init_pressure = sdata.get(key[2],"-1")
