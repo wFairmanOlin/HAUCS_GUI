@@ -182,11 +182,11 @@ class FirebaseWorker(QThread):
         upload_data['lng'] = sdata['lng']
         upload_data['pid'] = sdata['pid']
         upload_data['pressure'] = sdata['pressure_vals']
-        upload_data['temp'] = sdata['temperature_vals']
+        upload_data['temp'] = sdata['temp_vals']
         upload_data['sid'] = sdata['name']
         upload_data['type'] = 'rpi_truck' #hardcoded truck type
         upload_data['sample_hz'] = sdata['sample_hz']
-        upload_data['sensor_battv'] = sdata['batt_v']
+        upload_data['sensor_battv'] = sdata['batt']
 
         try:
             if self.app is not None:
