@@ -321,33 +321,9 @@ class ResultWindow(QWidget):
         
         self.data = data_dict
 
-        if len(do_vals) < 5:
+        if len(self.data['do_vals']) < 5:
             self.img_label2.setText("Insufficient DO data")
             return
-
-                        #  HBOI DO
-                do_arr = self.data_dict['do_vals']
-                p, f = calculate_do_fit(do_arr, record_time, sample_rate)
-                do_guess = generature_do(record_time, p, f)
-                do = do_guess if do_guess > 0 else do_arr[-1]
-                do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
-                do_mgl = convert_raw_to_mgl(do)
-                
-                # YSI DO
-                ysi_do_mgl_arr = self.ysi_worker.get_record()
-                p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
-                do_guess = generature_do(record_time, p, f)
-                ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]
-                ysi_do_arr = convert_mgl_to_raw(ysi_do_mgl_arr, self.water_temp, self.air_pressure)
-                ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
-                self.ysi_csv = self.ysi_worker.csv_file
-                self.data_dict['ysi_do'] = ysi_do
-                self.data_dict['ysi_do_mgl'] = ysi_do_mgl
-                self.data_dict['do'] = do
-                self.data_dict['do_mgl'] = do_mgl
-                self.data_dict['do_mgl_arr'] = do_mgl_arr
-                self.data_dict['ysi_do_mgl_arr'] = ysi_do_mgl_arr
-                self.data_dict['ysi_do_arr'] = ysi_do_arr
 
         if self.unit == "percent":
             do_arr = self.data['do_vals']
