@@ -389,7 +389,7 @@ class TruckSensor(QThread):
                 do_guess = generate_do(record_time, p, f)
                 do = do_guess if do_guess > 0 else do_arr[-1]
                 do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
-                do_mgl = convert_raw_to_mgl(do)
+                do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
                 
                 # YSI DO
                 ysi_do_mgl_arr = self.ysi_worker.get_record()
