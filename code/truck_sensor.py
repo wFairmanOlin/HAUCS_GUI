@@ -408,6 +408,9 @@ class TruckSensor(QThread):
                 self.data_dict['do_mgl_arr'] = do_mgl_arr
                 self.data_dict['ysi_do_mgl_arr'] = ysi_do_mgl_arr
                 self.data_dict['ysi_do_arr'] = ysi_do_arr
+                self.data_dict["pid"] = self.pond_id
+                self.data_dict["lng"] = self.longitude
+                self.data_dict["lat"] = self.latitude
  
                 self.update_pond_data.emit(self.data_dict)
 
@@ -450,7 +453,7 @@ class TruckSensor(QThread):
     def update_database(self, data_dict):
         #TODO: data_dict is not really used
         csv_file = self.csv_file
-        message_time = self.sdata['message_time']
+        data_dict['message_time'] = self.sdata['message_time']
         time_str = datetime.now().strftime("%H:%M:%S")
 
         row = {
@@ -464,10 +467,10 @@ class TruckSensor(QThread):
             "Pressure": data_dict['pressure_vals'],
             "do csv": csv_file,
             "upload status": False,
-            "message_time": message_time,
+            "message_time": data_dict['message_time'],
             "ysi csv": self.ysi_csv
         }
-
+        print(f"UPDATE DATABASE\n{data_dict.keys()}")
         self.firebase_worker.add_sdata(data_dict, row)
 
     def tricker_30sec(self):
