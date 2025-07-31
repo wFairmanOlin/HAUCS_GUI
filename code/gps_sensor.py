@@ -68,7 +68,6 @@ class GPS_sensor:
         #calculate euclidean distances
         distances = np.linalg.norm(self.pond_gps - point_y, axis=1)
         #calculate minimum distance in meters
-        print(distances)
         min_dist = distances.min() * 111_000
         #determine if min distance is acceptable
         if min_dist < 1_000: #TODO: DISTANCES
