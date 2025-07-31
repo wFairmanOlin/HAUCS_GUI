@@ -328,8 +328,6 @@ class TruckSensor(QThread):
             # self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
             self.update_any(sdata_key, update_json, True)
 
-            do_val = self.ble.sdata["do"]
-            self.update_logger_text("info", f"Data collected: {self.pond_id}, DO:{do_val}")
             self.csv_file = self.ble.csv_file
             
             update_json, msg, sdata_key = self.ble.set_sample_reset()
