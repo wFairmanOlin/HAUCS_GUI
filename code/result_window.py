@@ -286,7 +286,7 @@ class ResultWindow(QWidget):
             "pressure": self.data['sample_pressure'],
             "do": self.data['do'],
             "do_mgl": self.data['do_mgl'],
-            "ysi_do": self.data['ysi'],
+            "ysi_do": self.data['ysi_do'],
             "ysi_do_mgl": self.data['ysi_mgl'],
             "YSI": self.data_labels["YSI"].text(), #TODO REMOVE THIS VARIABLE
         }
@@ -334,6 +334,7 @@ class ResultWindow(QWidget):
             ysi_do_arr = self.data['ysi_do_mgl_arr']
             scale = 0
 
+        print(do_arr)
         # IDEAL RECORD TIME FOR DATA
         record_time = 30 #TODO: this should be in setting.setting
         x_plot = np.linspace(0, sample_stop_time, 10 * sample_stop_time)

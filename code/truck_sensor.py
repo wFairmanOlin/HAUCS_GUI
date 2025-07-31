@@ -377,7 +377,7 @@ class TruckSensor(QThread):
                 self.data_dict['water_temp'] = self.water_temp
                 # Pressure
                 self.air_pressure = self.sdata['init_pressure']
-                self.sample_depth = self.sdata['pressure_vals'][record_idx]
+                self.sample_depth = pressure_to_depth(self.sdata['pressure_vals'][record_idx], self.air_pressure)
                 self.data_dict['sample_pressure'] = self.sdata['pressure_vals'][record_idx]
                 self.data_dict['sample_depth'] = self.sample_depth
 
