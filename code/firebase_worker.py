@@ -173,7 +173,10 @@ class FirebaseWorker(QThread):
     def update_firebase(self, sdata):
         try:
             if self.app is not None:
-                db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(sdata)
+                print("UPLOADING TO FIREBASE >>>>>")
+                print('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/')
+                print(sdata)
+                # db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(sdata)
             else:
                 self.update_logger_text("warning", "uploading data to firebase failed")
                 return False
