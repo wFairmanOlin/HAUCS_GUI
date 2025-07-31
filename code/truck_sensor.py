@@ -367,18 +367,15 @@ class TruckSensor(QThread):
 
                 # IDEAL RECORD TIME FOR DATA
                 record_time = 30 #TODO: this should be in setting.setting
-                if sample_duration > record_time:
-                    record_idx = int(record_time * sample_rate)
-                else:
-                    record_idx = -1
 
                 # water temperature
-                self.water_temp = self.data_dict['temp_vals'][record_idx]
+                self.water_temp = sum(self.data_dict['temp_vals'])/len(self.data_dict['temp_vals'])
                 self.data_dict['water_temp'] = self.water_temp
                 # Pressure
                 self.air_pressure = self.sdata['init_pressure']
-                self.sample_depth = pressure_to_depth(self.sdata['pressure_vals'][record_idx], self.air_pressure)
-                self.data_dict['sample_pressure'] = self.sdata['pressure_vals'][record_idx]
+                self.data_dict['sample_pressure'] = sum(self.sdata['pressure_vals'])/len(self.sdata['pressure_vals'])
+                self.sample_depth = pressure_to_depth(self.data_dict['sample_pressure'], self.air_pressure)
+                
                 self.data_dict['sample_depth'] = self.sample_depth
 
                 #  HBOI DO
