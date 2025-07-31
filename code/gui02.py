@@ -14,7 +14,7 @@ from truck_sensor import TruckSensor
 from datetime import datetime
 from battery_widget import BatteryWidget
 from led_indicator import LEDStatusWidget
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_celcius, to_fahrenheit
+from converter import *
 from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog

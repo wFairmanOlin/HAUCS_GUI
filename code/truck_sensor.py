@@ -10,7 +10,7 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius, generature_do, calculate_do_fit, pressure_to_depth
+from converter import *
 import numpy as np
 
 from firebase_worker import FirebaseWorker
@@ -386,7 +386,7 @@ class TruckSensor(QThread):
                 #  HBOI DO
                 do_arr = self.data_dict['do_vals']
                 p, f = calculate_do_fit(do_arr, record_time, sample_rate)
-                do_guess = generature_do(record_time, p, f)
+                do_guess = generate_do(record_time, p, f)
                 do = do_guess if do_guess > 0 else do_arr[-1]
                 do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
                 do_mgl = convert_raw_to_mgl(do)
@@ -394,7 +394,7 @@ class TruckSensor(QThread):
                 # YSI DO
                 ysi_do_mgl_arr = self.ysi_worker.get_record()
                 p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
-                do_guess = generature_do(record_time, p, f)
+                do_guess = generate_do(record_time, p, f)
                 ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]
                 ysi_do_arr = convert_mgl_to_raw(ysi_do_mgl_arr, self.water_temp, self.air_pressure)
                 ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
