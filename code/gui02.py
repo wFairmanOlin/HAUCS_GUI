@@ -315,6 +315,7 @@ class DOApp(QWidget):
         self.thread.status_data.connect(self.on_status_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
         self.thread.counter_is_running.connect(self.on_counter_running)
+        self.thread.ysi_data.connect(self.on_ysi_update)
         self.thread.start()
         self.ble_running = True
 
@@ -397,6 +398,12 @@ class DOApp(QWidget):
             self.timer_active = True
         else:
             self.timer_active = False
+
+    def on_ysi_update(self, do_ps, do_mgl):
+        if self.unit == "percent":
+            self.update_value("YSI", f"{100 * do_ps:.2f}")
+        else:
+            self.update_value("YSI", f"{do_mgl:.2f}")
 
     def update_counter(self):
         if self.timer_active:

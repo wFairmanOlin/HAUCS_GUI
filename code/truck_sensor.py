@@ -21,7 +21,7 @@ class TruckSensor(QThread):
     counter_is_running = pyqtSignal(str)
     update_pond_data = pyqtSignal(dict)
     finished = pyqtSignal()
-    ysi_data = pyqtSignal(float)
+    ysi_data = pyqtSignal(float, float)
 
     _abort = False
     sdata = {}
@@ -98,9 +98,11 @@ class TruckSensor(QThread):
         self.ysi_worker.abort()
         self.ysi_worker.wait()
 
-    def on_ysi_update(self, value):
-        print(f"publishing ysi data to gui")
-        self.ysi_data.emit(value)
+    def on_ysi_update(self, do_mgl):
+        #TODO: delete this function. Should be directly connected to gui02.py
+        if self.water_temp and self.pressure:
+            do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.presssure)
+            self.ysi_data.emit(do_ps, do_mgl)
 
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
@@ -374,7 +376,7 @@ class TruckSensor(QThread):
                 #TODO: This breaks when sampling rate is less than 1
                 time_stop = len(self.data_dict["do_vals"])
                 self.water_temp = to_celcius(self.data_dict["temp"][0])
-                self.pressure = self.data_dict["pressure"][0]
+                self.pressure = self.data_dict["pressure"][0] #TODO: Make sure this is init pressure
                 self.do_val = self.data_dict["do"]
                 self.ysi_mgl_array = self.ysi_worker.get_record()
                 self.ysi_csv = self.ysi_worker.csv_file
