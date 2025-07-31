@@ -55,7 +55,7 @@ class BluetoothReader(QObject):
         'cal_do' : {'tx':'cal do', 'rx':'init do'},
         'cal_ps' : {'tx':'cal ps', 'rx':'init p'},
         'xmas'   : {'tx':'set light xmas', 'rx':''},
-        's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'}
+        's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
     }
 
     ################## logger #########################
@@ -211,6 +211,11 @@ class BluetoothReader(QObject):
 
     def set_calibration_do(self):
         return self.send_receive_command(self.commands['cal_do'])
+    
+    def set_threhsold(self, hpa):
+        command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
+        self.send_receive_command(command)
+
 
     def extract_message(self, msg):
         #TODO: break this into individual callbacks for each message

@@ -182,6 +182,8 @@ class TruckSensor(QThread):
         update_json, msg, sdata_key = self.ble.get_sampling_rate()
         self.update_any(sdata_key, update_json)
 
+        self.ble.set_threshold(10) #TODO: ADD TO SETTING PAGE
+
     
     def update_battery(self):
         #TODO: This function should be removed
@@ -311,6 +313,12 @@ class TruckSensor(QThread):
                     if self.is_30sec:
                         self.data_size_at30sec = self.ble.current_sample_size #TODO: probably delete this
                     continue # continue sampling
+
+            # ignore sample sizes less than 4
+            if self.ble.current_sample_size < 4:
+                self.ble.set_sample_reset()
+                self.ysi_worker.stop_record(reset=True)
+                continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
             self.status_data.emit("data is ready, starting to read")

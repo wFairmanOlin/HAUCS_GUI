@@ -12,6 +12,9 @@ class GPS_sensor:
     logger_status = "normal"
     logger_string = ""
 
+    latitude = 0
+    longitude = 0
+
     def update_logger(self, logger_status, logger_string):
         self.logger_status = logger_status
         self.logger_string = logger_string
@@ -37,6 +40,9 @@ class GPS_sensor:
                 self.fails = 0
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
+            if self.gps.latitude:
+                self.latitude = self.gps.latitude
+                self.longitude = self.gps.longitude
             return True
         except:
             self.fails += 1
@@ -52,8 +58,8 @@ class GPS_sensor:
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
-            lat = self.gps.latitude
-            lng = self.gps.longitude
+            lat = self.latitude
+            lng = self.longitude
 
         self.pond_id = self.default_pond_id
 
