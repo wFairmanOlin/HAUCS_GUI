@@ -212,7 +212,7 @@ class BluetoothReader(QObject):
     def set_calibration_do(self):
         return self.send_receive_command(self.commands['cal_do'])
     
-    def set_threhsold(self, hpa):
+    def set_threshold(self, hpa):
         command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
         self.send_receive_command(command)
 
