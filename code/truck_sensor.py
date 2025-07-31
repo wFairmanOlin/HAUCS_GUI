@@ -101,7 +101,7 @@ class TruckSensor(QThread):
     def on_ysi_update(self, do_mgl):
         #TODO: delete this function. Should be directly connected to gui02.py
         if self.water_temp and self.pressure:
-            do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.presssure)
+            do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.pressure)
             self.ysi_data.emit(do_ps, do_mgl)
         else:
             self.ysi_data.emit(-1, do_mgl)
@@ -133,8 +133,6 @@ class TruckSensor(QThread):
             self.underwater = False
 
         print(f"I am {'' if self.underwater else 'not'} underwater!")
-        
-    
 
     def restart_firebase(self, in_app):
         logging.info('Attempting to restart Firebase Connection')

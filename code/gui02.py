@@ -43,9 +43,9 @@ class DOApp(QWidget):
             "SID": QLabel("-1"),
             "SCS": QLabel("connecting..."),
             "SB": QLabel("Reading Batt..."),
-            "SDL": QLabel("-"),
             "YSI": QLabel("-"),
-            "Time S": QLabel("00:00"),
+            "SDL": QLabel("-"),
+            "TIMER": QLabel("00:00"),
             "Date Time": QLabel("N/A"),
             "GPS": QLabel("-1, -1"),
         }
@@ -200,12 +200,12 @@ class DOApp(QWidget):
         info_grid = QGridLayout()
         labels = [
             ("Pond ID:", "PID"),
-            ("Sensor ID:", "SID"),
+            ("HBOI ID:", "SID"),
             # ("Sensor Connection Status:", "SCS"),
             # ("Sensor Battery:", "SB"),
-            ("Sensor DO Live:", "SDL"),
-            ("YSI DO Live:", "YSI"),
-            ("Timer:", "Time S"),
+            ("HBOI DO:", "SDL"),
+            ("YSI DO:", "YSI"),
+            ("Timer:", "TIMER"),
             # ("GPS:", "GPS"),
             ("Last Calibration:", "Date Time"),
         ]
@@ -213,12 +213,15 @@ class DOApp(QWidget):
             key_label = QLabel(key_text)
             val_label = self.data_labels[key_id]
 
-            if key_id == "PID" or key_id == "SDL" or key_id == "YSI":
-                key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-                val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-            else:
-                key_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
-                val_label.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
+            key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
+            val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
+
+            # if key_id == "PID" or key_id == "SDL" or key_id == "YSI":
+            #     key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
+            #     val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
+            # else:
+            #     key_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
+            #     val_label.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
 
             info_grid.addWidget(key_label, i, 0, Qt.AlignRight)
             info_grid.addWidget(val_label, i, 1, Qt.AlignLeft)
@@ -348,7 +351,6 @@ class DOApp(QWidget):
             self.update_value("SID", data_dict["name"])
         if 'gps' in data_dict:
             self.update_value("PID", data_dict["pid"])
-            # self.update_value("GPS", str(data_dict["lat"]) + ", " + str(data_dict["lng"]))
         if 'do' in data_dict:
 
             if self.unit == "percent":
@@ -364,22 +366,6 @@ class DOApp(QWidget):
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
-        
-        if 'ysi_do' in data_dict:
-
-            if self.unit == "percent":
-                self.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
-            else:
-                self.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
-
-            # update label color based on mgl value in setting.setting
-            do_val = data_dict['ysi_do_mgl']
-            if do_val < self.min_do:
-                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
-            elif self.min_do <= do_val < self.good_do:
-                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
-            else:
-                self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
 
         if 'mouse' in data_dict:
             if data_dict['mouse'] == 'normal':
@@ -400,6 +386,7 @@ class DOApp(QWidget):
             self.timer_active = False
 
     def on_ysi_update(self, do_ps, do_mgl):
+        # update ysi value
         if self.unit == "percent":
             # water temperature and/or pressure have not been recorded
             if do_ps == -1:
@@ -408,6 +395,15 @@ class DOApp(QWidget):
                 self.update_value("YSI", f"{100 * do_ps:.2f}")
         else:
             self.update_value("YSI", f"{do_mgl:.2f}")
+
+        # update ysi color
+        if do_mgl < self.min_do:
+            self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
+        elif self.min_do <= do_mgl < self.good_do:
+            self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
+        else:
+            self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+
 
     def update_counter(self):
         if self.timer_active:
@@ -419,15 +415,15 @@ class DOApp(QWidget):
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time
             if self.counter_time < self.underwater_time:
-                self.update_value("Time S", str(self.counter_time) + " s Collecting data")
+                self.update_value("TIMER", str(self.counter_time) + " s Collecting data")
             else:
-                self.update_value("Time S", str(self.counter_time) + " s Collecting, Ready to pick up")
+                self.update_value("TIMER", str(self.counter_time) + " s Collecting, Ready to pick up")
                 self.thread.tricker_30sec()
         else:
             if self.counter_time > 0:
-                self.update_value("Time S", str(self.counter_time) + " s Collect data stop")
+                self.update_value("TIMER", str(self.counter_time) + " s Collect data stop")
             else:
-                self.update_value("Time S", str(self.counter_time) + " s")
+                self.update_value("TIMER", str(self.counter_time) + " s")
 
     def on_update_pond_data(self, data_dict):
         self.result_window = ResultWindow(auto_close_sec=self.auto_close_time)
