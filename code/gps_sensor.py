@@ -52,22 +52,25 @@ class GPS_sensor:
 
         return self.pond_id, self.gps.latitude, self.gps.longitude
 
-    def get_pond_id(self, lat = None, lng = None):
+    def get_pond_id(self, lat= None, lng= None):
         if lat is None:
             lat = self.latitude
             lng = self.longitude
+
         self.pond_id = self.default_pond_id
 
         try:
             point = np.array([float(lng), float(lat)])
         except:
-            point = np.array([0, 0])
+            print("malformed latitude and longitude")
             self.pond_id = self.default_pond_id
             return self.pond_id
+        
         point_y = np.tile(point, (self.pond_gps.shape[0], 1))
         #calculate euclidean distances
         distances = np.linalg.norm(self.pond_gps - point_y, axis=1)
         #calculate minimum distance in meters
+        print(distances)
         min_dist = distances.min() * 111_000
         #determine if min distance is acceptable
         if min_dist < 1_000: #TODO: DISTANCES
