@@ -468,7 +468,7 @@ class TruckSensor(QThread):
             "ysi csv": self.ysi_csv
         }
 
-        self.firebase_worker.add_sdata(self.sdata, csv_file, row)
+        self.firebase_worker.add_sdata(data_dict, row)
 
     def tricker_30sec(self):
         self.is_30sec = True
