@@ -401,7 +401,11 @@ class DOApp(QWidget):
 
     def on_ysi_update(self, do_ps, do_mgl):
         if self.unit == "percent":
-            self.update_value("YSI", f"{100 * do_ps:.2f}")
+            # water temperature and/or pressure have not been recorded
+            if do_ps == -1:
+                self.update_value("YSI", "N/A")
+            else:
+                self.update_value("YSI", f"{100 * do_ps:.2f}")
         else:
             self.update_value("YSI", f"{do_mgl:.2f}")
 

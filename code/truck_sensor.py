@@ -103,6 +103,8 @@ class TruckSensor(QThread):
         if self.water_temp and self.pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.presssure)
             self.ysi_data.emit(do_ps, do_mgl)
+        else:
+            self.ysi_data.emit(-1, do_mgl)
 
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
