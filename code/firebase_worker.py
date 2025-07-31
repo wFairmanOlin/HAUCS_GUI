@@ -189,7 +189,7 @@ class FirebaseWorker(QThread):
         upload_data['type'] = 'rpi_truck' #hardcoded truck type
         upload_data['sample_hz'] = sdata['sample_hz']
         upload_data['sensor_battv'] = sdata['battv']
-        upload_data = self.clean_for_firebase(upload_data)
+        upload_data = clean_for_firebase(upload_data)
 
         try:
             if self.app is not None:
@@ -211,9 +211,10 @@ class FirebaseWorker(QThread):
             return False
         return True
     
-    def clean_for_firebase(data):
-        for key in data:
-            val = data[key]
-            if isinstance(val, np.ndarray):
-                val = val.tolist()
-        return data
+
+def clean_for_firebase(data):
+    for key in data:
+        val = data[key]
+        if isinstance(val, np.ndarray):
+            val = val.tolist()
+    return data
