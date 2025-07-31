@@ -1,7 +1,7 @@
 from queue import Queue, Empty
 import os
 import firebase_admin
-from firebase_admin import credentials,db
+from firebase_admin import credentials, db
 import concurrent.futures
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 import pandas as pd
@@ -193,10 +193,6 @@ class FirebaseWorker(QThread):
 
         try:
             if self.app is not None:
-                print("UPLOADING TO FIREBASE >>>>>")
-                print('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/')
-                for key in upload_data:
-                    print(f"{key}, {type(upload_data[key])}: {upload_data[key]}")
                 db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(upload_data)
             else:
                 self.update_logger_text("warning", "uploading data to firebase failed")
