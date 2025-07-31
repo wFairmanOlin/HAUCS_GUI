@@ -71,7 +71,6 @@ class FirebaseWorker(QThread):
     def add_sdata(self, sdata, row):
 
         today_str = datetime.now().strftime("%Y-%m-%d")
-        time_str = datetime.now().strftime("%H:%M:%S")
         folder = self.database_folder
         os.makedirs(folder, exist_ok=True)
         file_path = os.path.join(folder, f"{self.truck_id}_{today_str}.csv")
@@ -171,12 +170,31 @@ class FirebaseWorker(QThread):
                     self.logger_data.emit("error", f"Failed to update CSV status for {msg_time_str}: {e}")
 
     def update_firebase(self, sdata):
+        
+        # copy relevant information to firebase
+        upload_data = {}
+        upload_data['do'] = sdata['do_vals']
+        upload_data['ysi_do_mgl'] = sdata['ysi_do_mgl_arr']
+        upload_data['heading'] = 100 #TODO: THIS SHOULD NOT BE HARDCODED
+        upload_data['init_do'] = 1 #hardcoded to handle legacy website
+        upload_data['init_pressure'] = sdata['init_pressure']
+        upload_data['lat'] = sdata['lat']
+        upload_data['lng'] = sdata['lng']
+        upload_data['pid'] = sdata['pid']
+        upload_data['pressure'] = sdata['pressure_vals']
+        upload_data['temp'] = sdata['temperature_vals']
+        upload_data['sid'] = sdata['name']
+        upload_data['type'] = 'rpi_truck' #hardcoded truck type
+        upload_data['sample_hz'] = sdata['sample_hz']
+        upload_data['sensor_battv'] = sdata['batt_v']
+
         try:
             if self.app is not None:
                 print("UPLOADING TO FIREBASE >>>>>")
                 print('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/')
-                print(sdata)
-                # db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(sdata)
+                for key in upload_data:
+                    print(f"{key}: {upload_data[key]}")
+                db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(sdata)
             else:
                 self.update_logger_text("warning", "uploading data to firebase failed")
                 return False

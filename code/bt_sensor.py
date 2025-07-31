@@ -203,7 +203,7 @@ class BluetoothReader(QObject):
         self.sample_stop_time = sample_stop_time
         update_json = True
         msg = self.send_receive_command(self.commands['s_print'], timeout=5)
-        keys = ["init_do", "init_pressure", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals", "sample_hz"]
+        keys = ["init_do", "init_pressure", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals", "sample_hz", 'name']
         return update_json, msg, keys
     
     def set_calibration_pressure(self):
