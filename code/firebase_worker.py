@@ -92,6 +92,7 @@ class FirebaseWorker(QThread):
         save_time = message_time.replace(":","-")
         file_path = os.path.join(self.unsaved_folder, save_time + ".pickle")
         self.sdatas.append(sdata)
+        print("appended sdata")
 
         os.makedirs(self.unsaved_folder, exist_ok=True)
         with open(file_path, 'wb') as file:
@@ -139,6 +140,7 @@ class FirebaseWorker(QThread):
         self._abort = True
 
     def update_firebase_when_internet(self):
+        print(f"firebase update size {len(self.sdatas)}")
         for i in reversed(range(len(self.sdatas))):
             sdata = self.sdatas[i]
 
