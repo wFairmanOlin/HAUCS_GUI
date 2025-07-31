@@ -140,7 +140,6 @@ class FirebaseWorker(QThread):
         self._abort = True
 
     def update_firebase_when_internet(self):
-        print(f"firebase update size {len(self.sdatas)}")
         for i in reversed(range(len(self.sdatas))):
             sdata = self.sdatas[i]
 
