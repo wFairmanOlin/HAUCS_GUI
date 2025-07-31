@@ -17,7 +17,7 @@ import io
 import re
 import pandas as pd
 from datetime import datetime, timedelta
-from converter import convert_raw_to_mgl, to_celcius, convert_mgl_to_raw, calculate_do_and_fit
+from converter import *
 
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
@@ -157,7 +157,7 @@ class ResultWindow(QWidget):
         self.img_label2.setAlignment(Qt.AlignCenter)
         self.img_label2.setStyleSheet("background-color: #c1c1c1; border: 1px solid white;")
         self.img_label2.setText("Engineering Image")
-        self.img_label2.setVisible(False)
+        self.img_label2.setVisible(True) #TODO: was FALSE
         layout_right.addStretch()
         layout_right.addWidget(self.img_label2, alignment=Qt.AlignCenter)
         layout_top.addLayout(layout_right, stretch=5)
@@ -282,14 +282,13 @@ class ResultWindow(QWidget):
         data_send = {
             "status": "completed",
             "pid": self.data_labels["PID"].text(),
-            "temp": temperature_val,
-            "pressure": pressure_val,
-            "do": self.do_current,
-            "do_mgl": self.do_mgl_current,
-            "ysi_do": self.ysi_current,
-            "ysi_do_mgl": self.ysi_mgl_current,
-            #TODO REMOVE THE FOLLOWING VARIABLE
-            "YSI": self.data_labels["YSI"].text(), 
+            "temp": self.data['water_temp'],
+            "pressure": self.data['sample_pressure'],
+            "do": self.data['do'],
+            "do_mgl": self.data['do_mgl'],
+            "ysi_do": self.data['ysi'],
+            "ysi_do_mgl": self.data['ysi_mgl'],
+            "YSI": self.data_labels["YSI"].text(), #TODO REMOVE THIS VARIABLE
         }
         self.closed_data.emit(data_send)
         super().closeEvent(event)
@@ -318,22 +317,69 @@ class ResultWindow(QWidget):
 
 
 
-    def set_do_temp_pressure(self, do_vals, temp_vals, pressure_vals, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
-        self.do_vals = do_vals
-        self.temp_vals = temp_vals
-        self.pressure_vals = pressure_vals
-
-        self.is_30sec = is_30sec
-        self.data_size_at30sec = data_size_at30sec
-        self.sample_stop_time = sample_stop_time
+    def set_do_temp_pressure(self, data_dict, sample_stop_time=30):
+        
+        self.data = data_dict
 
         if len(do_vals) < 5:
             self.img_label2.setText("Insufficient DO data")
             return
 
-        if len(do_vals) > 30:
-            do_vals = do_vals[:30]
-        y_fit, x_plot, y_at_30, do_vals, s_time = calculate_do_and_fit(do_vals)
+                        #  HBOI DO
+                do_arr = self.data_dict['do_vals']
+                p, f = calculate_do_fit(do_arr, record_time, sample_rate)
+                do_guess = generature_do(record_time, p, f)
+                do = do_guess if do_guess > 0 else do_arr[-1]
+                do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
+                do_mgl = convert_raw_to_mgl(do)
+                
+                # YSI DO
+                ysi_do_mgl_arr = self.ysi_worker.get_record()
+                p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
+                do_guess = generature_do(record_time, p, f)
+                ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]
+                ysi_do_arr = convert_mgl_to_raw(ysi_do_mgl_arr, self.water_temp, self.air_pressure)
+                ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
+                self.ysi_csv = self.ysi_worker.csv_file
+                self.data_dict['ysi_do'] = ysi_do
+                self.data_dict['ysi_do_mgl'] = ysi_do_mgl
+                self.data_dict['do'] = do
+                self.data_dict['do_mgl'] = do_mgl
+                self.data_dict['do_mgl_arr'] = do_mgl_arr
+                self.data_dict['ysi_do_mgl_arr'] = ysi_do_mgl_arr
+                self.data_dict['ysi_do_arr'] = ysi_do_arr
+
+        if self.unit == "percent":
+            do_arr = self.data['do_vals']
+            ysi_do_arr = self.data['ysi_do_arr']
+            scale = 100
+        else:
+            do_arr = self.data['do_mgl_arr']
+            ysi_do_arr = self.data['ysi_do_mgl_arr']
+            scale = 0
+
+        # IDEAL RECORD TIME FOR DATA
+        record_time = 30 #TODO: this should be in setting.setting
+        x_plot = np.linspace(0, sample_stop_time, 10 * sample_stop_time)
+
+        # generate time array
+        time = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+        time = time[time <= sample_stop_time]
+
+        # fit for HBOI SENSOR
+        p, f = calculate_do_fit(do_arr, record_time, self.data['sample_hz'])
+        y_fit = generate_do(x_plot, p, f)
+        y_fit = [scale * i for i in y_fit]
+        y_scatter = do_arr[:len(time)]
+        y_scatter = [scale * i for i in y_scatter]
+        
+        # fit for YSI SENSOR
+        p, f = calculate_do_fit(ysi_do_arr, record_time, self.data['sample_hz'])
+        y_fit_ysi = generate_do(x_plot, p, f)
+        y_fit_ysi = [scale * i for i in y_fit_ysi]
+        y_scatter_ysi = ysi_do_arr[:len(time)]
+        y_scatter_ysi = [scale * i for i in y_scatter_ysi]
+
         fig = Figure(figsize=((self.img_label2.width() + 100) / 100.0, self.img_label2.height() / 100.0), dpi=100, facecolor='white')
         canvas = FigureCanvas(fig)
         ax = fig.add_subplot(111)
@@ -348,12 +394,12 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color='red', fontsize=16)
         ax.set_ylabel("% Saturation", color='red', fontsize=16)
 
-        ax.scatter(s_time, [100 * i for i in do_vals], color='red', alpha=1)
-        ax.plot(x_plot, 100 * y_fit, color='red', linewidth=2, alpha=0.7)
+        ax.scatter(time, y_scatter, color='red', alpha=1)
+        ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
         ax.annotate(
-            str(round(y_fit[-1])) + '%',
+            f"{y_fit[-1]:.1f}{'%' if self.unit == 'percent' else 'mg/l'}",
             (x_plot[-1], y_fit[-1]),
-            xytext=(x_plot[int(len(x_plot)*0.6)], 100 * y_fit[int(len(y_fit)*0.3)]),
+            xytext=(x_plot[int(len(x_plot)*0.6)], y_fit[int(len(y_fit)*0.3)]),
             arrowprops={"width": 1, "color": "red", "headwidth": 6},
             color="red", fontsize=16
         )
@@ -411,8 +457,8 @@ class ResultWindow(QWidget):
 
         current_hour = self.measure_datetime.replace(minute=0, second=0, microsecond=0)
         if current_hour in do_dict:
-            do_dict[current_hour]['percent'].append(self.do_current)
-            do_dict[current_hour]['mgl'].append(self.do_mgl_current)
+            do_dict[current_hour]['percent'].append(self.data['do'])
+            do_dict[current_hour]['mgl'].append(self.data['do_mgl'])
 
         min_do = self.min_do
         good_do = self.good_do

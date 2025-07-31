@@ -10,7 +10,8 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius, generature_do, calculate_do_fit, pressure_to_depth
+import numpy as np
 
 from firebase_worker import FirebaseWorker
 
@@ -170,18 +171,17 @@ class TruckSensor(QThread):
         self.ble.set_calibration_pressure()
         self.update_logger_text("info", f"Calibration Pressure complete")
 
-        msgs = []
         update_json, msg, sdata_key = self.ble.get_init_do()
         self.update_any(sdata_key, update_json)
-        msgs.append(msg)
 
         update_json, msg, sdata_key = self.ble.get_init_pressure()
         self.update_any(sdata_key, update_json)
-        msgs.append(msg)
 
         self.update_battery()
-        
-        return msgs
+
+        update_json, msg, sdata_key = self.ble.get_sampling_rate()
+        self.update_any(sdata_key, update_json)
+
     
     def update_battery(self):
         #TODO: This function should be removed
@@ -325,8 +325,8 @@ class TruckSensor(QThread):
             if self.ble.logger_status == "warning":
                 self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
             self.status_data.emit("Read data finished")
-            self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
-            self.update_any(sdata_key, update_json, True, True)
+            # self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
+            self.update_any(sdata_key, update_json, True)
 
             do_val = self.ble.sdata["do"]
             self.update_logger_text("info", f"Data collected: {self.pond_id}, DO:{do_val}")
@@ -342,8 +342,8 @@ class TruckSensor(QThread):
         self.update_logger_text("info", "Stop ble normal process")
         self._abort = True
 
-    def update_any(self, sdata_key, update_json, update_pond_data = False, update_gps = False):
-        self.update_sdata_value(sdata_key, update_pond_data, update_gps)
+    def update_any(self, sdata_key, update_json, update_pond_data = False):
+        self.update_sdata_value(sdata_key, update_pond_data)
         self.save_json(update_json)
 
     def save_json(self, update_json):
@@ -351,46 +351,68 @@ class TruckSensor(QThread):
             with open(self.sensor_file, 'w') as outfile:
                 json.dump(self.sdata, outfile)
 
-    def update_sdata_value(self, sdata_key, update_pond_data = False, update_gps = False):
+    def update_sdata_value(self, sdata_key, update_pond_data = False):
         if sdata_key is not None:
             self.data_dict = {}
             for key in sdata_key:
-                # print(key)
-                # print(self.ble.sdata[key])
                 if key in self.ble.sdata:
                     self.sdata[key] = self.ble.sdata[key]
                     self.data_dict[key] = self.sdata[key]
                 if key == 'lat':
                     self.data_dict['gps'] = True
 
-            if update_gps:
-                self.sdata["pid"] = self.pond_id
-                self.sdata['lng'] = self.longitude
-                self.sdata['lat'] = self.latitude
-                self.data_dict["gps"] = True
-                self.data_dict["pid"] = self.pond_id
-                self.data_dict["lng"] = self.longitude
-                self.data_dict["lat"] = self.latitude
-
             if update_pond_data:
-                #TODO: This breaks when sampling rate is less than 1
-                time_stop = len(self.data_dict["do_vals"])
-                self.water_temp = to_celcius(self.data_dict["temp"][0])
-                self.pressure = self.data_dict["pressure"][0] #TODO: Make sure this is init pressure
-                self.do_val = self.data_dict["do"]
-                self.ysi_mgl_array = self.ysi_worker.get_record()
-                self.ysi_csv = self.ysi_worker.csv_file
-                self.ysi = convert_mgl_to_raw(self.ysi_mgl_array[-1], self.water_temp, self.pressure)
-                self.update_logger_text("info", f"YSI value: {self.ysi_mgl_array[-1]} mgl and {100 * self.ysi} %")
-                #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
-                self.sdata["ysi_do"] = self.ysi
-                self.sdata["ysi_do_mgl"] = self.ysi_mgl_array[-1]
-                self.data_dict['ysi_do'] = self.sdata['ysi_do']
-                self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
-                self.data_dict['do'] = self.sdata['do']
-                self.data_dict['do_mgl'] = self.sdata['do_mgl']
+                # sample duration
+                sample_rate = self.sdata.get('sample_hz', 1)
+                sample_duration = len(self.data_dict['do_vals']) / sample_rate
+                self.data_dict['sample_hz'] = sample_rate
 
+                # IDEAL RECORD TIME FOR DATA
+                record_time = 30 #TODO: this should be in setting.setting
+                if sample_duration > record_time:
+                    record_idx = int(record_time * sample_rate)
+                else:
+                    record_idx = -1
+
+                # water temperature
+                self.water_temp = self.data_dict['temp_vals'][record_idx]
+                self.data_dict['water_temp'] = self.water_temp
+                # Pressure
+                self.air_pressure = self.sdata['init_pressure']
+                self.sample_depth = self.sdata['pressure_vals'][record_idx]
+                self.data_dict['sample_pressure'] = self.sdata['pressure_vals'][record_idx]
+                self.data_dict['sample_depth'] = self.sample_depth
+
+                #  HBOI DO
+                do_arr = self.data_dict['do_vals']
+                p, f = calculate_do_fit(do_arr, record_time, sample_rate)
+                do_guess = generature_do(record_time, p, f)
+                do = do_guess if do_guess > 0 else do_arr[-1]
+                do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
+                do_mgl = convert_raw_to_mgl(do)
+                
+                # YSI DO
+                ysi_do_mgl_arr = self.ysi_worker.get_record()
+                p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
+                do_guess = generature_do(record_time, p, f)
+                ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]
+                ysi_do_arr = convert_mgl_to_raw(ysi_do_mgl_arr, self.water_temp, self.air_pressure)
+                ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
+                self.ysi_csv = self.ysi_worker.csv_file
+
+                #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
+                self.sdata["ysi_do"] = ysi_do
+                self.sdata["ysi_do_mgl"] = ysi_do_mgl
+                self.data_dict['ysi_do'] = ysi_do
+                self.data_dict['ysi_do_mgl'] = ysi_do_mgl
+                self.data_dict['do'] = do
+                self.data_dict['do_mgl'] = do_mgl
+                self.data_dict['do_mgl_arr'] = do_mgl_arr
+                self.data_dict['ysi_do_mgl_arr'] = ysi_do_mgl_arr
+                self.data_dict['ysi_do_arr'] = ysi_do_arr
+ 
                 self.update_pond_data.emit(self.data_dict)
+
             self.update_data.emit(self.data_dict)
 
     def toggle_unit(self, unit):

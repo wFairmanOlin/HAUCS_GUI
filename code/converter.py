@@ -65,36 +65,63 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
 
     return DO_percent
 
+def exp_func(x, a, b, c):
+    return a * np.exp(-b * x) + c
 
-def calculate_do_and_fit(do_vals, max_time= 30):
+def calculate_do_fit(do_vals, max_time=30, sample_hz=1):
+    '''
+    do_vals:   array of DO values (either mgl or percent sat)
+    max_time:  max time where DO values are still valid
+    sample_hz: samle frequency used to collect do_vals
+
+    return:
+    popt: optimization parameters for either curve fit or linear fit
+    fit_type: "curve" for curve fit or "linear" for linear fit
+    '''
+
+    do_vals = np.array(do_vals)
     
-    def exp_func(x, a, b, c):
-        return a * np.exp(-b * x) + c
-    
-    s_time = np.arange(len(do_vals)) #TODO: This only works with a sampling rate of 1 hz
+    time = np.arange(len(do_vals)) / sample_hz
+
+    #trim time and do vals to be less than max time
+    time = time[time <= max_time]
+    do_vals = do_vals[: len(time)]
 
     x_plot = np.linspace(0, max_time, max_time * 10)
-
-    # default fallback
     y_fit = np.zeros_like(x_plot)
-    y_at_30 = None
 
     try:
-        popt, _ = curve_fit(exp_func, s_time, do_vals)
-        y_fit = exp_func(x_plot, *popt)
-        y_at_30 = exp_func(30, *popt)
+        popt, _ = curve_fit(exp_func, time, do_vals)
+        fit_type = "curve"
 
     except Exception as e:
         print("Curve fit failed:", e)
 
-        p = np.polyfit(s_time, do_vals, 1)
-        y_fit = np.polyval(p, x_plot)
-        y_at_30 = np.polyval(p, 30)
-    
-    if y_at_30 < 0:
-        print(f"oops broke physics, predicted DO below 0%, {y_at_30}")
-        y_at_30 = do_vals[-1]
-    
-    print("ESTIMATED Y: ", y_at_30)
+        popt = np.polyfit(time, do_vals, 1)
+        fit_type = "linear"
 
-    return y_fit, x_plot, y_at_30, do_vals, s_time
+    return popt, fit_type
+
+
+def generate_do(x, popt, fit_type):
+    '''
+    x: input in seconds (array or scalar)
+    popt: output from calculate_do_fit
+    fit_type: output from calculate_do_fit
+
+    return: DO array of len x
+    '''
+    if fit_type == "curve":
+        y = exp_func(x, *popt)
+    else:
+        y = np.polyval(popt, x)
+
+    return y if y > 0 else 0
+
+
+def pressure_to_depth(p, init_p):
+    '''
+    p: pressure at depth measurment
+    init_p: ambient air pressure
+    '''
+    return round(10.197 / 25.4 * (p - init_p), 1)

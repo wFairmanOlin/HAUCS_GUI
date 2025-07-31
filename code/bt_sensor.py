@@ -12,7 +12,7 @@ from datetime import datetime
 import subprocess
 import serial
 from subprocess import call
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius, calculate_do_and_fit
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
@@ -55,8 +55,8 @@ class BluetoothReader(QObject):
         'cal_do' : {'tx':'cal do', 'rx':'init do'},
         'cal_ps' : {'tx':'cal ps', 'rx':'init p'},
         'xmas'   : {'tx':'set light xmas', 'rx':''},
+        's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'}
     }
-    msg_command = ["get init_do", 'get init_p', 'batt', 'sample reset', 'sample size', 'sample print', 'cal ps', 'cal do']
 
     ################## logger #########################
     logger_status = "normal"
@@ -175,6 +175,12 @@ class BluetoothReader(QObject):
         update_json = False
         msg = self.send_receive_command(self.commands['init_ps'])
         return update_json, msg, ["init_pressure"]
+    
+    def get_sampling_rate(self):
+        self.sdata["sample_hz"] = 1
+        update_json = False
+        msg = self.send_receive_command(self.commands['s_rate'])
+        return update_json, msg, ["sample_hz"]
 
     def get_battery(self):
         update_json = True
@@ -197,7 +203,7 @@ class BluetoothReader(QObject):
         self.sample_stop_time = sample_stop_time
         update_json = True
         msg = self.send_receive_command(self.commands['s_print'], timeout=5)
-        keys = ["do", "do_mgl", "init_do", "init_pressure", "pressure", "temp", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals"]
+        keys = ["init_do", "init_pressure", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals", "sample_hz"]
         return update_json, msg, keys
     
     def set_calibration_pressure(self):
@@ -207,6 +213,7 @@ class BluetoothReader(QObject):
         return self.send_receive_command(self.commands['cal_do'])
 
     def extract_message(self, msg):
+        #TODO: break this into individual callbacks for each message
         # print(f"extract: {msg}")
         key, value = msg[0], msg[1:]
         if key == "init_do":
@@ -215,11 +222,15 @@ class BluetoothReader(QObject):
         elif key == "init_p":
             self.init_p_val = float(value[0].strip())
             self.sdata["init_pressure"] = self.init_p_val
-        elif msg[0] == 'v' and len(value) == 3:
+
+        elif key == 'v' and len(value) == 3:
             self.batt_v = float(value[0])
             self.batt_status = value[2].strip()
             self.sdata['battv'] = self.batt_v
             self.sdata['batt_status'] = self.batt_status
+        elif key == 'sample_hz':
+            self.sdata['sample_hz'] = float(value[0]
+                                            )
         elif key == "dsize":
             self.prev_sample_size = self.current_sample_size
             try:
@@ -234,31 +245,6 @@ class BluetoothReader(QObject):
             self.do_vals = []
             self.temp_vals = []
             self.pressure_vals = []
-        elif "dfinish" in key:
-            if len(self.do_vals) > 30:
-                self.do_vals = self.do_vals[:30]
-
-            self.do = self.do_vals[-1]
-            arr = np.array(self.temp_vals)
-            self.temp_val = [float(arr.mean())]
-            arr = np.array(self.pressure_vals)
-            self.pressure_val = [float(arr.mean())]
-
-            self.sdata["do"] = self.do
-            print(f"do_mgl: {self.do}, {self.temp_val}, {self.init_p_val}")
-            #TODO: WHY IS temp_val AN ARRAY?
-            #TODO: WHY IS temp_val IN FAHRENHEIT?
-            self.sdata["do_mgl"] = convert_raw_to_mgl(self.do, to_celcius(self.temp_val[0]), self.init_p_val)
-            self.sdata["init_do"] = self.init_do_val
-            self.sdata["init_pressure"] = self.init_p_val
-            self.sdata["pressure"] = self.pressure_val
-            self.sdata["temp"] = self.temp_val
-            self.sdata['battv'] = self.batt_v
-            self.sdata['batt_status'] = self.batt_status
-            self.do_vals = self.do_vals
-            self.sdata["do_vals"] = self.do_vals
-            self.sdata["temp_vals"] = self.temp_vals
-            self.sdata["pressure_vals"] = self.pressure_vals
 
         elif key == "ts":
             do = float(value[2])
@@ -268,10 +254,18 @@ class BluetoothReader(QObject):
                 self.writeCSV(self.csv_file, [float(value[0]), do, temp_val, pressure_val])
 
             self.do_vals.append(do) # DO
-            temp_val = to_fahrenheit(temp_val)
-            self.temp_vals.append(round(temp_val, 1))   # tempuerature 
+            self.temp_vals.append(temp_val)   # tempuerature 
             self.pressure_vals.append(pressure_val) # pressure
             self.data_counter = self.data_counter + 1  
+
+        elif "dfinish" in key:
+
+            self.sdata["init_do"] = self.init_do_val
+            self.sdata['battv'] = self.batt_v
+            self.sdata['batt_status'] = self.batt_status
+            self.sdata["do_vals"] = self.do_vals
+            self.sdata["temp_vals"] = self.temp_vals
+            self.sdata["pressure_vals"] = self.pressure_vals
 
     def send_receive_command(self, command, timeout=1):
         '''

@@ -14,7 +14,7 @@ from truck_sensor import TruckSensor
 from datetime import datetime
 from battery_widget import BatteryWidget
 from led_indicator import LEDStatusWidget
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_celcius
+from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_celcius, to_fahrenheit
 from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
@@ -216,13 +216,6 @@ class DOApp(QWidget):
             key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
             val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
 
-            # if key_id == "PID" or key_id == "SDL" or key_id == "YSI":
-            #     key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-            #     val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-            # else:
-            #     key_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
-            #     val_label.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
-
             info_grid.addWidget(key_label, i, 0, Qt.AlignRight)
             info_grid.addWidget(val_label, i, 1, Qt.AlignLeft)
 
@@ -415,13 +408,13 @@ class DOApp(QWidget):
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time
             if self.counter_time < self.underwater_time:
-                self.update_value("TIMER", str(self.counter_time) + " s Collecting data")
+                self.update_value("TIMER", str(self.counter_time) + " s collecting")
             else:
-                self.update_value("TIMER", str(self.counter_time) + " s Collecting, Ready to pick up")
+                self.update_value("TIMER", str(self.counter_time) + " s ready to pick-up")
                 self.thread.tricker_30sec()
         else:
             if self.counter_time > 0:
-                self.update_value("TIMER", str(self.counter_time) + " s Collect data stop")
+                self.update_value("TIMER", str(self.counter_time) + " s collection stoped")
             else:
                 self.update_value("TIMER", str(self.counter_time) + " s")
 
@@ -437,41 +430,28 @@ class DOApp(QWidget):
             self.result_window.pond_id = data_dict["pid"]
         else:
             self.result_window.update_value("PID", "-1")
-        if 'temp' in data_dict:
-            self.result_window.temp_c = to_celcius(data_dict['temp'][0])
-            self.result_window.update_value("Temp", f"{data_dict['temp'][0]:.2f} °F")
-        if 'pressure' in data_dict:
-            self.result_window.pressure = data_dict['pressure'][0]
-            self.result_window.update_value("Press", f"{data_dict['pressure'][0]:.2f} HPA")
-        if 'do' in data_dict:
-            self.result_window.do_current = data_dict['do']
-            self.result_window.do_mgl_current = data_dict['do_mgl']
 
-            if self.unit == "percent":
-                self.result_window.update_value("HBOI", f"{100 * data_dict['do']:.2f}")
-            else:
-                self.result_window.update_value("HBOI", f"{data_dict['do_mgl']:.2f}")
-           
-        if 'ysi_do' in data_dict:
-            self.result_window.ysi_current = data_dict['ysi_do']
-            self.result_window.ysi_mgl_current = data_dict['ysi_do_mgl']
-            if self.unit == "percent":
-                self.result_window.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
-            else:
-                self.result_window.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
-            
+        self.result_window.temp_c = data_dict['water_temp']
+        self.result_window.update_value("Temp", f"{to_fahrenheit(data_dict['water_temp']):.2f} °F")
+        self.result_window.pressure = data_dict['sample_depth']
+        self.result_window.update_value("Press", f"{data_dict['sample_depth']:.2f} in")
+
+        # HANDLE DO CONVERSIONS
+        if self.unit == "percent":
+            self.result_window.update_value("HBOI", f"{100 * data_dict['do']:.2f}")
+            self.result_window.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
+        else:
+            self.result_window.update_value("HBOI", f"{data_dict['do_mgl']:.2f}")
+            self.result_window.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
+
         self.result_window.update_value("SD", str(self.counter_time))
 
         now = datetime.now()
-        formatted_time = now.strftime("%b %d %I:%M %p")  # <== รูปแบบตามที่คุณต้องการ
+        formatted_time = now.strftime("%b %d %I:%M %p")
         self.result_window.update_value("Date", formatted_time)
         self.result_window.measure_datetime = now
 
-        is_30sec = self.thread.is_30sec
-        data_size_at30sec = self.thread.data_size_at30sec
-        sample_stop_time = self.thread.sample_stop_time
-
-        self.result_window.set_do_temp_pressure(data_dict['do_vals'], data_dict['temp_vals'], data_dict['pressure_vals'])
+        self.result_window.set_do_temp_pressure(data_dict, sample_stop_time=30)
         self.result_window.plot_hourly_do_barchart()
 
     def on_result_window_closed(self, result_data):
@@ -480,9 +460,6 @@ class DOApp(QWidget):
         self.result_window = None
 
     def on_thread_finished(self):
-        # self.ble_running = False
-        # self.log_label.setText("Sensor stop main process")
-        # self.thread.update_logger_text("info", "DO Sensor thread aborted.")
         print("Thread Abort")
 
     def on_toggle_click(self):

@@ -9,7 +9,7 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 import csv
 import time
 from scipy.optimize import curve_fit
-from converter import calculate_do_and_fit, convert_mgl_to_raw
+from converter import convert_mgl_to_raw
 
 class YSIReader(QThread):
     logger_data = pyqtSignal(str, str)
