@@ -102,7 +102,7 @@ class YSIReader(QThread):
         if reset:
             self.data_record = []
 
-    def get_record(self, time_stop):
+    def get_record(self):
         self.start_record = False
         data_mgl = self.data_record
         return data_mgl
