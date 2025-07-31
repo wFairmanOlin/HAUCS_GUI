@@ -4,8 +4,6 @@ import time
 import numpy as np
 
 class GPS_sensor:
-    latitude = 0
-    longitude = 0
     pond_id = 0
     fails = 0
     num_satellites = 0
@@ -54,8 +52,8 @@ class GPS_sensor:
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
-            lat = self.latitude
-            lng = self.longitude
+            lat = self.gps.latitude
+            lng = self.gps.longitude
 
         self.pond_id = self.default_pond_id
 
