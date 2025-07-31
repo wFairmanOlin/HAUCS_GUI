@@ -449,28 +449,19 @@ class TruckSensor(QThread):
 
     def update_database(self, data_dict):
         #TODO: data_dict is not really used
-        truck_id = self.truck_id
-        pid = data_dict["pid"]
-        do_val = round(self.sdata.get("do", ""), 2)
-        do_mgl_val = round(self.sdata.get("do_mgl", -1), 2)
-        ysi_do = round(self.sdata.get("ysi_do", -1), 2)
-        ysi_do_mgl = round(self.sdata.get("ysi_do_mgl", -1), 2)
-        temp_val = round(self.sdata.get("temp", [-1])[0], 2)
-        press_val = round(self.sdata.get("pressure", [-1])[0], 2)
         csv_file = self.csv_file
         message_time = self.sdata['message_time']
-        self.sdata["pid"] = pid
         time_str = datetime.now().strftime("%H:%M:%S")
 
         row = {
             "time": time_str,
-            "Pond ID": pid,
-            "HBOI DO": do_val,
-            "HBOI DO MGL":do_mgl_val,
-            "YSI DO": ysi_do,
-            "YSI DO MGL": ysi_do_mgl,
-            "Temperature": temp_val,
-            "Pressure": press_val,
+            "Pond ID": data_dict['pid'],
+            "HBOI DO": data_dict['do_val'],
+            "HBOI DO MGL":data_dict['do_mgl_arr'],
+            "YSI DO": data_dict['ysi_do_arr'],
+            "YSI DO MGL": data_dict['ysi_do_mgl_arr'],
+            "Temperature": data_dict['temp_vals'],
+            "Pressure": data_dict['pressure_vals'],
             "do csv": csv_file,
             "upload status": False,
             "message_time": message_time,
