@@ -116,7 +116,7 @@ def generate_do(x, popt, fit_type):
     else:
         y = np.polyval(popt, x)
 
-    return y if y > 0 else 0
+    return y
 
 
 def pressure_to_depth(p, init_p):
