@@ -75,6 +75,8 @@ class YSIReader(QThread):
 
             # perform voltage to mgl conversion
             self.ysi_do_mgl = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
+            # set to zero if less than zero
+            self.ysi_do_mgl = 0 if self.ysi_do_mgl < 0 else self.ysi_do_mgl
             # publish YSI data
             self.ysi_data.emit(self.ysi_do_mgl)
 
