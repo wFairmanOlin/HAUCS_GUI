@@ -278,19 +278,13 @@ class ResultWindow(QWidget):
         raw_text = self.data_labels["Press"].text() 
         pressure_val = re.findall(r"[\d.]+", raw_text)[0] 
         raw_text = self.data_labels["Temp"].text() 
-        temperature_val = re.findall(r"[\d.]+", raw_text)[0] 
-        data_send = {
-            "status": "completed",
-            "pid": self.data_labels["PID"].text(),
-            "temp": self.data['water_temp'],
-            "pressure": self.data['sample_pressure'],
-            "do": self.data['do'],
-            "do_mgl": self.data['do_mgl'],
-            "ysi_do": self.data['ysi_do'],
-            "ysi_do_mgl": self.data['ysi_do_mgl'],
-            "YSI": self.data_labels["YSI"].text(), #TODO REMOVE THIS VARIABLE
-        }
-        self.closed_data.emit(data_send)
+        temperature_val = re.findall(r"[\d.]+", raw_text)[0]
+        self.data['pid'] = self.data_labels['PID'].text()
+        self.data['status'] = "completed" #TODO REMOVE THIS VARIABLE
+        self.data['temp'] = self.data['water_temp'] #TODO REMOVE THIS VARIABLE
+        self.data['pressure'] = self.data['sample_pressure'] #TODO REMOVE THIS VARIABLE
+        self.data['YSI'] = self.data_labels['YSI'].text()
+        self.closed_data.emit(self.data)
         super().closeEvent(event)
 
     def edit_pid_dialog(self):
