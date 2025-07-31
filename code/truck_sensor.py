@@ -456,7 +456,7 @@ class TruckSensor(QThread):
         row = {
             "time": time_str,
             "Pond ID": data_dict['pid'],
-            "HBOI DO": data_dict['do_val'],
+            "HBOI DO": data_dict['do_vals'],
             "HBOI DO MGL":data_dict['do_mgl_arr'],
             "YSI DO": data_dict['ysi_do_arr'],
             "YSI DO MGL": data_dict['ysi_do_mgl_arr'],
@@ -467,8 +467,6 @@ class TruckSensor(QThread):
             "message_time": message_time,
             "ysi csv": self.ysi_csv
         }
-
-        self.update_logger_text("info", f"upload DO value to database: {pid}, {do_val}")
 
         self.firebase_worker.add_sdata(self.sdata, csv_file, row)
 
