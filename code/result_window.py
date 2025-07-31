@@ -287,7 +287,7 @@ class ResultWindow(QWidget):
             "do": self.data['do'],
             "do_mgl": self.data['do_mgl'],
             "ysi_do": self.data['ysi_do'],
-            "ysi_do_mgl": self.data['ysi_mgl'],
+            "ysi_do_mgl": self.data['ysi_do_mgl'],
             "YSI": self.data_labels["YSI"].text(), #TODO REMOVE THIS VARIABLE
         }
         self.closed_data.emit(data_send)
@@ -332,7 +332,7 @@ class ResultWindow(QWidget):
         else:
             do_arr = self.data['do_mgl_arr']
             ysi_do_arr = self.data['ysi_do_mgl_arr']
-            scale = 0
+            scale = 1
 
         print(do_arr)
         # IDEAL RECORD TIME FOR DATA
@@ -369,7 +369,7 @@ class ResultWindow(QWidget):
         ax.spines['left'].set_color('red')
         ax.spines['right'].set_color('red')
         ax.set_xlabel("Seconds", color='red', fontsize=16)
-        ax.set_ylabel("% Saturation", color='red', fontsize=16)
+        ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color='red', fontsize=16)
 
         ax.scatter(time, y_scatter, color='red', alpha=1)
         ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
