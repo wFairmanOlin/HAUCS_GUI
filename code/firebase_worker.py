@@ -196,7 +196,7 @@ class FirebaseWorker(QThread):
                 print("UPLOADING TO FIREBASE >>>>>")
                 print('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/')
                 for key in upload_data:
-                    print(f"{key}: {upload_data[key]}")
+                    print(f"{key}, {type(upload_data[key])}: {upload_data[key]}")
                 db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(sdata)
             else:
                 self.update_logger_text("warning", "uploading data to firebase failed")
