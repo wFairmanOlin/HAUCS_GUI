@@ -367,6 +367,7 @@ class TruckSensor(QThread):
                 self.data_dict["pid"] = self.sdata['pid']
                 self.data_dict["lng"] = self.sdata['lng']
                 self.data_dict["lat"] = self.sdata['lat']
+                self.data_dict['hdg'] = self.sdata['hdg']
  
                 self.update_pond_data.emit(self.data_dict)
 
@@ -421,6 +422,5 @@ class TruckSensor(QThread):
             "upload status": False,
             "message_time": data_dict['message_time'],
         }
-        print(f"UPDATE DATABASE\n{data_dict.keys()}")
         self.firebase_worker.add_sdata(data_dict, row)
 
