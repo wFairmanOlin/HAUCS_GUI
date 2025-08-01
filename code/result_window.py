@@ -40,7 +40,6 @@ class ResultWindow(QWidget):
         self.setup_timer()
 
         # set values
-        self.data = data
         print(f"RESULTS WINDOW DATA\n{data}")
         self.update_value("PID", self.data["pid"])
         self.update_value("PID", "-1")
@@ -65,17 +64,17 @@ class ResultWindow(QWidget):
     def setup_ui(self, image_path):
         screen = self.screen().size()
         w = int(screen.width() * 0.98)
-        h = int(screen.height() * 0.98)
+        h = int(screen.height() * 0.90)
         font_size = int(h * 0.05)
         self.font_size = font_size
-        large_font_size = int(h * 0.09)
+        large_font_size = int(h * 0.08)
         self.large_font_size = large_font_size
         btn_font_size = int(h * 0.03)
 
         self.setGeometry(
             # int((screen.width() - w) / 2),
             # int((screen.height() - h) / 3),
-            10, 0,
+            0, 0,
             w, h
         )
         self.setStyleSheet("background-color: #4D4D4D; color: white;")
@@ -333,7 +332,7 @@ class ResultWindow(QWidget):
         print(do_arr)
         # IDEAL RECORD TIME FOR DATA
         record_time = 30 #TODO: this should be in setting.setting
-        x_plot = np.linspace(0, sample_stop_time, 10 * sample_stop_time)
+        x_plot = np.linspace(0, sample_stop_time, 5 * sample_stop_time)
 
         # generate time array
         time = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
