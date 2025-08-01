@@ -28,7 +28,7 @@ class FirebaseWorker(QThread):
     fail_counter = 0
 
     max_fail = 30
-    fb_key="/home/haucs/Desktop/HAUCS_GUI/fb_key.json"
+    fb_key="fb_key.json"
     database_folder = "database_truck"
     unsaved_folder = "unsaved"
     completed_folder = "completed"
@@ -41,7 +41,6 @@ class FirebaseWorker(QThread):
     def init_firebase(self):
         try:
             self.logger_data.emit("info", f'use firebase key:{self.fb_key}')
-            # print(self.fb_key)
             if os.path.exists(self.fb_key):
                 self.cred = credentials.Certificate(self.fb_key)
                 self.app = firebase_admin.initialize_app(self.cred, {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
