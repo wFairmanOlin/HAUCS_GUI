@@ -42,8 +42,6 @@ class ResultWindow(QWidget):
         self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.1f} °F")
         self.update_value("Press", f"{self.data['sample_depth']:.1f} in")
         
-        print(self.unit)
-        print(self.data['do'], self.data['do_mgl'], self.data['ysi_do'], self.data['ysi_do_mgl'])
         # HANDLE DO CONVERSIONS
         if self.unit == "percent":
             self.update_value("HBOI", f"{100 * self.data['do']:.1f} %")
