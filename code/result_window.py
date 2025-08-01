@@ -25,22 +25,20 @@ class ResultWindow(QWidget):
     database_truck = "database_truck"
     measure_datetime = None
     pond_id = "unk"
-    min_do = 4
-    good_do = 5
-    unit = "percent"
  
-    def __init__(self, data, auto_close_sec=10):
+    def __init__(self, data, unit, min_do, good_do, auto_close_sec=10):
         super().__init__()
-        self.auto_close_sec = auto_close_sec
         self.remaining_time = auto_close_sec
         self.timer_active = True
 
         self.setWindowTitle("Result Summary")
         self.setup_ui(self.image_path)
         self.setup_timer()
-
+        self.unit = unit
+        self.min_do = min_do
+        self.good_do = good_do
+        self.data = data
         # set values
-        print(f"RESULTS WINDOW DATA\n{data}")
         self.update_value("PID", self.data["pid"])
         self.update_value("PID", "-1")
         self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
