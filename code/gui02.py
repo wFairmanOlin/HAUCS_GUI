@@ -44,7 +44,7 @@ class DOApp(QWidget):
 
         # retrieve and apply calibration info
         self.calibration = self.load_local_csv("calibration.csv")
-        self.last_calibration = self.settings.get("last_calibration", "N/A")
+        self.last_calibration = self.calibration.get("last_calibration", "N/A")
 
         # initial data labels
         self.data_labels = {
@@ -55,7 +55,7 @@ class DOApp(QWidget):
             "YSI": QLabel("-"),
             "SDL": QLabel("-"),
             "TIMER": QLabel("0"),
-            "CAL_DT": QLabel(self.last_calibration),
+            "CAL_DT": QLabel("N/A"),
             "GPS": QLabel("-1, -1"),
         }
 
