@@ -101,9 +101,8 @@ class HistoryLogWindow(QDialog):
                         ysi =      float(row["ysi_do"])
                         ysi_mgl =  float(row["ysi_do_mgl"])
                         temp_c =   float(row["temperature"])
-                        temp_f =   to_fahrenheit(temp_f)
+                        temp_f =   to_fahrenheit(temp_c)
                         depth =    row['depth']
-
 
                         if self.unit == "percent":
                             hboi_display = hboi
@@ -112,16 +111,16 @@ class HistoryLogWindow(QDialog):
                             hboi_display = hboi_mgl
                             ysi_display = ysi_mgl
 
-                        rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, press))
+                        rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, depth))
                     except:
                         print("couldn't append history rows")
 
         rows.sort(key=lambda x: (x[0], x[1]), reverse=True)
         self.table.setRowCount(len(rows))
 
-        for r, (date, time, pond_id, do1, do2, mgl1, mgl2, temp, press) in enumerate(rows):
+        for r, (date, time, pond_id, do1, do2, mgl1, mgl2, temp_f, depth) in enumerate(rows):
             row_color = QColor("#444444") if r % 2 == 0 else QColor("#222222")
-            for c, val in enumerate([date, time, pond_id, do1, do2, temp, press]):
+            for c, val in enumerate([date, time, pond_id, do1, do2, temp_f, depth]):
                 item = QTableWidgetItem(str(val))
                 item.setTextAlignment(Qt.AlignCenter)
                 item.setBackground(row_color)
