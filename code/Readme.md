@@ -32,8 +32,6 @@ The following sections describe the purpose of each file.
 - **truck_sensor.py** – The backend core handling sensor connections and internet communication.
   - **bt_sensor.py** – Interfaces with DO sensors via `adafruit_ble` (send commands, read data).
   - **firebase_worker.py** – Processes JSON files, generates history logs and CSV files, and uploads data to Firebase silently without interfering with the GUI.
-  - **gps_sensor.py** – Connects to GPS devices via `adafruit_gps`. Uses `sampling_points.csv` to convert GPS locations into pond IDs. (Compass integration planned.)
-  - **ysi_reader.py** – Interfaces with legacy YSI machines (analog DO meter) using ADC.
 
 ---
 

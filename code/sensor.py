@@ -19,7 +19,7 @@ class I2CReader(QThread):
     #TODO the following values should NOT be hardcoded
     FULL_SCALE = 10500
     ZERO_SCALE = 0
-    FULL_MSG = 15
+    FULL_MGL = 15
 
     # accessed externally
     underwater          = False # True if underwater, set by truck_sensor.py
@@ -52,23 +52,20 @@ class I2CReader(QThread):
         
 
     def send_scheduled_messages(self):
-        if self.messaging_active:
-            for message in self.scheduled_msgs.values():
-                if time.time() - message['timer'] > message['period']:
-                    message['timer'] = time.time()
-                    # only trigger callback if above water or message has underwater priority
-                    if not self.underwater or message['underwater']:
-                        message['callback']()
+        for message in self.scheduled_msgs.values():
+            if time.time() - message['timer'] > message['period']:
+                message['timer'] = time.time()
+                # only trigger callback if above water or message has underwater priority
+                if not self.underwater or message['underwater']:
+                    message['callback']()
 
     def init_ysi_adc(self):
         try:
             self.ysi_adc = ADS1x15.ADS1115(1)
             self.ysi_adc.setGain(16)
             self.ysi_connected = True
-        except Exception as error:
+        except:
             self.ysi_connected = False
-
-
 
     def measure_ysi_adc(self):
         try:
@@ -83,7 +80,7 @@ class I2CReader(QThread):
         do_mgl = 0 if do_mgl < 0 else do_mgl
 
         # publish YSI data
-        self.ysi_data.emit(do_mgl)
+        self.ysi_publisher.emit(do_mgl)
         return do_mgl
 
     def set_ysi_sample_rate(self, sample_hz):

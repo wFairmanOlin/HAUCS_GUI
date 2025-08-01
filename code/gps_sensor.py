@@ -46,8 +46,8 @@ class GPSSensor:
                 self.latitude = self.gps.latitude
             if self.gps.longitude:
                 self.longitude = self.gps.longitude
-            if self.gps.track_angle_degree:
-                self.heading = self.gps.track_angle_degree
+            if self.gps.track_angle_deg:
+                self.heading = self.gps.track_angle_deg
         except:
             print('GPS update failed')
 

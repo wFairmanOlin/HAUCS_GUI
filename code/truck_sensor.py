@@ -37,9 +37,6 @@ class TruckSensor(QThread):
 
     messaging_active = True #semaphore for scheduled messages
 
-    is_30sec = False
-    data_size_at30sec = 30
-    sample_stop_time = 30
     underwater = False
 
     # environment variables
