@@ -365,15 +365,12 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color='red', fontsize=16)
         ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color='red', fontsize=16)
 
-        ax.scatter(time, y_scatter, color='red', alpha=1)
+        ax.scatter(time, y_scatter, color='red', alpha=1, label='hboi')
+        ax.scatter(time, y_scatter_ysi, color='blue', alpha=1, label='ysi')
         ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
-        ax.annotate(
-            f"{y_fit[-1]:.1f}{'%' if self.unit == 'percent' else 'mg/l'}",
-            (x_plot[-1], y_fit[-1]),
-            xytext=(x_plot[int(len(x_plot)*0.6)], y_fit[int(len(y_fit)*0.3)]),
-            arrowprops={"width": 1, "color": "red", "headwidth": 6},
-            color="red", fontsize=16
-        )
+        ax.plot(x_plot, y_fit_ysi, color='blue', linewidth=2, alpha=0.7)
+        ax.legend()
+        
         # Convert plot to QPixmap
         buf = io.BytesIO()
         fig.savefig(buf, format='png', bbox_inches='tight')
