@@ -203,9 +203,9 @@ class TruckSensor(QThread):
         # Wait for First Connection
         while self.ble is None or not self.ble.check_connection_status():
             self.init_ble()
-            self.msleep(500)
             self.init_sensor_status()
             self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure")
+            self.msleep(100)
 
         self.init_message_scheduler()
 
@@ -232,8 +232,8 @@ class TruckSensor(QThread):
                     print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
                     self.update_logger_value()
-                # do not try to reconnect for first 2000 ms
-                elif connection_count > 20:
+                # do not try to reconnect for first 2500 ms
+                elif connection_count > 25:
                     connected = self.reconnection(just_reconnect)
                 # continue if still not conneted
                 if not connected:
