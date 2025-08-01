@@ -353,7 +353,7 @@ class ResultWindow(QWidget):
         fig = Figure(figsize=((self.img_label2.width() / 100.0), self.img_label2.height() / 100.0), dpi=100)
         ax = fig.add_subplot(111)
         ax.tick_params(axis='x', colors='red', labelsize=14)
-        ax.tick_params(labelsize=14)
+        ax.tick_params(axis='y', colors='red', labelsize=14)
         ax.spines['bottom'].set_color('red')
         ax.spines['top'].set_color('red')
         ax.spines['left'].set_color('red')
@@ -369,7 +369,7 @@ class ResultWindow(QWidget):
         
         # Convert plot to QPixmap
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', bbox_inches='tight')
+        fig.savefig(buf, format='png', bbox_inches='tight', transparent=True)
         buf.seek(0)
         img = QImage()
         img.loadFromData(buf.getvalue())
