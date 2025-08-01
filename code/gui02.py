@@ -186,11 +186,12 @@ class DOApp(QWidget):
         self.calib_val = QLabel(str(self.last_calibration))
         calib_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
         self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
+        calib_bar.setFixedHeight(self.label_font_size)
 
-        calib_bar.addWidget(calib_label)
-        calib_bar.addWidget(self.calib_val)
+        calib_bar.addWidget(calib_label, Qt.AlignRight)
+        calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
 
-        main_layout.addWidget(calib_bar)
+        main_layout.addLayout(calib_bar)
 
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
@@ -208,7 +209,7 @@ class DOApp(QWidget):
                     background-color: #333;
                     border: 1px solid white;
                     color: white;
-                    font-size: {int(self.base_font_size * 0.9)}px;
+                    font-size: {int(self.base_font_size * 2)}px;
                     padding: 10px;                         
                 }}
                 QPushButton:hover {{
