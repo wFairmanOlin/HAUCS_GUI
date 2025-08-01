@@ -30,7 +30,8 @@ class ResultWindow(QWidget):
     min_do = 4
     good_do = 5
     unit = "percent"
-
+    data = {} # stores all data passed from gui02 on pond update
+ 
     def __init__(self, auto_close_sec=10):
         super().__init__()
         self.auto_close_sec = auto_close_sec
@@ -40,6 +41,27 @@ class ResultWindow(QWidget):
         self.setWindowTitle("Result Summary")
         self.setup_ui(self.image_path)
         self.setup_timer()
+
+        # set values
+        self.update_value("PID", self.data["pid"])
+        self.update_value("PID", "-1")
+        self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
+        self.update_value("Press", f"{self.data['sample_depth']:.2f} in")
+        
+        # HANDLE DO CONVERSIONS
+        if self.unit == "percent":
+            self.update_value("HBOI", f"{100 * self.data['do']:.2f}")
+            self.update_value("YSI", f"{100 * self.data['ysi_do']:.2f}")
+        else:
+            self.update_value("HBOI", f"{self.data['do_mgl']:.2f}")
+            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.2f}")
+
+        self.update_value("SD", f"{self.data['sample_duration']}s")
+
+        now = datetime.now()
+        formatted_time = now.strftime("%b %d %I:%M %p")
+        self.result_window.update_value("Date", formatted_time)
+        self.result_window.measure_datetime = now
         self.show()
 
     def setup_ui(self, image_path):
@@ -295,9 +317,7 @@ class ResultWindow(QWidget):
 
 
 
-    def set_do_temp_pressure(self, data_dict, sample_stop_time=30):
-        
-        self.data = data_dict
+    def set_do_temp_pressure(self, sample_stop_time=30):
 
         if len(self.data['do_vals']) < 5:
             self.img_label2.setText("Insufficient DO data")

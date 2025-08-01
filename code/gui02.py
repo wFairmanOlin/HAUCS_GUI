@@ -423,35 +423,8 @@ class DOApp(QWidget):
         self.result_window.unit = self.unit
         self.result_window.good_do = self.good_do
         self.result_window.min_do = self.min_do
-
-        if 'pid' in data_dict:
-            self.result_window.update_value("PID", data_dict["pid"])
-            self.result_window.pond_id = data_dict["pid"]
-        else:
-            self.result_window.update_value("PID", "-1")
-
-        self.result_window.temp_c = data_dict['water_temp']
-        self.result_window.update_value("Temp", f"{to_fahrenheit(data_dict['water_temp']):.2f} °F")
-        self.result_window.pressure = data_dict['sample_depth']
-        self.result_window.update_value("Press", f"{data_dict['sample_depth']:.2f} in")
-
-        # HANDLE DO CONVERSIONS
-        if self.unit == "percent":
-            self.result_window.update_value("HBOI", f"{100 * data_dict['do']:.2f}")
-            self.result_window.update_value("YSI", f"{100 * data_dict['ysi_do']:.2f}")
-        else:
-            self.result_window.update_value("HBOI", f"{data_dict['do_mgl']:.2f}")
-            self.result_window.update_value("YSI", f"{data_dict['ysi_do_mgl']:.2f}")
-
-        self.result_window.update_value("SD", str(self.counter_time))
-
-        now = datetime.now()
-        formatted_time = now.strftime("%b %d %I:%M %p")
-        self.result_window.update_value("Date", formatted_time)
-        self.result_window.measure_datetime = now
-
-        self.result_window.set_do_temp_pressure(data_dict, sample_stop_time=30)
-        self.result_window.plot_hourly_do_barchart()
+        self.result_window.sdata = data_dict
+        self.result_window.set_do_temp_pressure(sample_stop_time=30)
 
     def on_result_window_closed(self, result_data):
         # print("Result window closed. Data received:", result_data)

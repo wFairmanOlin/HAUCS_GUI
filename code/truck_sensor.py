@@ -324,6 +324,7 @@ class TruckSensor(QThread):
                 sample_rate = self.sdata.get('sample_hz', 1)
                 sample_duration = len(self.data_dict['do_vals']) / sample_rate
                 self.data_dict['sample_hz'] = sample_rate
+                self.data_dict['sample_duration'] = sample_duration
 
                 # IDEAL RECORD TIME FOR DATA
                 record_time = 30 #TODO: this should be in setting.setting
