@@ -3,14 +3,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 import os, csv, re
 from datetime import datetime, timedelta
-from converter import convert_raw_to_mgl, to_celcius
+from converter import *
 
 class HistoryLogWindow(QDialog):
-    unit = "percent"
-    min_do = 4
-    good_do = 5
 
-    def __init__(self, unit, foldername, min_do, good_do, parent=None):
+    def __init__(self, foldername, unit, min_do, good_do, parent=None):
         super().__init__(parent)
         self.setWindowTitle("History Log")
         self.setWindowState(Qt.WindowMaximized)
@@ -21,7 +18,7 @@ class HistoryLogWindow(QDialog):
 
         self.table = QTableWidget()
         self.table.setColumnCount(7)
-        self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temperature", "Pressure"])
+        self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temp ℉", "Pressure"])
         self.table.verticalHeader().setVisible(False)
         self.table.setStyleSheet("""
             QTableWidget {
@@ -102,35 +99,28 @@ class HistoryLogWindow(QDialog):
             with open(fpath, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    if row.get("time") and row.get("HBOI DO") and row.get("YSI DO"):
+                    try:
                         time_str = row["time"]
-                        pond_id = row["Pond ID"]
-                        hboi = row["HBOI DO"]
-                        ysi = row["YSI DO"]
-                        temp_f = float(row["Temperature"])
-                        temp = to_celcius(temp_f)
-                        press = float(row["Pressure"])
+                        pond_id =  row["pond_id"]
+                        hboi =     float(row["hboi_do"])
+                        hboi_mgl = float(row['hboi_do_mgl'])
+                        ysi =      float(row["ysi_do"])
+                        ysi_mgl =  float(row["ysi_do_mgl"])
+                        temp_c =   float(row["temperature"])
+                        temp_f =   to_fahrenheit(temp_f)
+                        depth =    row['depth']
 
-                        if self.is_number(hboi):
-                            hboi_mgl = convert_raw_to_mgl(float(hboi), temp, press)
-                            hboi_mgl = round(hboi_mgl, 2)
+
+                        if self.unit == "percent":
+                            hboi_display = hboi
+                            ysi_display = ysi
                         else:
-                            hboi_mgl = None
-
-                        if self.is_number(ysi):
-                            ysi_mgl = convert_raw_to_mgl(float(ysi), temp, press)
-                            ysi_mgl = round(ysi_mgl, 2)
-                        else:
-                            ysi_mgl = None
-
-                        if self.unit == "mgl":
                             hboi_display = hboi_mgl
                             ysi_display = ysi_mgl
-                        else:
-                            hboi_display = round(100 * float(hboi), 2) if self.is_number(hboi) else hboi
-                            ysi_display = round(float(ysi), 2) if self.is_number(ysi) else ysi
 
                         rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, press))
+                    except:
+                        print("couldn't append history rows")
 
         rows.sort(key=lambda x: (x[0], x[1]), reverse=True)
         self.table.setRowCount(len(rows))

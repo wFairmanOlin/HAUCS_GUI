@@ -484,7 +484,7 @@ class DOApp(QWidget):
 
     def on_history_log_click(self):
         print("?? History Log clicked")
-        window = HistoryLogWindow(self.unit, self.settings['database_folder'], self.min_do, self.good_do, parent=self)
+        window = HistoryLogWindow( self.settings['database_folder'], self.unit, self.min_do, self.good_do, parent=self)
         window.exec_() 
 
     def open_settings_dialog(self):

@@ -217,9 +217,7 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
-            self.msleep(10) # do nothing for Alisa
-
-            # ADD NONE-BLE SENSOR UPDATES FIRST
+            self.msleep(50)
 
             connected = self.ble.check_connection_status()
             if not connected:
@@ -231,13 +229,13 @@ class TruckSensor(QThread):
                     print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
                     self.update_logger_value()
-                # do not try to reconnect for first 4400 ms TODO see how small you can make this
-                elif connection_count > 44:
+                # do not try to reconnect for first 5000 ms
+                elif connection_count > 25:
                     connected = self.reconnection(just_reconnect)
                 # continue if still not conneted
                 if not connected:
                     connection_count += 1
-                    self.msleep(100)
+                    self.msleep(150)
                     continue
 
             if just_reconnect:
@@ -413,16 +411,16 @@ class TruckSensor(QThread):
 
         row = {
             "time": time_str,
-            "Pond ID": data_dict['pid'],
-            "HBOI DO": data_dict['do'],
-            "HBOI DO MGL":data_dict['do_mgl'],
-            "YSI DO": data_dict['ysi_do'],
-            "YSI DO MGL": data_dict['ysi_do_mgl'],
-            "Temperature": data_dict['water_temp'],
-            "Pressure": data_dict['sample_depth'],
+            "Pond ID": round(data_dict['pid'],2),
+            "HBOI DO": round(data_dict['do'],2),
+            "HBOI DO MGL":round(data_dict['do_mgl'],2),
+            "YSI DO": round(data_dict['ysi_do'],2),
+            "YSI DO MGL": round(data_dict['ysi_do_mgl'],2),
+            "Temperature": round(data_dict['water_temp'],2),
+            "Pressure": round(data_dict['sample_depth'],2),
             "do csv": csv_file,
             "upload status": False,
-            "message_time": data_dict['message_time'],
+            "message_time": round(data_dict['message_time'],2),
         }
         self.firebase_worker.add_sdata(data_dict, row)
 
