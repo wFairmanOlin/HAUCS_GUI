@@ -47,13 +47,13 @@ class ResultWindow(QWidget):
         print(self.data['do'], self.data['do_mgl'], self.data['ysi_do'], self.data['ysi_do_mgl'])
         # HANDLE DO CONVERSIONS
         if self.unit == "percent":
-            self.update_value("HBOI", f"{100 * self.data['do']:.2f}")
-            self.update_value("YSI", f"{100 * self.data['ysi_do']:.2f}")
+            self.update_value("HBOI", f"{100 * self.data['do']:.2f} %")
+            self.update_value("YSI", f"{100 * self.data['ysi_do']:.2f} %")
         else:
-            self.update_value("HBOI", f"{self.data['do_mgl']:.2f}")
-            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.2f}")
+            self.update_value("HBOI", f"{self.data['do_mgl']:.2f} mg/l")
+            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.2f} mg/l")
 
-        self.update_value("SD", f"{self.data['sample_duration']}s")
+        self.update_value("SD", f"{self.data['sample_duration']} s")
 
         now = datetime.now()
         formatted_time = now.strftime("%I:%M %p")

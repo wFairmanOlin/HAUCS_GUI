@@ -7,7 +7,7 @@ from converter import *
 
 class HistoryLogWindow(QDialog):
 
-    def __init__(self, foldername, unit, min_do, good_do, parent=None):
+    def __init__(self, unit, min_do, good_do, parent=None):
         super().__init__(parent)
         self.setWindowTitle("History Log")
         self.setWindowState(Qt.WindowMaximized)
@@ -15,7 +15,8 @@ class HistoryLogWindow(QDialog):
         self.unit = unit
         self.min_do = min_do
         self.good_do = good_do
-
+        self.foldername = 'database_truck'
+        
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temp ℉", "Depth in"])
