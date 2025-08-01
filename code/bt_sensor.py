@@ -227,8 +227,7 @@ class BluetoothReader(QObject):
             self.sdata['battv'] = self.batt_v
             self.sdata['batt_status'] = self.batt_status
         elif key == 'sample_hz':
-            self.sdata['sample_hz'] = float(value[0]
-                                            )
+            self.sdata['sample_hz'] = float(value[0])
         elif key == "dsize":
             self.prev_sample_size = self.current_sample_size
             try:
@@ -245,9 +244,15 @@ class BluetoothReader(QObject):
             self.pressure_vals = []
 
         elif key == "ts":
-            do = float(value[2])
-            temp_val = float(value[4])
-            pressure_val = float(value[6])
+            try:
+                do = float(value[2])
+                temp_val = float(value[4])
+                pressure_val = float(value[6])
+            except:
+                do = 0
+                temp_val = 0
+                pressure_val = 0
+                
             if self.csv_file is not None:
                 self.writeCSV(self.csv_file, [float(value[0]), do, temp_val, pressure_val])
 
