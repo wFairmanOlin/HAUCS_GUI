@@ -304,7 +304,6 @@ class DOApp(QWidget):
         self.thread.database_folder = self.settings['database_folder']
         self.thread.unsaved_json = self.settings['unsaved_json'] #TODO REMOVE THIS
         self.thread.unit = self.unit
-        self.thread.YSI_folder = self.settings['ysi_vals']
 
         self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)

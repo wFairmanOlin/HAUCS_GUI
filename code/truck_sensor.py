@@ -44,8 +44,6 @@ class TruckSensor(QThread):
     air_pressure = 0  # HPA
     unit = "mgl"      # mgl or percent
 
-    ysi_csv = ""
-
     max_fail = 30
     fb_key="fb_key.json"
     database_folder = "database_truck"
@@ -53,7 +51,6 @@ class TruckSensor(QThread):
     do_vals_log = "DO_data/"
     unsaved_json = "unsaved_json"
     completed_upload = "completed_json"
-    YSI_folder = "YSI_data/"
 
 
     def __init__(self, parent=None):
@@ -356,7 +353,6 @@ class TruckSensor(QThread):
                 ysi_do_mgl = do_guess if do_guess > 0 else self.ysi_do_mgl_arr[-1]
                 ysi_do_arr = convert_mgl_to_raw(self.ysi_do_mgl_arr, self.water_temp, self.air_pressure)
                 ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
-                self.ysi_csv = self.ysi_worker.csv_file
 
                 #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
                 self.sdata["ysi_do"] = ysi_do
@@ -428,7 +424,6 @@ class TruckSensor(QThread):
             "do csv": csv_file,
             "upload status": False,
             "message_time": data_dict['message_time'],
-            "ysi csv": self.ysi_csv
         }
         print(f"UPDATE DATABASE\n{data_dict.keys()}")
         self.firebase_worker.add_sdata(data_dict, row)
