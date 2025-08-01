@@ -31,8 +31,9 @@ class DOApp(QWidget):
 
         screen_size = QApplication.primaryScreen().size()
         self.base_font_size = int(screen_size.height() * 0.03)
-        self.label_font_size = int(screen_size.height() * 0.05)
+        self.label_font_size = int(screen_size.height() * 0.06)
         self.label_font_size_large = int(screen_size.height() * 0.1)
+        self.label_font_xlarge = int(screen_size.height() * 0.12)
 
         # retrieve and apply settings
         self.settings = self.load_local_csv("settings.csv")
@@ -159,9 +160,9 @@ class DOApp(QWidget):
 
         self.pid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
         self.sid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-        self.ysi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-        self.hboi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-        self.timer_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
+        self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
+        self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
+        self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
         self.status.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-left: 20px;")
         
 
@@ -185,13 +186,15 @@ class DOApp(QWidget):
         calib_label = QLabel('Last Calibration')
         
         self.calib_val = QLabel(str(self.last_calibration))
-        calib_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
+        calib_label.setStyleSheet(f"font-size: {self.label_font_size}px;")
         self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
-        self.calib_val.setFixedHeight(self.label_font_size)
-        calib_label.setFixedHeight(self.label_font_size)
+
+        self.calib_val.setFixedHeight(1.5 * self.label_font_size)
+        calib_label.setFixedHeight(1.5 * self.label_font_size)
 
         calib_bar.addWidget(calib_label, Qt.AlignRight)
         calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
+        calib_bar.addSpacing(30)
 
         main_layout.addLayout(calib_bar)
 
@@ -205,7 +208,7 @@ class DOApp(QWidget):
 
         for label, handler in buttons:
             btn = QPushButton(label)
-            btn.setFixedHeight(self.base_font_size * 3)
+            btn.setFixedHeight(self.base_font_size * 4)
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: #333;
