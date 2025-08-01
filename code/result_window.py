@@ -65,10 +65,10 @@ class ResultWindow(QWidget):
     def setup_ui(self, image_path):
         screen = self.screen().size()
         w = int(screen.width() * 0.98)
-        h = int(screen.height() * 0.90)
+        h = int(screen.height() * 0.98)
         font_size = int(h * 0.05)
         self.font_size = font_size
-        large_font_size = int(h * 0.07)
+        large_font_size = int(h * 0.09)
         self.large_font_size = large_font_size
         btn_font_size = int(h * 0.03)
 
@@ -279,11 +279,11 @@ class ResultWindow(QWidget):
 
             elif key == "YSI":
                 if self.data['ysi_do_mgl'] < self.min_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: red;")
+                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: red;")
                 elif self.min_do <= self.data['ysi_do_mgl'] < self.good_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
+                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
                 else:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
+                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
 
 
     def closeEvent(self, event):
