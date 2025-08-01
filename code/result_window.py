@@ -352,19 +352,20 @@ class ResultWindow(QWidget):
 
         fig = Figure(figsize=((self.img_label2.width() / 100.0), self.img_label2.height() / 100.0), dpi=100)
         ax = fig.add_subplot(111)
-        ax.tick_params(axis='x', colors='red', labelsize=14)
-        ax.tick_params(axis='y', colors='red', labelsize=14)
-        ax.spines['bottom'].set_color('red')
-        ax.spines['top'].set_color('red')
-        ax.spines['left'].set_color('red')
-        ax.spines['right'].set_color('red')
-        ax.set_xlabel("Seconds", color='red', fontsize=16)
-        ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color='red', fontsize=16)
-
-        ax.scatter(time, y_scatter, color='tab:cyan', alpha=1, label='hboi')
-        ax.scatter(time, y_scatter_ysi, color='tab:orange', alpha=1, label='ysi')
-        ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=2, alpha=0.7)
-        ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=2, alpha=0.7)
+        accent_color = 'white'
+        ax.tick_params(axis='x', colors=accent_color, labelsize=14)
+        ax.tick_params(axis='y', colors=accent_color, labelsize=14)
+        ax.spines['bottom'].set_color(accent_color)
+        ax.spines['top'].set_color(accent_color)
+        ax.spines['left'].set_color(accent_color)
+        ax.spines['right'].set_color(accent_color)
+        ax.set_xlabel("Seconds", color=accent_color, fontsize=16)
+        ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color=accent_color, fontsize=16)
+        
+        ax.scatter(time, y_scatter, s=10, color='tab:cyan', alpha=1, label='hboi')
+        ax.scatter(time, y_scatter_ysi, s=10, color='tab:orange', alpha=1, label='ysi')
+        ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=4, alpha=0.7)
+        ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=4, alpha=0.7)
         ax.legend()
         
         # Convert plot to QPixmap
