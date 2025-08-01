@@ -345,7 +345,6 @@ class DOApp(QWidget):
         if 'gps' in data_dict:
             self.update_value("PID", data_dict["pid"])
         if 'do' in data_dict:
-
             if self.unit == "percent":
                 self.update_value("SDL", f"{100 * data_dict['do']:.2f}")
             else:
@@ -359,6 +358,9 @@ class DOApp(QWidget):
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
                 self.data_labels["SDL"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+        
+        if 'ysi_do' in data_dict:
+            self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'])
 
         if 'mouse' in data_dict:
             if data_dict['mouse'] == 'normal':
@@ -379,7 +381,6 @@ class DOApp(QWidget):
             self.timer_active = False
 
     def on_ysi_update(self, do_ps, do_mgl):
-        # update ysi value
         if self.unit == "percent":
             # water temperature and/or pressure have not been recorded
             if do_ps == -1:
@@ -396,7 +397,6 @@ class DOApp(QWidget):
             self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
         else:
             self.data_labels["YSI"].setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
-
 
     def update_counter(self):
         if self.timer_active:

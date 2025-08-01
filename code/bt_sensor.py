@@ -38,10 +38,6 @@ class BluetoothReader(QObject):
     pressure_val = 0
     csv_file = None
 
-    is_30sec = False
-    data_size_at30sec = 30
-    sample_stop_time = 30
-
     do_vals_log = "DO_data/"
 
    # dictionary of commands (tx) and expected retunrs (rx)
@@ -197,10 +193,7 @@ class BluetoothReader(QObject):
     def get_sample_size(self):
         return self.send_receive_command(self.commands['s_size'])
 
-    def get_sample_text(self, is_30sec = False, data_size_at30sec = 30, sample_stop_time = 30):
-        self.is_30sec = is_30sec
-        self.data_size_at30sec = data_size_at30sec
-        self.sample_stop_time = sample_stop_time
+    def get_sample_text(self):
         update_json = True
         msg = self.send_receive_command(self.commands['s_print'], timeout=5)
         keys = ["init_do", "init_pressure", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals", "sample_hz", 'name']

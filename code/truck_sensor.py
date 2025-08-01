@@ -48,13 +48,12 @@ class TruckSensor(QThread):
     sample_stop_time = 30
     underwater = False
 
-    water_temp = 0 # celcius
-    pressure = 0 # HPA
-    do_val = 0 # percent
-    ysi_val = 0 # percent
+    # environment variables
+    water_temp = 0    # celcius
+    air_pressure = 0  # HPA
+    unit = "mgl"      # mgl or percent
+
     ysi_csv = ""
-    ysi = 0
-    ysi_v = 0
 
     max_fail = 30
     truck_id = "truck1"
@@ -65,7 +64,7 @@ class TruckSensor(QThread):
     unsaved_json = "unsaved_json"
     completed_upload = "completed_json"
     YSI_folder = "YSI_data/"
-    unit = "mgl"
+
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -100,12 +99,14 @@ class TruckSensor(QThread):
         self.ysi_worker.wait()
 
     def on_ysi_update(self, do_mgl):
-        #TODO: delete this function. Should be directly connected to gui02.py
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
-            self.ysi_data.emit(do_ps, do_mgl)
         else:
-            self.ysi_data.emit(-1, do_mgl)
+            do_ps = -1
+        
+        # only emit data when underwater
+        if self.underwater:
+            self.ysi_data.emit(do_ps, do_mgl)
 
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
@@ -329,7 +330,7 @@ class TruckSensor(QThread):
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
 
-            update_json, msg, sdata_key = self.ble.get_sample_text(self.is_30sec, self.data_size_at30sec, self.sample_stop_time)
+            update_json, _, sdata_key = self.ble.get_sample_text()
             if self.ble.logger_status == "warning":
                 self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
             self.status_data.emit("Read data finished")
