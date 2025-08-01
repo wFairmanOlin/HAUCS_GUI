@@ -57,7 +57,6 @@ class FirebaseWorker(QThread):
             self.msleep(10000)
         if os.path.exists(self.fb_key) and self.cred is None:
             self.cred = credentials.Certificate(self.fb_key)
-            # self.update_logger_text("warning", 'Firebase initialize failed, no fb_key')
         if self.cred is not None:
             new_app = firebase_admin.initialize_app(self.cred,
                                                 {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
@@ -191,7 +190,6 @@ class FirebaseWorker(QThread):
             if self.app is not None:
                 db.reference('LH_Farm/pond_' + sdata['pid'] + '/' + sdata['message_time'] + '/').set(upload_data)
             else:
-                self.update_logger_text("warning", "uploading data to firebase failed")
                 return False
         except Exception as error:
             print("An exception occurred:", error)
