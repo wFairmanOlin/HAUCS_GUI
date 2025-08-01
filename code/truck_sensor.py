@@ -52,7 +52,6 @@ class TruckSensor(QThread):
     unsaved_json = "unsaved_json"
     completed_upload = "completed_json"
 
-
     def __init__(self, parent=None):
         super().__init__(parent)
         

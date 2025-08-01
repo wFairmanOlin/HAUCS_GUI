@@ -14,7 +14,6 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np
 from scipy.optimize import curve_fit
 import io
-import re
 import pandas as pd
 from datetime import datetime, timedelta
 from converter import *
@@ -22,9 +21,7 @@ from converter import *
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
     image_path=None
-    do_vals = []
-    temp_vals = []
-    pressure_vals = []
+
     database_truck = "database_truck"
     do_current = 0.0
     do_mgl_current = 0.0
@@ -32,11 +29,7 @@ class ResultWindow(QWidget):
     pond_id = "unk"
     min_do = 4
     good_do = 5
-    ysi_current = 0
-    ysi_mgl_current = 0
     unit = "percent"
-    temp_c = 0
-    pressure = 0
 
     def __init__(self, auto_close_sec=10):
         super().__init__()
@@ -78,21 +71,18 @@ class ResultWindow(QWidget):
         self.data_labels = {}
 
         labels = [
-            ("Pond ID:", "PID"),
-            ("Duration:", "SD"),
-            ("Water temp:", "Temp"),
-            ("Last Time:", "Date"),
-            ("HBOI DO:", "HBOI"),
-            ("YSI DO:", "YSI"),
-            ("Pressure:", "Press"),
+            ("Pond ID", "PID"),
+            ("HBOI DO", "HBOI"),
+            ("YSI DO", "YSI"),
+            ("Duration", "SD"),
+            ("Water Temp", "Temp"),
+            ("Time", "Date"),
+            ("Depth", "Press"),
         ]
 
         for i, (text, key) in enumerate(labels):
             label = QLabel(text)
-            if text == "Pond ID:" or text == "HBOI DO:":
-                label.setStyleSheet(f"font-size: {large_font_size}px; padding-right: 5px;")
-            else:
-                label.setStyleSheet(f"font-size: {font_size}px; padding-right: 5px;")
+            label.setStyleSheet(f"font-size: {large_font_size}px; padding-right: 5px;")
 
             if key == "PID":
                 pid_layout = QHBoxLayout()
@@ -115,11 +105,7 @@ class ResultWindow(QWidget):
                 info_grid.addWidget(pid_widget, i, 1, Qt.AlignLeft)
             else:
                 value = QLabel("-")
-                if text == "Pond ID:" or text == "HBOI DO:":
-                    value.setStyleSheet(f"font-size: {large_font_size}px; font-weight: bold; padding-left: 5px;")
-                else:
-                    value.setStyleSheet(f"font-size: {font_size}px; font-weight: bold; padding-left: 5px;")
-                
+                value.setStyleSheet(f"font-size: {large_font_size}px; font-weight: bold; padding-left: 5px;")                
                 info_grid.addWidget(label, i, 0, Qt.AlignRight)
                 info_grid.addWidget(value, i, 1, Qt.AlignLeft)
                 self.data_labels[key] = value
@@ -139,13 +125,19 @@ class ResultWindow(QWidget):
         self.img_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.img_label.setAlignment(Qt.AlignCenter)
         self.img_label.setStyleSheet("background-color: navy blue; color: black; border: 1px solid black;")
-
-        if image_path and os.path.exists(image_path):
-            pixmap = QPixmap(image_path).scaled(
-                self.img_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.img_label.setPixmap(pixmap)
-        else:
-            self.img_label.setText("DO Chart")
+        # TODO: TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
+        self.img_label.clear()
+        self.img_label.setStyleSheet("""
+            background-color: #444444;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            border: 1px solid white;
+        """)
+        self.img_label.setText("Pond DO Prediction Here\nIn Development :(")
+        self.img_label.setAlignment(Qt.AlignCenter)
+        
+        # END TODO: END OF TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
 
         layout_right.addStretch()
         layout_right.addWidget(self.img_label, alignment=Qt.AlignCenter)
@@ -258,32 +250,24 @@ class ResultWindow(QWidget):
         if key in self.data_labels:
             self.data_labels[key].setText(str(value))
             if key == "HBOI":
-                if self.do_mgl_current < self.min_do:
+                if value < self.min_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= self.do_mgl_current < self.good_do:
+                elif self.min_do <= value < self.good_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
                 else:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
 
             elif key == "YSI":
-                if self.ysi_mgl_current < self.min_do:
+                if value < self.min_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= self.ysi_mgl_current < self.good_do:
+                elif self.min_do <= value < self.good_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
                 else:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
 
 
     def closeEvent(self, event):
-        raw_text = self.data_labels["Press"].text() 
-        pressure_val = re.findall(r"[\d.]+", raw_text)[0] 
-        raw_text = self.data_labels["Temp"].text() 
-        temperature_val = re.findall(r"[\d.]+", raw_text)[0]
         self.data['pid'] = self.data_labels['PID'].text()
-        self.data['status'] = "completed" #TODO REMOVE THIS VARIABLE
-        self.data['temp'] = self.data['water_temp'] #TODO REMOVE THIS VARIABLE
-        self.data['pressure'] = self.data['sample_pressure'] #TODO REMOVE THIS VARIABLE
-        self.data['YSI'] = self.data_labels['YSI'].text()
         self.closed_data.emit(self.data)
         super().closeEvent(event)
 
@@ -383,141 +367,6 @@ class ResultWindow(QWidget):
         pixmap = QPixmap.fromImage(img)
         scaled = pixmap.scaled(self.img_label2.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.img_label2.setPixmap(scaled)
-
-    def plot_hourly_do_barchart(self):
-        now = datetime.now().replace(minute=0, second=0, microsecond=0)
-
-        hours_to_pred = 12
-        past_hours = [now - timedelta(hours=i) for i in reversed(range(hours_to_pred))]
-        future_hours = [now + timedelta(hours=i) for i in range(1, 7)] 
-        hours = past_hours + future_hours
-
-        do_dict = {h: {'percent':[], 'mgl':[]} for h in hours}
-
-        today_str = now.strftime("%Y-%m-%d")
-        yesterday_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-
-        if not os.path.exists(self.database_truck):
-            os.makedirs(self.database_truck)
-
-        for fname in os.listdir(self.database_truck):
-            if not fname.endswith(".csv"):
-                continue
-            if not (today_str in fname or yesterday_str in fname):
-                continue
-
-            try:
-                date_part = fname.split("_")[-1].replace(".csv", "")
-                file_date = datetime.strptime(date_part, "%Y-%m-%d")
-            except:
-                continue
-
-            df = pd.read_csv(os.path.join(self.database_truck, fname))
-            for _, row in df.iterrows():
-                try:
-                    if "pond_id" in row and row["pond_id"] != self.pond_id:
-                        continue
-                    t = datetime.strptime(row["time"], "%H:%M:%S")
-                    ts = datetime.combine(file_date.date(), t.time()).replace(minute=0, second=0, microsecond=0)
-                    # print(row)
-                    if ts in do_dict:
-                        try:
-                            do_dict[ts]['percent'].append(float(row['HBOI DO']))
-                            do_dict[ts]['mgl'].append(float(row['HBOI DO MGL']))
-                        except:
-                            print("DO value is not float")
-                except:
-                    continue
-
-        current_hour = self.measure_datetime.replace(minute=0, second=0, microsecond=0)
-        if current_hour in do_dict:
-            do_dict[current_hour]['percent'].append(self.data['do'])
-            do_dict[current_hour]['mgl'].append(self.data['do_mgl'])
-
-        min_do = self.min_do
-        good_do = self.good_do
-
-        y_vals = {'percent':[], 'mgl':[]}
-        colors = []
-
-        for h in past_hours:
-            vals = do_dict[h]
-            if vals['percent']:
-                y_vals['percent'].append(np.mean(vals['percent']))
-                y_vals['mgl'].append(np.mean(vals['mgl']))
-                if y_vals['mgl'][-1] < min_do:
-                    colors.append("#d32f2f")
-                elif min_do <= y_vals['mgl'][-1] < good_do:
-                    colors.append("#f9a825")
-                else:
-                    colors.append("#388e3c")
-            else:
-                y_vals['percent'].append(0)
-                y_vals['mgl'].append(0)
-                colors.append("#388e3c")
-
-        now = datetime.now()
-        source_for_pred = {'percent':[], 'mgl':[]}
-        #perform separate predictions for each unit type
-        for i in ['mgl','percent']:
-            source_for_pred[i] = y_vals[i][-hours_to_pred:] if len(y_vals[i]) >= hours_to_pred else y_vals[i].copy()
-
-            for h in future_hours:
-                dt = h
-                hour = dt.hour
-                day_of_year = dt.timetuple().tm_yday
-
-                sin_hour = np.sin(2 * np.pi * (hour + 3) / 24)
-                cos_hour = np.cos(2 * np.pi * (hour - 15) / 24)
-                sin_day = np.sin(2 * np.pi * day_of_year / 365)
-                cos_day = np.cos(2 * np.pi * (day_of_year - 182.5) / 365)
-
-                light_weight = (cos_hour + 1) / 2
-                season_weight = (cos_day + 1) / 2
-
-                valid_vals = [v for v in source_for_pred[i][-12:] if v > 0]
-
-                if len(valid_vals) == 0:
-                    pred = 0
-                else:
-                    # pred = np.mean(valid_vals) * 0.8 + 0.2 * light_weight * season_weight  # เพิ่มน้ำหนักช่วงกลางวัน
-                    # pred = np.mean(valid_vals) * (0.6 + 0.4 * season_weight) + 0.4 * light_weight * season_weight
-                    pred = np.mean(valid_vals) * 0.6 + np.mean(valid_vals) * (0.0 + 0.4 * light_weight * season_weight)
-
-                y_vals[i].append(pred)
-                source_for_pred[i].append(pred)
-                # only append color when calculating predictions for mgl
-                if i == "mgl":
-                    if pred < min_do:
-                        colors.append("#ef9a9a")
-                    elif min_do <= pred < good_do:
-                        colors.append("#ffe082")
-                    else:
-                        colors.append("#a5d6a7")
-            
-
-
-        x_labels = [h.strftime("%H") + ("P" if h > now else "") for h in hours]
-
-        fig = Figure(figsize=((self.img_label.width()+100) / 100.0, (self.img_label.height() - 20) / 100.0), dpi=100)
-        canvas = FigureCanvas(fig)
-        ax = fig.add_subplot(111)
-        fig.patch.set_facecolor('white')
-        ax.set_facecolor('white')
-        y = [(100 if self.unit == 'percent' else 1) * i for i in y_vals[self.unit]]
-        ax.bar(x_labels, y, color=colors)
-        ax.set_xlabel("Hour", fontsize=12)
-        ax.set_ylabel("HBOI DO" + ("%" if self.unit == 'percent' else "mg/l"), fontsize=12)
-        ax.set_title("Hourly HBOI DO (with 6-hr Prediction)", fontsize=14)
-        ax.tick_params(axis='x', labelrotation=45)
-
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png', bbox_inches='tight')
-        buf.seek(0)
-        qimg = QImage()
-        qimg.loadFromData(buf.getvalue())
-        pix = QPixmap.fromImage(qimg)
-        self.img_label.setPixmap(pix)
 
 
 
