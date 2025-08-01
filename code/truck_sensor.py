@@ -101,8 +101,8 @@ class TruckSensor(QThread):
 
     def on_ysi_update(self, do_mgl):
         #TODO: delete this function. Should be directly connected to gui02.py
-        if self.water_temp and self.pressure:
-            do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.pressure)
+        if self.water_temp and self.air_pressure:
+            do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
             self.ysi_data.emit(do_ps, do_mgl)
         else:
             self.ysi_data.emit(-1, do_mgl)
@@ -317,12 +317,12 @@ class TruckSensor(QThread):
             # ignore sample sizes less than 4
             if self.ble.current_sample_size < 4:
                 self.ble.set_sample_reset()
-                self.ysi_worker.stop_record(reset=True)
+                self.ysi_worker.get_record(stop=True, reset=True)
                 continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
             self.status_data.emit("data is ready, starting to read")
-            self.ysi_worker.stop_record()
+            self.ysi_worker.get_record(stop=True, reset=False)
             print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
 
@@ -395,7 +395,7 @@ class TruckSensor(QThread):
                 do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
                 
                 # YSI DO
-                ysi_do_mgl_arr = self.ysi_worker.get_record()
+                ysi_do_mgl_arr = self.ysi_worker.get_record(reset=True)
                 p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
                 do_guess = generate_do(record_time, p, f)
                 ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]

@@ -19,7 +19,7 @@ class YSIReader(QThread):
     adc_connected = False
     reconnect_period = 5
     reconnect_timer = 0
-    start_record = False
+    recording = False
     data_record = []
 
     FULL_SCALE = 10500
@@ -53,7 +53,7 @@ class YSIReader(QThread):
             self.adc_connected = False
 
     def set_record(self):
-        self.start_record = True
+        self.recording = True
 
     def run(self):
         self._abort = False
@@ -81,7 +81,7 @@ class YSIReader(QThread):
             self.ysi_data.emit(self.ysi_do_mgl)
 
             # set to record
-            if self.start_record:
+            if self.recording:
                 if csv_file is None:
                     csv_file = self.init_csv_file()
                     self.sampling_start = time.time()
@@ -97,17 +97,15 @@ class YSIReader(QThread):
             # sleep for sampling period
             self.msleep(1000)
 
-    def stop_record(self, reset=False):
-        self.start_record = False
+    def get_record(self, stop=True, reset=False):
+        self.recording = not stop
+        data_mgl = self.data_record.copy()
+
         if reset:
             self.data_record = []
 
-    def get_record(self):
-        self.start_record = False
-        data_mgl = self.data_record
         return data_mgl
 
-        return data_mgl[-1]
 
     def writeCSV(self, ofile, data):
         with open(ofile,'a',newline='') as csvfile:
