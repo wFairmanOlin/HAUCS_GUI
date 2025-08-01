@@ -506,7 +506,6 @@ class DOApp(QWidget):
         dialog = ShutdownDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             if dialog.result == "close":
-                self.thread.stop_ysi()
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
@@ -519,7 +518,6 @@ class DOApp(QWidget):
 
             elif dialog.result == "shutdown":
                 print("Shutting down...")
-                self.thread.stop_ysi()
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
@@ -532,7 +530,6 @@ class DOApp(QWidget):
 
             elif dialog.result == "restart":
                 print("Rebooting...")
-                self.thread.stop_ysi()
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
