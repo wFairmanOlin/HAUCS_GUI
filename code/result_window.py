@@ -41,6 +41,7 @@ class ResultWindow(QWidget):
 
         # set values
         self.data = data
+        print(f"RESULTS WINDOW DATA\n{data}")
         self.update_value("PID", self.data["pid"])
         self.update_value("PID", "-1")
         self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
@@ -67,7 +68,7 @@ class ResultWindow(QWidget):
         h = int(screen.height() * 0.90)
         font_size = int(h * 0.05)
         self.font_size = font_size
-        large_font_size = int(h * 0.08)
+        large_font_size = int(h * 0.07)
         self.large_font_size = large_font_size
         btn_font_size = int(h * 0.03)
 

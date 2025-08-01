@@ -379,11 +379,7 @@ class TruckSensor(QThread):
         self.data_dict['do_mgl'] = self.sdata.get('do_mgl',0)
         self.data_dict['ysi_do'] = self.sdata.get('ysi_do',0)
         self.data_dict['ysi_do_mgl'] = self.sdata.get('ysi_do_mgl',0)
-        self.data_dict['ysi'] = self.sdata.get('ysi_do_mgl',0) # remove this variable
         self.update_data.emit(self.data_dict)
-        print(f"NEW_UNIT: {self.unit}")
-        print(f"SDATA\n {self.sdata}")
-        print(f"DATA DICT\n{self.data_dict}")
 
     def update_logger_value(self):
         log = {}

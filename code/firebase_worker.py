@@ -175,7 +175,7 @@ class FirebaseWorker(QThread):
         upload_data = {}
         upload_data['do'] = sdata['do_vals']
         upload_data['ysi_do_mgl'] = sdata['ysi_do_mgl_arr']
-        upload_data['heading'] = 100 #TODO: THIS SHOULD NOT BE HARDCODED
+        upload_data['heading'] = sdata['hdg']
         upload_data['init_do'] = 1 #hardcoded to handle legacy website
         upload_data['init_pressure'] = sdata['init_pressure']
         upload_data['lat'] = sdata['lat']
