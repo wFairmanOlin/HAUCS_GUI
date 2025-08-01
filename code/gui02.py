@@ -46,18 +46,14 @@ class DOApp(QWidget):
             "GPS": QLabel("-1, -1"),
         }
 
-        # global structures
-        self.settings = {} # all gui settings
-        self.calibration = {} # all calibration data
-
         # retrieve and apply settings
-        self.load_local_csv(self.settings, "settings.csv")
+        self.settings = self.load_local_csv(self.settings, "settings.csv")
         self.unit = self.settings.get("unit", "mgl")
         self.min_do = self.settings.get("min_do", 4)
         self.good_do = self.settings.get("good_do", 4)
 
         # retrieve and apply calibration info
-        self.load_local_csv(self.calibration, "calibration.csv")
+        self.calibration = self.load_local_csv(self.calibration, "calibration.csv")
         self.last_calibration = self.settings.get("last_calibration", "N/A")
 
         self.is_first = True
