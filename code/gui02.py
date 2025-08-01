@@ -32,7 +32,7 @@ class DOApp(QWidget):
         screen_size = QApplication.primaryScreen().size()
         self.base_font_size = int(screen_size.height() * 0.03)
         self.label_font_size = int(screen_size.height() * 0.05)
-        self.label_font_size_large = int(screen_size.height() * 0.07)
+        self.label_font_size_large = int(screen_size.height() * 0.08)
 
 
 
@@ -215,10 +215,13 @@ class DOApp(QWidget):
         for i, (key_text, key_id) in enumerate(labels):
             key_label = QLabel(key_text)
             val_label = self.data_labels[key_id]
+            
+            font_size = self.label_font_size_large
+            if key_id == "CAL_DT":
+                font_size = self.label_font_size
 
-            key_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-            val_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-
+            key_label.setStyleSheet(f"font-size: {font_size}px; padding-right: 20px;")
+            val_label.setStyleSheet(f"font-size: {font_size}px; font-weight: bold; padding-left: 20px;")
             info_grid.addWidget(key_label, i, 0, Qt.AlignRight)
             info_grid.addWidget(val_label, i, 1, Qt.AlignLeft)
 
