@@ -39,18 +39,18 @@ class ResultWindow(QWidget):
         self.data = data
         # set values
         self.update_value("PID", self.data["pid"])
-        self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
-        self.update_value("Press", f"{self.data['sample_depth']:.2f} in")
+        self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.1f} °F")
+        self.update_value("Press", f"{self.data['sample_depth']:.1f} in")
         
         print(self.unit)
         print(self.data['do'], self.data['do_mgl'], self.data['ysi_do'], self.data['ysi_do_mgl'])
         # HANDLE DO CONVERSIONS
         if self.unit == "percent":
-            self.update_value("HBOI", f"{100 * self.data['do']:.2f} %")
-            self.update_value("YSI", f"{100 * self.data['ysi_do']:.2f} %")
+            self.update_value("HBOI", f"{100 * self.data['do']:.1f} %")
+            self.update_value("YSI", f"{100 * self.data['ysi_do']:.1f} %")
         else:
-            self.update_value("HBOI", f"{self.data['do_mgl']:.2f} mg/l")
-            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.2f} mg/l")
+            self.update_value("HBOI", f"{self.data['do_mgl']:.1f} mg/l")
+            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.1f} mg/l")
 
         self.update_value("SD", f"{self.data['sample_duration']} s")
 

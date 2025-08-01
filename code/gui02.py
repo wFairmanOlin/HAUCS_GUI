@@ -187,14 +187,14 @@ class DOApp(QWidget):
         
         self.calib_val = QLabel(str(self.last_calibration))
         calib_label.setStyleSheet(f"font-size: {self.label_font_size}px;")
-        self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
+        self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px;")
 
         self.calib_val.setFixedHeight(int(1.5 * self.label_font_size))
         calib_label.setFixedHeight(int(1.5 * self.label_font_size))
 
         calib_bar.addWidget(calib_label, Qt.AlignRight)
         calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
-        calib_bar.addSpacing(30)
+        calib_bar.addStretch(3)
 
         main_layout.addLayout(calib_bar)
 
@@ -284,9 +284,9 @@ class DOApp(QWidget):
             self.pid_val.setText(str(data_dict['pid']))
         if 'do' in data_dict:
             if self.unit == "percent":
-                self.hboi_val.setText(f"{100 * data_dict['do']:.2f}")
+                self.hboi_val.setText(f"{100 * data_dict['do']:.1f}")
             else:
-                self.hboi_val.setText(f"{data_dict['do_mgl']:.2f}")
+                self.hboi_val.setText(f"{data_dict['do_mgl']:.1f}")
 
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
@@ -320,9 +320,9 @@ class DOApp(QWidget):
             if do_ps == -1:
                 self.ysi_val.setText('-')
             else:
-                self.ysi_val.setText(f"{100 * do_ps:.2f}")
+                self.ysi_val.setText(f"{100 * do_ps:.1f}")
         else:
-            self.ysi_val.setText(f"{do_mgl:.2f}")
+            self.ysi_val.setText(f"{do_mgl:.1f}")
 
         # update ysi color
         if do_mgl < self.min_do:
