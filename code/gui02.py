@@ -32,7 +32,7 @@ class DOApp(QWidget):
         screen_size = QApplication.primaryScreen().size()
         self.base_font_size = int(screen_size.height() * 0.03)
         self.label_font_size = int(screen_size.height() * 0.06)
-        self.label_font_size_large = int(screen_size.height() * 0.1)
+        self.label_font_large = int(screen_size.height() * 0.1)
         self.label_font_xlarge = int(screen_size.height() * 0.12)
 
         # retrieve and apply settings
@@ -151,19 +151,19 @@ class DOApp(QWidget):
         self.status   = QLabel('')
         
 
-        pid_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-        sid_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-        ysi_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-        hboi_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
-        timer_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;") 
+        pid_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-right: 20px;")
+        sid_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-right: 20px;")
+        ysi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-right: 20px;")
+        hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-right: 20px;")
+        timer_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-right: 20px;") 
         
 
-        self.pid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-        self.sid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
+        self.pid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-left: 20px;")
+        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-left: 20px;")
         self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px;")
-        self.status.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-left: 20px;")
+        self.status.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 20px;")
         
 
         info_grid.addWidget(hboi_label,    0, 0, Qt.AlignRight)
@@ -291,11 +291,11 @@ class DOApp(QWidget):
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
             if do_val < self.min_do:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
+                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px; color: red;")
             elif self.min_do <= do_val < self.good_do:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
+                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px; color: yellow;")
             else:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-left: 20px; color: limegreen;")
         
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'])
@@ -326,11 +326,11 @@ class DOApp(QWidget):
 
         # update ysi color
         if do_mgl < self.min_do:
-            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: red;")
+            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: red;")
         elif self.min_do <= do_mgl < self.good_do:
-           self.ysi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: yellow;")
+           self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;")
         else:
-            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px; color: limegreen;")
+            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
 
     def update_counter(self):
         if self.timer_active:
