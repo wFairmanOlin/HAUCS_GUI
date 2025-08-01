@@ -163,9 +163,9 @@ class ResultWindow(QWidget):
 
         # image 2
         self.img_label2 = QLabel()
-        self.img_label2.setFixedSize(img_width, int(h * 0.7))
+        self.img_label2.setFixedSize(img_width, int(h * 0.6))
         self.img_label2.setAlignment(Qt.AlignCenter)
-        self.img_label2.setStyleSheet("background-color: #c1c1c1; border: 1px solid white;")
+        # self.img_label2.setStyleSheet("background-color: #c1c1c1; border: 1px solid white;")
         self.img_label2.setText("Engineering Image")
         self.img_label2.setVisible(True) #TODO: was FALSE
         layout_right.addStretch()
@@ -352,8 +352,6 @@ class ResultWindow(QWidget):
 
         fig = Figure(figsize=((self.img_label2.width() / 100.0), self.img_label2.height() / 100.0), dpi=100)
         ax = fig.add_subplot(111)
-        # fig.patch.set_facecolor('white')
-        # ax.set_facecolor('white')
         ax.tick_params(axis='x', colors='red', labelsize=14)
         ax.tick_params(labelsize=14)
         ax.spines['bottom'].set_color('red')
@@ -363,10 +361,10 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color='red', fontsize=16)
         ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color='red', fontsize=16)
 
-        ax.scatter(time, y_scatter, color='red', alpha=1, label='hboi')
-        ax.scatter(time, y_scatter_ysi, color='green', alpha=1, label='ysi')
-        ax.plot(x_plot, y_fit, color='red', linewidth=2, alpha=0.7)
-        ax.plot(x_plot, y_fit_ysi, color='green', linewidth=2, alpha=0.7)
+        ax.scatter(time, y_scatter, color='tab:cyan', alpha=1, label='hboi')
+        ax.scatter(time, y_scatter_ysi, color='tab:orange', alpha=1, label='ysi')
+        ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=2, alpha=0.7)
+        ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=2, alpha=0.7)
         ax.legend()
         
         # Convert plot to QPixmap
