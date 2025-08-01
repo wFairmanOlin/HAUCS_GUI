@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 from bt_sensor import BluetoothReader
 import json, logging
-from gps_sensor import GPS_sensor
 from datetime import datetime
 import time
 import pandas as pd
@@ -9,7 +8,6 @@ import os
 import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
-from ysi_reader import YSIReader
 from sensor import I2CReader
 from converter import *
 import numpy as np

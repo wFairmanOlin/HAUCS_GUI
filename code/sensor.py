@@ -9,7 +9,6 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 import csv
 import time
 from converter import *
-from ysi_reader import YSIReader
 from gps_sensor import GPSSensor
 import board
 
