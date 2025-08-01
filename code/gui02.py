@@ -159,11 +159,11 @@ class DOApp(QWidget):
                 border: none;
             }
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 40);  /* สีขาวจางๆ ตอน hover */
+                background-color: rgba(255, 255, 255, 40);
                 border-radius: 5px;
             }
             QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 80);  /* สีขาวเข้มขึ้นตอนกด */
+                background-color: rgba(255, 255, 255, 80);
                 border-radius: 5px;
             }
         """)
@@ -297,12 +297,9 @@ class DOApp(QWidget):
     def setup_thread(self):
         self.thread = TruckSensor()
 
-        self.thread.fb_key = self.settings['fb_key']
         self.thread.max_fail = int(self.settings['upload_firebase_max_counter'])
         self.thread.do_vals_log = self.settings['do_vals']
         self.thread.log_folder = self.settings['log_folder']
-        self.thread.database_folder = self.settings['database_folder']
-        self.thread.unsaved_json = self.settings['unsaved_json'] #TODO REMOVE THIS
         self.thread.unit = self.unit
 
         self.thread.initialize()

@@ -95,9 +95,6 @@ class TruckSensor(QThread):
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
         self.firebase_worker.max_fail = self.max_fail
-        self.firebase_worker.fb_key = self.fb_key
-        self.firebase_worker.database_folder = self.database_folder
-        self.firebase_worker.unsaved_json = self.unsaved_json
         self.firebase_worker.completed_upload = self.completed_upload
         self.firebase_worker.logger_data.connect(self.on_logger_update)
         self.firebase_worker.init_firebase()
