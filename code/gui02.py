@@ -522,7 +522,7 @@ class DOApp(QWidget):
             self.settings['autoclose_sec'] = new_values["autoclose_sec"]
             self.settings['min_do'] = self.min_do
             self.settings['good_do'] = self.good_do
-            self.save_local_csv(self.settings, "settings.csv")()
+            self.save_local_csv(self.settings, "settings.csv")
             # print("Updated:", new_values)
 
     def closeEvent(self, event):

@@ -16,11 +16,11 @@ class SettingDialog(QDialog):
         self.auto_close_box = BigSpinBox(autoclose_sec, min_val=5, max_val=100, step=1, digits=0)
 
         font_style = "font-size: 32px;"
-        label1 = QLabel("Minimum Safe DO (mg/l)")
+        label1 = QLabel("low DO level (mg/l)")
         label1.setStyleSheet(font_style)
-        label2 = QLabel("Optimal DO for Growth (mg/l)")
+        label2 = QLabel("good DO level (mg/l)")
         label2.setStyleSheet(font_style)
-        label3 = QLabel("Time to show results before auto-close (sec)")
+        label3 = QLabel("time to show results before auto-close (sec)")
         label3.setStyleSheet(font_style)
 
         # ===== Grid Layout สำหรับ Labels + Spinboxes =====
@@ -36,13 +36,12 @@ class SettingDialog(QDialog):
         grid.addWidget(self.min_do_box, 1, 0, alignment=Qt.AlignLeft)
         grid.addWidget(self.good_do_box, 1, 1, alignment=Qt.AlignLeft)
 
-        # แถว 2: Label auto-close (เต็มบรรทัด)
+        # แถว 2: Label auto-close
         grid.addWidget(label3, 2, 0, 1, 2, alignment=Qt.AlignLeft)
 
         # แถว 3: Spinbox auto-close
         grid.addWidget(self.auto_close_box, 3, 0, 1, 2, alignment=Qt.AlignLeft)
 
-        # ปุ่มล่าง
         self.engineer_btn = QPushButton("Engineer")
         self.engineer_btn.setStyleSheet("""
             QPushButton {
