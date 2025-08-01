@@ -62,7 +62,6 @@ class DOApp(QWidget):
 
         self.is_first = True
         self.check_conn_first = True
-        self.load_local_csv()
         self.setup_ui()
         self.showFullScreen()
         self.setup_thread()
@@ -221,7 +220,6 @@ class DOApp(QWidget):
 
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
-        # ????: [Label, Handler function]
         buttons = [
             ("Calibrate DO", self.on_calibrate_click),
             ("Manual/Auto\nPond ID", self.on_manual_auto_click),
