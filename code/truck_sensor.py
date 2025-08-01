@@ -232,8 +232,8 @@ class TruckSensor(QThread):
                     print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
                     self.update_logger_value()
-                # do not try to reconnect for first 2500 ms
-                elif connection_count > 25:
+                # do not try to reconnect for first 4400 ms TODO see how small you can make this
+                elif connection_count > 44:
                     connected = self.reconnection(just_reconnect)
                 # continue if still not conneted
                 if not connected:
