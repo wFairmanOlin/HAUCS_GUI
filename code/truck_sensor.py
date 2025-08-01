@@ -266,7 +266,7 @@ class TruckSensor(QThread):
             # ignore sample sizes less than 4, reset ysi mgl array
             if self.ble.current_sample_size < 4:
                 self.ble.set_sample_reset()
-                self.ysi_do_mgl_arr = 0
+                self.ysi_do_mgl_arr = []
                 continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
