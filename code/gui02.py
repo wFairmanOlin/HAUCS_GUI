@@ -34,17 +34,7 @@ class DOApp(QWidget):
         self.label_font_size = int(screen_size.height() * 0.05)
         self.label_font_size_large = int(screen_size.height() * 0.07)
 
-        self.data_labels = {
-            "PID": QLabel("-1"),
-            "SID": QLabel("-1"),
-            "SCS": QLabel("connecting..."),
-            "SB": QLabel("Reading Batt..."),
-            "YSI": QLabel("-"),
-            "SDL": QLabel("-"),
-            "TIMER": QLabel("00:00"),
-            "CAL_DT": QLabel("N/A"),
-            "GPS": QLabel("-1, -1"),
-        }
+
 
         # retrieve and apply settings
         self.settings = self.load_local_csv("settings.csv")
@@ -62,6 +52,20 @@ class DOApp(QWidget):
         self.showFullScreen()
         self.setup_thread()
         self.setup_timer()
+
+
+        # initial data labels
+        self.data_labels = {
+            "PID": QLabel("-1"),
+            "SID": QLabel("-1"),
+            "SCS": QLabel("connecting..."),
+            "SB": QLabel("Reading Batt..."),
+            "YSI": QLabel("-"),
+            "SDL": QLabel("-"),
+            "TIMER": QLabel("0"),
+            "CAL_DT": QLabel(self.last_calibration),
+            "GPS": QLabel("-1, -1"),
+        }
 
 
     def load_local_csv(self, filename):
