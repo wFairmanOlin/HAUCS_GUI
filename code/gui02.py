@@ -77,16 +77,21 @@ class DOApp(QWidget):
         calibration.csv:  calibration information  
         '''
         self.settings = {}
-        with open(filename, newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                key = row['param']
-                # convert to float if possible
-                try:
-                    value = float(row['value'])
-                except:
-                    value = row['value']
-                data_dict[key] = value
+        if os.path.exists(filename):
+            with open(filename, newline='') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    key = row['param']
+                    # convert to float if possible
+                    try:
+                        value = float(row['value'])
+                    except:
+                        value = row['value']
+                    data_dict[key] = value
+        else:
+            print(f"created file for {filename}")
+            with open(filename, 'a', newline='') as csvfile:
+                pass
 
     def save_local_csv(self, data_dict, filename):
         try:
