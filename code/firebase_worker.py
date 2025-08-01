@@ -28,7 +28,6 @@ class FirebaseWorker(QThread):
     fail_counter = 0
 
     max_fail = 30
-    truck_id = "truck1"
     fb_key="/home/haucs/Desktop/HAUCS_GUI/fb_key.json"
     database_folder = "database_truck"
     unsaved_folder = "unsaved"
@@ -73,7 +72,7 @@ class FirebaseWorker(QThread):
         today_str = datetime.now().strftime("%Y-%m-%d")
         folder = self.database_folder
         os.makedirs(folder, exist_ok=True)
-        file_path = os.path.join(folder, f"{self.truck_id}_{today_str}.csv")
+        file_path = os.path.join(folder, f"iamtruck_{today_str}.csv")
 
         # random csv stuff
         if os.path.exists(file_path):
@@ -157,7 +156,7 @@ class FirebaseWorker(QThread):
                     msg_time_str = sdata['message_time']
                     msg_date = datetime.strptime(msg_time_str.split("_")[0], "%Y%m%d").strftime("%Y-%m-%d")
 
-                    file_path = os.path.join(self.database_folder, f"{self.truck_id}_{msg_date}.csv")
+                    file_path = os.path.join(self.database_folder, f"iamtruck_{msg_date}.csv")
                     if os.path.exists(file_path):
                         df = pd.read_csv(file_path)
 

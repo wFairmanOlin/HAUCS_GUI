@@ -293,7 +293,6 @@ class DOApp(QWidget):
     def setup_thread(self):
         self.thread = TruckSensor()
 
-        self.thread.truck_id = self.settings['truck_id'] #TODO REMOVE THIS
         self.thread.fb_key = self.settings['fb_key']
         self.thread.max_fail = int(self.settings['upload_firebase_max_counter'])
         self.thread.do_vals_log = self.settings['do_vals']
@@ -409,7 +408,6 @@ class DOApp(QWidget):
                 self.update_value("TIMER", str(self.counter_time) + " s collecting")
             else:
                 self.update_value("TIMER", str(self.counter_time) + " s ready to pick-up")
-                self.thread.tricker_30sec()
         else:
             if self.counter_time > 0:
                 self.update_value("TIMER", str(self.counter_time) + " s collection stoped")

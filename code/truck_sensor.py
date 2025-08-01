@@ -56,7 +56,6 @@ class TruckSensor(QThread):
     ysi_csv = ""
 
     max_fail = 30
-    truck_id = "truck1"
     fb_key="fb_key.json"
     database_folder = "database_truck"
     log_folder = "log/"
@@ -111,7 +110,6 @@ class TruckSensor(QThread):
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
         self.firebase_worker.max_fail = self.max_fail
-        self.firebase_worker.truck_id = self.truck_id
         self.firebase_worker.fb_key = self.fb_key
         self.firebase_worker.database_folder = self.database_folder
         self.firebase_worker.unsaved_json = self.unsaved_json
@@ -267,7 +265,6 @@ class TruckSensor(QThread):
             if not connected:
                 # first disconnect event
                 if connection_count == 0:
-                    self.is_30sec = False
                     self.status_data.emit("BLE connection failed - maybe underwater")
                     data_dict = {'connection' : self.ble.sdata['connection']}
                     self.update_data.emit(data_dict)
@@ -308,11 +305,7 @@ class TruckSensor(QThread):
                         print("underwater, trigger first time events")
                         self.counter_is_running.emit("True")
                         self.status_data.emit("Collecting Data")
-                        self.is_30sec = False
                         self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
-                    # tag 30 scecond mark
-                    if self.is_30sec:
-                        self.data_size_at30sec = self.ble.current_sample_size #TODO: probably delete this
                     continue # continue sampling
 
             # ignore sample sizes less than 4
@@ -478,7 +471,4 @@ class TruckSensor(QThread):
         }
         print(f"UPDATE DATABASE\n{data_dict.keys()}")
         self.firebase_worker.add_sdata(data_dict, row)
-
-    def tricker_30sec(self):
-        self.is_30sec = True
 
