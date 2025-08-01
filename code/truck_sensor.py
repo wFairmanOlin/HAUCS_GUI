@@ -411,15 +411,15 @@ class TruckSensor(QThread):
 
         row = {
             "time": time_str,
-            "Pond ID": round(data_dict['pid'],2),
-            "HBOI DO": round(data_dict['do'],2),
-            "HBOI DO MGL":round(data_dict['do_mgl'],2),
-            "YSI DO": round(data_dict['ysi_do'],2),
-            "YSI DO MGL": round(data_dict['ysi_do_mgl'],2),
-            "Temperature": round(data_dict['water_temp'],2),
-            "Pressure": round(data_dict['sample_depth'],2),
-            "do csv": csv_file,
-            "upload status": False,
+            "pond_id": data_dict['pid'],
+            "hboi_do": round(data_dict['do'],2),
+            "hboi_do_mgl":round(data_dict['do_mgl'],2),
+            "ysi_do": round(data_dict['ysi_do'],2),
+            "ysi_do_mgl": round(data_dict['ysi_do_mgl'],2),
+            "temperature": round(data_dict['water_temp'],2),
+            "depth": round(data_dict['sample_depth'],2),
+            "do_csv": csv_file,
+            "upload_status": False,
             "message_time": round(data_dict['message_time'],2),
         }
         self.firebase_worker.add_sdata(data_dict, row)
