@@ -16,7 +16,7 @@ class HistoryLogWindow(QDialog):
         self.min_do = min_do
         self.good_do = good_do
         self.foldername = 'database_truck'
-        
+
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temp ℉", "Depth in"])
@@ -58,7 +58,7 @@ class HistoryLogWindow(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-        self.load_data(foldername)
+        self.load_data(self.foldername)
         self.table.resizeColumnsToContents()
         for col in range(self.table.columnCount()):
             current_width = self.table.columnWidth(col)
@@ -83,13 +83,6 @@ class HistoryLogWindow(QDialog):
                 if date_str in target_dates:
                     filenames.append(os.path.join(foldername, fname))
         return filenames
-
-    def is_number(self, val):
-        try:
-            float(val)
-            return True
-        except:
-            return False
 
     def load_data(self, foldername):
         rows = []
@@ -134,14 +127,14 @@ class HistoryLogWindow(QDialog):
                 item.setBackground(row_color)
 
                 # HBOI DO (col=3) YSI DO (col=4)
-                if c == 3 and self.is_number(mgl1):
+                if c == 3:
                     if mgl1 < self.min_do:
                         item.setForeground(QColor("red"))
                     elif self.min_do <= mgl1 < self.good_do:
                         item.setForeground(QColor("orange"))
                     else:
                         item.setForeground(QColor("limegreen"))
-                elif c == 4 and self.is_number(mgl2):
+                elif c == 4:
                     if mgl2 < self.min_do:
                         item.setForeground(QColor("red"))
                     elif self.min_do <= mgl2 < self.good_do:
