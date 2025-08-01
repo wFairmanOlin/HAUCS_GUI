@@ -32,7 +32,6 @@ class FirebaseWorker(QThread):
     database_folder = "database_truck"
     unsaved_folder = "unsaved"
     completed_folder = "completed"
-    key=['sid', 'init_do', 'init_pressure', 'pid', 'do', 'temp', 'pressure', 'batt_v', 'lng', 'lat', 'message_time', 'ysi_do_mgl']
     sdatas = []
 
     def __init__(self):
@@ -82,7 +81,6 @@ class FirebaseWorker(QThread):
             df = pd.DataFrame([row]) 
         df.to_csv(file_path, index=False)
 
-        # self.save_datadict_txt(sdata, self.key)
         self.save_data_pickle(sdata)
 
     def save_data_pickle(self, sdata):
