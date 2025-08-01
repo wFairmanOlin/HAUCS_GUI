@@ -189,8 +189,8 @@ class DOApp(QWidget):
         calib_label.setStyleSheet(f"font-size: {self.label_font_size}px;")
         self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
 
-        self.calib_val.setFixedHeight(1.5 * self.label_font_size)
-        calib_label.setFixedHeight(1.5 * self.label_font_size)
+        self.calib_val.setFixedHeight(int(1.5 * self.label_font_size))
+        calib_label.setFixedHeight(int(1.5 * self.label_font_size))
 
         calib_bar.addWidget(calib_label, Qt.AlignRight)
         calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
