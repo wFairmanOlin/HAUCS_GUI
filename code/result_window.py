@@ -57,8 +57,8 @@ class ResultWindow(QWidget):
         self.update_value("SD", f"{self.data['sample_duration']}s")
 
         now = datetime.now()
-        formatted_time = now.strftime("%b %d %I:%M %p")
-        self.result_window.update_value("Date", formatted_time)
+        formatted_time = now.strftime("%I:%M %p")
+        self.update_value("Date", formatted_time)
         self.show()
 
     def setup_ui(self, image_path):
