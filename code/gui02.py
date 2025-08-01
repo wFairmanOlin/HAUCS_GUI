@@ -46,14 +46,6 @@ class DOApp(QWidget):
         self.calibration = self.load_local_csv("calibration.csv")
         self.last_calibration = self.settings.get("last_calibration", "N/A")
 
-        self.is_first = True
-        self.check_conn_first = True
-        self.setup_ui()
-        self.showFullScreen()
-        self.setup_thread()
-        self.setup_timer()
-
-
         # initial data labels
         self.data_labels = {
             "PID": QLabel("-1"),
@@ -66,6 +58,16 @@ class DOApp(QWidget):
             "CAL_DT": QLabel(self.last_calibration),
             "GPS": QLabel("-1, -1"),
         }
+
+        self.is_first = True        #TODO REMOVE THIS
+        self.check_conn_first = True#TODO REMOVE THIS
+        self.setup_ui()
+        self.showFullScreen()
+        self.setup_thread()
+        self.setup_timer()
+
+
+
 
 
     def load_local_csv(self, filename):
