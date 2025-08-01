@@ -32,7 +32,7 @@ class DOApp(QWidget):
         screen_size = QApplication.primaryScreen().size()
         self.base_font_size = int(screen_size.height() * 0.03)
         self.label_font_size = int(screen_size.height() * 0.05)
-        self.label_font_size_large = int(screen_size.height() * 0.08)
+        self.label_font_size_large = int(screen_size.height() * 0.1)
 
         # retrieve and apply settings
         self.settings = self.load_local_csv("settings.csv")
@@ -42,7 +42,7 @@ class DOApp(QWidget):
 
         # retrieve and apply calibration info
         self.calibration = self.load_local_csv("calibration.csv")
-        self.last_calibration = self.calibration.get("last_calibration", "N/A")
+        self.last_calibration = self.calibration.get("last_calibration", "-")
 
         self.is_first = True        #TODO REMOVE THIS
         self.check_conn_first = True#TODO REMOVE THIS
@@ -134,58 +134,63 @@ class DOApp(QWidget):
 
         # ==== Info Grid ====
         info_grid = QGridLayout()
-        labels = [
-            ("Pond ID:", "PID"),
-            ("HBOI ID:", "SID"),
-            ("HBOI DO:", "SDL"),
-            ("YSI DO:", "YSI"),
-            ("Timer:", "TIMER"),
-            ("Last Calibration:", "CAL_DT"),
-            
-        ]
 
         pid_label   = QLabel('Pond ID')
         sid_label   = QLabel('HBOI ID')
         ysi_label   = QLabel('YSI DO')
         hboi_label  = QLabel('HBOI DO')
         timer_label = QLabel('TIMER')
-        calib_label = QLabel('Last Calibration')
+        
 
         self.pid_val   = QLabel('-')
         self.sid_val   = QLabel('-')
         self.ysi_val   = QLabel('-')
         self.hboi_val  = QLabel('-')
         self.timer_val = QLabel('-')
-        self.calib_val = QLabel('-')
+        self.status   = QLabel('')
+        
 
         pid_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
         sid_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
         ysi_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
         hboi_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;")
         timer_label.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-right: 20px;") 
-        calib_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
+        
 
         self.pid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
         self.sid_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
         self.ysi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_size_large}px; font-weight: bold; padding-left: 20px;")
-        self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
+        self.status.setStyleSheet(f"font-size: {self.label_font_size_large}px; padding-left: 20px;")
+        
 
-        info_grid.addWidget(pid_label,  0, 0, Qt.AlignRight)
-        info_grid.addWidget(self.pid_val,    0, 1, Qt.AlignLeft)
-        info_grid.addWidget(hboi_label, 0, 2, Qt.AlignRight)
-        info_grid.addWidget(self.hboi_val,   0, 3, Qt.AlignLeft)
-        info_grid.addWidget(sid_label,  1, 0, Qt.AlignRight)
-        info_grid.addWidget(self.sid_val,    1, 1, Qt.AlignLeft)
-        info_grid.addWidget(ysi_label,  1, 2, Qt.AlignRight)
-        info_grid.addWidget(self.ysi_val,    1, 3, Qt.AlignLeft)
-        info_grid.addWidget(calib_label,2, 0, Qt.AlignRight)
-        info_grid.addWidget(self.calib_val,  2, 1, Qt.AlignLeft)
-        info_grid.addWidget(timer_label,2, 2, Qt.AlignRight)
-        info_grid.addWidget(self.timer_val,  2, 3, Qt.AlignLeft)
+        info_grid.addWidget(hboi_label,    0, 0, Qt.AlignRight)
+        info_grid.addWidget(self.hboi_val, 0, 1, Qt.AlignLeft)
+        info_grid.addWidget(pid_label,     0, 2, Qt.AlignRight)
+        info_grid.addWidget(self.pid_val,  0, 3, Qt.AlignLeft)
+        info_grid.addWidget(ysi_label,     1, 0, Qt.AlignRight)
+        info_grid.addWidget(self.ysi_val,  1, 1, Qt.AlignLeft)
+        info_grid.addWidget(sid_label,     1, 2, Qt.AlignRight)
+        info_grid.addWidget(self.sid_val,  1, 3, Qt.AlignLeft)
+        info_grid.addWidget(timer_label,   2, 0, Qt.AlignRight)
+        info_grid.addWidget(self.timer_val,2, 1, Qt.AlignLeft)
+        info_grid.addWidget(self.status,   2, 2, 1, 2, Qt.AlignCenter)
         
         main_layout.addLayout(info_grid)
+
+        # ==== Calibration Bar ====
+        calib_bar = QHBoxLayout()
+
+        calib_label = QLabel('Last Calibration')
+        self.calib_val = QLabel(str(self.last_calibration))
+        calib_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
+        self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
+
+        calib_bar.addWidget(calib_label)
+        calib_bar.addWidget(self.calib_val)
+
+        main_layout.addWidget(calib_bar)
 
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
@@ -218,8 +223,6 @@ class DOApp(QWidget):
 
         main_layout.addLayout(btn_layout)
         self.setLayout(main_layout)
-
-        self.calib_val.setText(str(self.last_calibration))
 
     def setup_timer(self):
         self.timer_active = False
@@ -333,14 +336,15 @@ class DOApp(QWidget):
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time
             if self.counter_time < self.settings['underwater_counter']:
-                self.timer_val.setText(f"{self.counter_time} s collecting")
+                self.status.setText("collecting data")
             else:
-                self.timer_val.setText(f"{self.counter_time} s ready to pick-up")
+                self.status.setText("ready to pick up")
         else:
             if self.counter_time > 0:
-                self.timer_val.setText(f"{self.counter_time} s collection stopped")
+                self.status.setText("collection stopped")
             else:
-                self.timer_val.setText(f"{self.counter_time} s")
+                self.status.setText("")
+        self.timer_val.setText(f"{self.counter_time} s")
 
     def on_update_pond_data(self, data_dict):
         self.result_window = ResultWindow(data_dict, self.unit, self.min_do, self.good_do, int(self.settings['autoclose_sec']))
