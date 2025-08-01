@@ -269,17 +269,17 @@ class ResultWindow(QWidget):
         if key in self.data_labels:
             self.data_labels[key].setText(str(value))
             if key == "HBOI":
-                if value < self.min_do:
+                if self.data['do_mgl'] < self.min_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= value < self.good_do:
+                elif self.min_do <= self.data['do_mgl'] < self.good_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
                 else:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
 
             elif key == "YSI":
-                if value < self.min_do:
+                if self.data['ysi_do_mgl'] < self.min_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= value < self.good_do:
+                elif self.min_do <= self.data['ysi_do_mgl'] < self.good_do:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
                 else:
                     self.data_labels[key].setStyleSheet(f"font-size: {self.font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
