@@ -117,7 +117,7 @@ class I2CReader(QThread):
         self._abort = False
         
         while not self._abort:
-
+            self.msleep(10)
             # reconnect ysi sensor
             if not self.ysi_connected:
                 if time.time() - self.ysi_reconnect_timer > self.reconnect_period:

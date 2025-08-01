@@ -24,7 +24,7 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
 
     _abort = False
-    sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0}
+    sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0}
     data_dict = {}
     sensor_file = "sensor.json"
 
@@ -217,7 +217,7 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
-            # self.msleep(1) # do nothing for Alisa
+            self.msleep(10) # do nothing for Alisa
 
             # ADD NONE-BLE SENSOR UPDATES FIRST
 
