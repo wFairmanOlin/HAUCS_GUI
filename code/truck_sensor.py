@@ -26,7 +26,6 @@ class TruckSensor(QThread):
 
     _abort = False
     sdata = {}
-    sdatas = []
     data_dict = {}
     sensor_file = "sensor.json"
 
