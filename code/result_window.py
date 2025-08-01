@@ -40,7 +40,6 @@ class ResultWindow(QWidget):
         self.data = data
         # set values
         self.update_value("PID", self.data["pid"])
-        self.update_value("PID", "-1")
         self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
         self.update_value("Press", f"{self.data['sample_depth']:.2f} in")
         

@@ -420,7 +420,7 @@ class TruckSensor(QThread):
             "depth": round(data_dict['sample_depth'],2),
             "do_csv": csv_file,
             "upload_status": False,
-            "message_time": round(data_dict['message_time'],2),
+            "message_time": data_dict['message_time'],
         }
         self.firebase_worker.add_sdata(data_dict, row)
 
