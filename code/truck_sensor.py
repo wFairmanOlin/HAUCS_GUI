@@ -10,6 +10,7 @@ import firebase_admin
 from firebase_admin import credentials,db
 import concurrent.futures
 from ysi_reader import YSIReader
+from sensor import I2CReader
 from converter import *
 import numpy as np
 
@@ -25,13 +26,9 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
 
     _abort = False
-    sdata = {}
+    sdata = {'pid':'unk25', 'prev_pid':'unk25'}
     data_dict = {}
     sensor_file = "sensor.json"
-
-    latitude = 0
-    longitude = 0
-    pond_id = 0
 
     ble = None
     csv_file = ""
@@ -78,23 +75,22 @@ class TruckSensor(QThread):
                     level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         self.update_logger_text("info", 'DO Sensor Starting')
-        self.init_GPS()
-        self.init_ysi()
         self.init_firebase()
+
+        # initialize BLE sensor
+        self.init_ble()
+        # initialize I2C sensor bus
+        self.sensors = I2CReader()
+        self.sensors.start()
+
+        #internally accessed variables
+        self.ysi_do_mgl_arr = []
+
         # initialzie PyQt Signals
-        self.counter_is_running.connect(self.underwater_status)
+        self.counter_is_running.connect(self.underwater_status) #TODO underwaters status should trigger counter
+        self.sensors.gps_publisher.connect(self.on_gps_update)
+        self.sensors.ysi_publisher.connect(self.on_ysi_update)
 
-    def init_ysi(self):
-        self.ysi_worker = YSIReader()
-        self.ysi_worker.YSI_folder = self.YSI_folder
-        self.ysi_worker.logger_data.connect(self.on_logger_update)
-        self.ysi_worker.ysi_data.connect(self.on_ysi_update)
-        self.ysi_worker.initialize()
-        self.ysi_worker.start()
-
-    def stop_ysi(self):
-        self.ysi_worker.abort()
-        self.ysi_worker.wait()
 
     def on_ysi_update(self, do_mgl):
         if self.water_temp and self.air_pressure:
@@ -104,6 +100,7 @@ class TruckSensor(QThread):
         
         # only emit data when underwater
         if self.underwater:
+            self.ysi_do_mgl_arr.append(do_mgl)
             self.ysi_data.emit(do_ps, do_mgl)
 
     def init_firebase(self):
@@ -127,32 +124,13 @@ class TruckSensor(QThread):
     def underwater_status(self, value):
         if value == "True":
             self.underwater = True
-            self.ysi_worker.set_record()
+            self.sensors.underwater = True
         else:
             self.underwater = False
+            self.sensors.underwater = False
 
         print(f"I am {'' if self.underwater else 'not'} underwater!")
 
-    def restart_firebase(self, in_app):
-        logging.info('Attempting to restart Firebase Connection')
-        if in_app is not None:
-            firebase_admin.delete_app(in_app)
-            time.sleep(60)
-        if os.path.exists(self.fb_key) and self.cred is None:
-            self.cred = credentials.Certificate(self.fb_key)
-            self.update_logger_text("warning", 'Firebase initialize failed, no fb_key')
-        if self.cred is not None:
-            new_app = firebase_admin.initialize_app(self.cred,
-                                                {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
-            return new_app
-        return None
-
-    def init_GPS(self):
-        self.gps = GPS_sensor()
-        print("connect gps")
-        self.sdata["prev_pid"] = "unk25"
-        self.sdata["pid"] = "unk25"
-        self.update_logger_text("info", 'GPS Starting')
 
     def init_ble(self):
         self.ble = BluetoothReader()
@@ -193,7 +171,6 @@ class TruckSensor(QThread):
         self.scheduled_msgs = {}
         self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
         self.scheduled_msgs['batt']   = {'callback':self.update_battery, 'period':10, 'timer':0}
-        self.scheduled_msgs['gps']    = {'callback':self.update_gps, 'period':10, 'timer':0}
 
     def send_scheduled_messages(self):
         if self.messaging_active:
@@ -212,22 +189,21 @@ class TruckSensor(QThread):
             self.update_logger_value()
         return msg
 
-    def update_gps(self):
+    def on_gps_update(self, data):
         gps_time = time.time()
-        self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
-        self.sdata["prev_pid"] = self.sdata["pid"]
-        self.sdata["pid"] = self.pond_id
-        data_dict = {}
-        data_dict["gps"] = True
-        data_dict["pid"] = self.pond_id
-        data_dict["lng"] = self.longitude
-        data_dict["lat"] = self.latitude
-        self.update_data.emit(data_dict)
+        self.sdata['prev_pid'] = self.sdata['pid']
+
+        #update sdata with new gps data
+        for key, val in data.items():
+            self.sdata[key] = val
+
+        data['gps'] = True # TODO remove this
+
+        self.update_data.emit(data)
         if self.sdata["prev_pid"] != self.sdata["pid"]:
-            self.update_logger_text("info", f"move to pond ID: {self.pond_id}")
-            print(self.pond_id, self.longitude, self.latitude)
+            self.update_logger_text("info", f"move to pond ID: {self.sdata['pid']}")
         
-        print(f"{self.latitude} {self.longitude}")
+        print(f"{self.sdata['lat']} {self.sdata['lng']}")
         print(f"gps update time: {round(time.time() - gps_time, 2)}")
         
     def calibrate_DO(self):
@@ -270,8 +246,8 @@ class TruckSensor(QThread):
                     print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
                     self.update_logger_value()
-                # do not try to reconnect for first 1500 ms
-                elif connection_count > 15:
+                # do not try to reconnect for first 2000 ms
+                elif connection_count > 20:
                     connected = self.reconnection(just_reconnect)
                 # continue if still not conneted
                 if not connected:
@@ -307,15 +283,14 @@ class TruckSensor(QThread):
                         self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
                     continue # continue sampling
 
-            # ignore sample sizes less than 4
+            # ignore sample sizes less than 4, reset ysi mgl array
             if self.ble.current_sample_size < 4:
                 self.ble.set_sample_reset()
-                self.ysi_worker.get_record(stop=True, reset=True)
+                self.ysi_do_mgl_arr = 0
                 continue
 
             # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
             self.status_data.emit("data is ready, starting to read")
-            self.ysi_worker.get_record(stop=True, reset=False)
             print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
 
@@ -326,7 +301,6 @@ class TruckSensor(QThread):
             if self.ble.logger_status == "warning":
                 self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
             self.status_data.emit("Read data finished")
-            # self.pond_id, self.latitude, self.longitude = self.gps.get_GPS_pond()
             self.update_any(sdata_key, update_json, True)
 
             self.csv_file = self.ble.csv_file
@@ -388,11 +362,10 @@ class TruckSensor(QThread):
                 do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
                 
                 # YSI DO
-                ysi_do_mgl_arr = self.ysi_worker.get_record(reset=True)
-                p, f = calculate_do_fit(ysi_do_mgl_arr,record_time, sample_rate)
+                p, f = calculate_do_fit(self.ysi_do_mgl_arr,record_time, sample_rate)
                 do_guess = generate_do(record_time, p, f)
-                ysi_do_mgl = do_guess if do_guess > 0 else ysi_do_mgl_arr[-1]
-                ysi_do_arr = convert_mgl_to_raw(ysi_do_mgl_arr, self.water_temp, self.air_pressure)
+                ysi_do_mgl = do_guess if do_guess > 0 else self.ysi_do_mgl_arr[-1]
+                ysi_do_arr = convert_mgl_to_raw(self.ysi_do_mgl_arr, self.water_temp, self.air_pressure)
                 ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
                 self.ysi_csv = self.ysi_worker.csv_file
 
@@ -404,11 +377,11 @@ class TruckSensor(QThread):
                 self.data_dict['do'] = do
                 self.data_dict['do_mgl'] = do_mgl
                 self.data_dict['do_mgl_arr'] = do_mgl_arr
-                self.data_dict['ysi_do_mgl_arr'] = ysi_do_mgl_arr
+                self.data_dict['ysi_do_mgl_arr'] = self.ysi_do_mgl_arr
                 self.data_dict['ysi_do_arr'] = ysi_do_arr
-                self.data_dict["pid"] = self.pond_id
-                self.data_dict["lng"] = self.longitude
-                self.data_dict["lat"] = self.latitude
+                self.data_dict["pid"] = self.sdata['pid']
+                self.data_dict["lng"] = self.sdata['lng']
+                self.data_dict["lat"] = self.sdata['lat']
  
                 self.update_pond_data.emit(self.data_dict)
 

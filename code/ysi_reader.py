@@ -1,6 +1,5 @@
 import os
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
-import pandas as pd
 from datetime import datetime
 import numpy as np
 import shutil
@@ -8,8 +7,7 @@ import ADS1x15
 from gpiozero.pins.pigpio import PiGPIOFactory
 import csv
 import time
-from scipy.optimize import curve_fit
-from converter import convert_mgl_to_raw
+from converter import *
 
 class YSIReader(QThread):
     logger_data = pyqtSignal(str, str)
