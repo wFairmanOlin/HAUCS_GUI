@@ -24,7 +24,7 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
 
     _abort = False
-    sdata = {'pid':'unk25', 'prev_pid':'unk25'}
+    sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0}
     data_dict = {}
     sensor_file = "sensor.json"
 
@@ -354,9 +354,11 @@ class TruckSensor(QThread):
                 ysi_do_arr = convert_mgl_to_raw(self.ysi_do_mgl_arr, self.water_temp, self.air_pressure)
                 ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
 
-                #TODO: CHANGE WHERE SDATA YSI_DO_MGL IS UDPATED
+                #TODO: JUST RETURN SDATA
                 self.sdata["ysi_do"] = ysi_do
                 self.sdata["ysi_do_mgl"] = ysi_do_mgl
+                self.sdata['do'] = do
+                self.sdata['do_mgl'] = do_mgl
                 self.data_dict['ysi_do'] = ysi_do
                 self.data_dict['ysi_do_mgl'] = ysi_do_mgl
                 self.data_dict['do'] = do
@@ -376,10 +378,10 @@ class TruckSensor(QThread):
     def toggle_unit(self, unit):
         #TODO: this function should be removed
         self.unit = unit
-        self.data_dict['do'] = self.sdata.get('do',0)
-        self.data_dict['do_mgl'] = self.sdata.get('do_mgl',0)
-        self.data_dict['ysi_do'] = self.sdata.get('ysi_do',0)
-        self.data_dict['ysi_do_mgl'] = self.sdata.get('ysi_do_mgl',0)
+        self.data_dict['do'] = self.sdata['do']
+        self.data_dict['do_mgl'] = self.sdata['do_mgl']
+        self.data_dict['ysi_do'] = self.sdata['ysi_do']
+        self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
         self.update_data.emit(self.data_dict)
 
     def update_logger_value(self):
