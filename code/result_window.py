@@ -350,7 +350,7 @@ class ResultWindow(QWidget):
         y_scatter_ysi = ysi_do_arr[:len(time)]
         y_scatter_ysi = [scale * i for i in y_scatter_ysi]
 
-        fig = Figure(figsize=((self.img_label2.width() / 100.0), self.img_label2.height() / 100.0), dpi=100)
+        fig = Figure(figsize=(((self.img_label2.width() + 100)/ 100.0), self.img_label2.height() / 100.0), dpi=100)
         ax = fig.add_subplot(111)
         accent_color = 'white'
         ax.tick_params(axis='x', colors=accent_color, labelsize=14)
@@ -362,8 +362,8 @@ class ResultWindow(QWidget):
         ax.set_xlabel("Seconds", color=accent_color, fontsize=16)
         ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color=accent_color, fontsize=16)
         
-        ax.scatter(time, y_scatter, s=10, color='tab:cyan', alpha=1, label='hboi')
-        ax.scatter(time, y_scatter_ysi, s=10, color='tab:orange', alpha=1, label='ysi')
+        ax.scatter(time, y_scatter, s=20, color='tab:cyan', alpha=1, label='hboi')
+        ax.scatter(time, y_scatter_ysi, s=20, color='tab:orange', alpha=1, label='ysi')
         ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=4, alpha=0.7)
         ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=4, alpha=0.7)
         ax.legend()
