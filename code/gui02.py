@@ -418,12 +418,11 @@ class DOApp(QWidget):
                 self.update_value("TIMER", str(self.counter_time) + " s")
 
     def on_update_pond_data(self, data_dict):
-        self.result_window = ResultWindow(auto_close_sec=int(self.settings['autoclose_sec']))
+        self.result_window = ResultWindow(data=data_dict, auto_close_sec=int(self.settings['autoclose_sec']))
         self.result_window.closed_data.connect(self.on_result_window_closed)
         self.result_window.unit = self.unit
         self.result_window.good_do = self.good_do
         self.result_window.min_do = self.min_do
-        self.result_window.sdata = data_dict
         self.result_window.set_do_temp_pressure(sample_stop_time=30)
 
     def on_result_window_closed(self, result_data):

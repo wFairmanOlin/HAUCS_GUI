@@ -23,16 +23,13 @@ class ResultWindow(QWidget):
     image_path=None
 
     database_truck = "database_truck"
-    do_current = 0.0
-    do_mgl_current = 0.0
     measure_datetime = None
     pond_id = "unk"
     min_do = 4
     good_do = 5
     unit = "percent"
-    data = {} # stores all data passed from gui02 on pond update
  
-    def __init__(self, auto_close_sec=10):
+    def __init__(self, data, auto_close_sec=10):
         super().__init__()
         self.auto_close_sec = auto_close_sec
         self.remaining_time = auto_close_sec
@@ -43,6 +40,7 @@ class ResultWindow(QWidget):
         self.setup_timer()
 
         # set values
+        self.data = data
         self.update_value("PID", self.data["pid"])
         self.update_value("PID", "-1")
         self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.2f} °F")
@@ -61,7 +59,6 @@ class ResultWindow(QWidget):
         now = datetime.now()
         formatted_time = now.strftime("%b %d %I:%M %p")
         self.result_window.update_value("Date", formatted_time)
-        self.result_window.measure_datetime = now
         self.show()
 
     def setup_ui(self, image_path):
