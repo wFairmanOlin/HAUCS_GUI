@@ -47,13 +47,13 @@ class DOApp(QWidget):
         }
 
         # retrieve and apply settings
-        self.settings = self.load_local_csv(self.settings, "settings.csv")
+        self.settings = self.load_local_csv("settings.csv")
         self.unit = self.settings.get("unit", "mgl")
         self.min_do = self.settings.get("min_do", 4)
         self.good_do = self.settings.get("good_do", 4)
 
         # retrieve and apply calibration info
-        self.calibration = self.load_local_csv(self.calibration, "calibration.csv")
+        self.calibration = self.load_local_csv("calibration.csv")
         self.last_calibration = self.settings.get("last_calibration", "N/A")
 
         self.is_first = True
@@ -64,7 +64,7 @@ class DOApp(QWidget):
         self.setup_timer()
 
 
-    def load_local_csv(self, data_dict, filename):
+    def load_local_csv(self, filename):
         '''
         Loads data from local csv files containing setting and calibration info. Files
         nested in folders not supported. 
@@ -72,7 +72,7 @@ class DOApp(QWidget):
         setting.csv:      settings for gui
         calibration.csv:  calibration information  
         '''
-        self.settings = {}
+        data_dict = {}
         if os.path.exists(filename):
             with open(filename, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -88,6 +88,8 @@ class DOApp(QWidget):
             print(f"created file for {filename}")
             with open(filename, 'a', newline='') as csvfile:
                 pass
+        
+        return data_dict
 
     def save_local_csv(self, data_dict, filename):
         try:
