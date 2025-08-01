@@ -11,6 +11,9 @@ code/YSI_data/*.csv
 #sensor files
 code/sensor.json
 
+#setting files
+calibration.csv
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

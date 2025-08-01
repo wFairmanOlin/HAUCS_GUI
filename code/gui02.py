@@ -24,20 +24,16 @@ class DOApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        # QApplication.setOverrideCursor(Qt.WaitCursor)
-
         self.current_time = datetime.now()
 
         self.setWindowTitle("DO Monitor")
         self.setStyleSheet("background-color: #4D4D4D; color: white;")
 
-        # ?????????????
         screen_size = QApplication.primaryScreen().size()
-        self.base_font_size = int(screen_size.height() * 0.03)  # ~3% ????????????
+        self.base_font_size = int(screen_size.height() * 0.03)
         self.label_font_size = int(screen_size.height() * 0.05)
         self.label_font_size_large = int(screen_size.height() * 0.07)
 
-        # ???? QLabel ??? value
         self.data_labels = {
             "PID": QLabel("-1"),
             "SID": QLabel("-1"),
@@ -46,64 +42,66 @@ class DOApp(QWidget):
             "YSI": QLabel("-"),
             "SDL": QLabel("-"),
             "TIMER": QLabel("00:00"),
-            "Date Time": QLabel("N/A"),
+            "CAL_DT": QLabel("N/A"),
             "GPS": QLabel("-1, -1"),
         }
 
+        # global structures
+        self.settings = {} # all gui settings
+        self.calibration = {} # all calibration data
+
+        # retrieve and apply settings
+        self.load_local_csv(self.settings, "settings.csv")
+        self.unit = self.settings.get("unit", "mgl")
+        self.min_do = self.settings.get("min_do", 4)
+        self.good_do = self.settings.get("good_do", 4)
+
+        # retrieve and apply calibration info
+        self.load_local_csv(self.calibration, "calibration.csv")
+        self.last_calibration = self.settings.get("last_calibration", "N/A")
+
         self.is_first = True
         self.check_conn_first = True
-        self.load_settings()
+        self.load_local_csv()
         self.setup_ui()
         self.showFullScreen()
         self.setup_thread()
         self.setup_timer()
 
-    def load_settings(self, filename="setting.setting"):
+
+    def load_local_csv(self, data_dict, filename):
+        '''
+        Loads data from local csv files containing setting and calibration info.
+        Valid files:
+        setting.csv: settings for gui
+        calibration.csv:  calibration information  
+        '''
         self.settings = {}
         if os.path.exists(filename):
             with open(filename, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     key = row['param']
-                    value = row['value']
-                    self.settings[key] = value
+                    # convert to float if possible
+                    try:
+                        value = float(row['value'])
+                    except:
+                        value = row['value']
+                    data_dict[key] = value
         else:
-            print(f"Settings file '{filename}' not found.")
+            print(f"file '{filename}' not found. creating one")
+            os.makedirs(filename, exist_ok=True)
 
-        self.fb_key = self.settings.get("fb_key", "fb_key.json") #
-        self.do_vals_log = self.settings.get("do_vals", "DO_data/") #
-        self.log_folder = self.settings.get("log_folder", "log") #
-        self.database_folder = self.settings.get("database_folder", "database_truck") #
-        self.upload_firebase_max_counter = int(self.settings.get("upload_firebase_max_counter", 30)) #
-        self.truck_id = self.settings.get("truck_id", "truck") #
-        self.unsaved_json = self.settings.get("unsaved_json", "unsaved_json/")
-
-        self.unit = self.settings.get("unit", "mgl")
-        self.auto_close_time = int(self.settings.get("autoclose_sec", 10)) #
-        self.underwater_time = int(self.settings.get("underwater_counter", 30)) #
-        self.batt_full = float(self.settings.get("max_battv", 4.2)) #
-        self.batt_empty = float(self.settings.get("min_battv", 3.2)) #
-        self.batt_low_v = 3.42
-        self.YSI_folder = self.settings.get("ysi_vals", "YSI_data/")
-
-        self.min_do = float(self.settings.get("min_do", 4))
-        self.good_do = float(self.settings.get("good_do", 4))
-
-        self.last_calibration = self.settings.get("last_calibration", "N/A")
-
-    def update_setting(self, key, value):
-        self.settings[key] = str(value)
-
-    def save_settings(self, filename="setting.setting"):
+    def save_local_csv(self, data_dict, filename):
         try:
             with open(filename, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
                 writer.writeheader()
-                for key, value in self.settings.items():
-                    writer.writerow({"param": key, "value": value})
-            print(f"Settings saved to {filename}")
+                for key, value in data_dict.items():
+                    writer.writerow({"param": key, "value": str(value)})
+            print(f"saved to {filename}")
         except Exception as e:
-            print(f"Failed to save settings: {e}")
+            print(f"Failed to save: {e}")
 
     def setup_ui(self):
         os.popen('sudo hciconfig hci0 reset')
@@ -207,7 +205,7 @@ class DOApp(QWidget):
             ("YSI DO:", "YSI"),
             ("Timer:", "TIMER"),
             # ("GPS:", "GPS"),
-            ("Last Calibration:", "Date Time"),
+            ("Last Calibration:", "CAL_DT"),
         ]
         for i, (key_text, key_id) in enumerate(labels):
             key_label = QLabel(key_text)
@@ -282,7 +280,7 @@ class DOApp(QWidget):
         log_layout.addWidget(log_container)
         main_layout.addLayout(log_layout)
 
-        self.update_value("Date Time", self.last_calibration)
+        self.update_value("CAL_DT", self.last_calibration)
 
     def setup_timer(self):
         self.timer_active = False
@@ -295,15 +293,15 @@ class DOApp(QWidget):
     def setup_thread(self):
         self.thread = TruckSensor()
 
-        self.thread.truck_id = self.truck_id
-        self.thread.fb_key = self.fb_key
-        self.thread.max_fail = self.upload_firebase_max_counter
-        self.thread.do_vals_log = self.do_vals_log
-        self.thread.log_folder = self.log_folder
-        self.thread.database_folder = self.database_folder
-        self.thread.unsaved_json = self.unsaved_json
+        self.thread.truck_id = self.settings['truck_id'] #TODO REMOVE THIS
+        self.thread.fb_key = self.settings['fb_key']
+        self.thread.max_fail = int(self.settings['upload_firebase_max_counter'])
+        self.thread.do_vals_log = self.settings['do_vals']
+        self.thread.log_folder = self.settings['log_folder']
+        self.thread.database_folder = self.settings['database_folder']
+        self.thread.unsaved_json = self.settings['unsaved_json'] #TODO REMOVE THIS
         self.thread.unit = self.unit
-        self.thread.YSI_folder = self.YSI_folder
+        self.thread.YSI_folder = self.settings['ysi_vals']
 
         self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)
@@ -321,7 +319,7 @@ class DOApp(QWidget):
 
     def on_data_update(self, data_dict):
         if 'battv' in data_dict:
-            batt_percent = int((data_dict["battv"] - self.batt_empty) / (self.batt_full - self.batt_empty) * 100)
+            batt_percent = int((data_dict["battv"] - self.settings['min_battv']) / (self.settings['max_battv'] - self.settings['min_battv']) * 100)
             if batt_percent > 100:
                 batt_percent = 100
             batt_charge = ("not charging" != data_dict['batt_status'][:12])
@@ -407,7 +405,7 @@ class DOApp(QWidget):
 
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time
-            if self.counter_time < self.underwater_time:
+            if self.counter_time < self.settings['underwater_counter']:
                 self.update_value("TIMER", str(self.counter_time) + " s collecting")
             else:
                 self.update_value("TIMER", str(self.counter_time) + " s ready to pick-up")
@@ -419,7 +417,7 @@ class DOApp(QWidget):
                 self.update_value("TIMER", str(self.counter_time) + " s")
 
     def on_update_pond_data(self, data_dict):
-        self.result_window = ResultWindow(auto_close_sec=self.auto_close_time)
+        self.result_window = ResultWindow(auto_close_sec=int(self.settings['autoclose_sec']))
         self.result_window.closed_data.connect(self.on_result_window_closed)
         self.result_window.unit = self.unit
         self.result_window.good_do = self.good_do
@@ -467,15 +465,13 @@ class DOApp(QWidget):
             self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: normal;")
             self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
             self.unit = "percent"
-            self.update_setting("unit", "percent")
-            self.save_settings()
         elif self.unit == "percent":
             self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
             self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: normal;")
             self.unit = "mgl"
-            self.update_setting("unit", "mgl")
-            self.save_settings()
-        
+        # save unit permanently
+        self.settings['unit'] = self.unit
+        self.save_local_csv(self.settings, "settings.csv")
         self.thread.toggle_unit(self.unit)
 
     def update_value(self, key, value):
@@ -503,10 +499,9 @@ class DOApp(QWidget):
             now = datetime.now()
             formatted_time = now.strftime("%b %d, %Y %I:%M %p") 
             self.last_calibration = formatted_time
-
-            self.update_value("Date Time", self.last_calibration)
-            self.update_setting("last_calibration", self.last_calibration)
-            self.save_settings()
+            self.calibration['last_calibration'] = self.last_calibration
+            self.update_value("CAL_DT", self.last_calibration)
+            self.save_local_csv(self.calibration, "calibration.csv")
         else:
             print("User clicked No")
         
@@ -519,20 +514,19 @@ class DOApp(QWidget):
 
     def on_history_log_click(self):
         print("?? History Log clicked")
-        window = HistoryLogWindow(self.unit, self.database_folder, self.min_do, self.good_do, parent=self)
-        window.exec_()  # ถ้าอยากให้เป็น modal dialog
+        window = HistoryLogWindow(self.unit, self.settings['database_folder'], self.min_do, self.good_do, parent=self)
+        window.exec_() 
 
     def open_settings_dialog(self):
-        dialog = SettingDialog(min_do=self.min_do, good_do=self.good_do, autoclose_sec=self.auto_close_time)
+        dialog = SettingDialog(min_do=self.min_do, good_do=self.good_do, autoclose_sec=int(self.settings['autoclose_sec']))
         if dialog.exec_():
             new_values = dialog.get_values()
             self.min_do = new_values["min_do"]
             self.good_do = new_values["good_do"]
-            self.auto_close_time = new_values["autoclose_sec"]
-            self.update_setting("min_do", self.min_do)
-            self.update_setting("good_do", self.good_do)
-            self.update_setting("autoclose_sec", self.auto_close_time)
-            self.save_settings()
+            self.settings['autoclose_sec'] = new_values["autoclose_sec"]
+            self.settings['min_do'] = self.min_do
+            self.settings['good_do'] = self.good_do
+            self.save_local_csv(self.settings, "settings.csv")()
             # print("Updated:", new_values)
 
     def closeEvent(self, event):
