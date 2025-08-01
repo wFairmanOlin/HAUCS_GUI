@@ -72,8 +72,6 @@ class TruckSensor(QThread):
         self.update_logger_text("info", 'DO Sensor Starting')
         self.init_firebase()
 
-        # initialize BLE sensor
-        self.init_ble()
         # initialize I2C sensor bus
         self.sensors = I2CReader()
         self.sensors.start()
@@ -185,7 +183,6 @@ class TruckSensor(QThread):
         return msg
 
     def on_gps_update(self, data):
-        gps_time = time.time()
         self.sdata['prev_pid'] = self.sdata['pid']
 
         #update sdata with new gps data
@@ -197,9 +194,6 @@ class TruckSensor(QThread):
         self.update_data.emit(data)
         if self.sdata["prev_pid"] != self.sdata["pid"]:
             self.update_logger_text("info", f"move to pond ID: {self.sdata['pid']}")
-        
-        print(f"{self.sdata['lat']} {self.sdata['lng']}")
-        print(f"gps update time: {round(time.time() - gps_time, 2)}")
         
     def calibrate_DO(self):
         self.ble.set_calibration_do()
