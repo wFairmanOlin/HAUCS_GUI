@@ -46,6 +46,7 @@ class FirebaseWorker(QThread):
                 self.cred = credentials.Certificate(self.fb_key)
                 self.app = firebase_admin.initialize_app(self.cred, {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
             else:
+                print("firebase failed to initialize")
                 self.logger_data.emit("warning", 'Firebase initialize failed, no fb_key')
         except Exception as error:
             self.logger_data.emit("warning", f'Firebase initialize failed {str(error)}')
@@ -164,6 +165,7 @@ class FirebaseWorker(QThread):
                             df.to_csv(file_path, index=False)
                     
                 except Exception as e:
+                    print("failed ot generate CSV")
                     self.logger_data.emit("error", f"Failed to update CSV status for {msg_time_str}: {e}")
 
     def update_firebase(self, sdata):
