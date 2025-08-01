@@ -183,10 +183,12 @@ class DOApp(QWidget):
         calib_bar = QHBoxLayout()
 
         calib_label = QLabel('Last Calibration')
+        
         self.calib_val = QLabel(str(self.last_calibration))
         calib_label.setStyleSheet(f"font-size: {self.label_font_size}px; padding-right: 20px;")
         self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold; padding-left: 20px;")
-        calib_bar.setFixedHeight(self.label_font_size)
+        self.calib_val.setFixedHeight(self.label_font_size)
+        calib_label.setFixedHeight(self.label_font_size)
 
         calib_bar.addWidget(calib_label, Qt.AlignRight)
         calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
