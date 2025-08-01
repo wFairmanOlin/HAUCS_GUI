@@ -70,26 +70,23 @@ class DOApp(QWidget):
 
     def load_local_csv(self, data_dict, filename):
         '''
-        Loads data from local csv files containing setting and calibration info.
-        Valid files:
-        setting.csv: settings for gui
+        Loads data from local csv files containing setting and calibration info. Files
+        nested in folders not supported. 
+
+        setting.csv:      settings for gui
         calibration.csv:  calibration information  
         '''
         self.settings = {}
-        if os.path.exists(filename):
-            with open(filename, newline='') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    key = row['param']
-                    # convert to float if possible
-                    try:
-                        value = float(row['value'])
-                    except:
-                        value = row['value']
-                    data_dict[key] = value
-        else:
-            print(f"file '{filename}' not found. creating one")
-            os.makedirs(filename, exist_ok=True)
+        with open(filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                key = row['param']
+                # convert to float if possible
+                try:
+                    value = float(row['value'])
+                except:
+                    value = row['value']
+                data_dict[key] = value
 
     def save_local_csv(self, data_dict, filename):
         try:
