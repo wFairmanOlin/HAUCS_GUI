@@ -98,7 +98,7 @@ class HistoryLogWindow(QDialog):
                         pond_id =  row["pond_id"]
                         hboi =     round(100 * float(row["hboi_do"]))
                         hboi_mgl = float(row['hboi_do_mgl'])
-                        ysi =      round(100, float(row["ysi_do"]))
+                        ysi =      round(100 * float(row["ysi_do"]))
                         ysi_mgl =  float(row["ysi_do_mgl"])
                         temp_c =   float(row["temperature"])
                         temp_f =   round(to_fahrenheit(temp_c))

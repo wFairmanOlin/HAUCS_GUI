@@ -314,7 +314,6 @@ class BluetoothReader(QObject):
                         break
         # reset transmission timeouts on successfull transmission 
         self.transmission_timeouts = 0
-        print(f"{command} resp {msg} time: {round((time.time() - start_time), 2)}")
         return msg
 
     def writeCSV(self, ofile, data):
