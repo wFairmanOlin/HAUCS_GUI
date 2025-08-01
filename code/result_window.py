@@ -152,7 +152,7 @@ class ResultWindow(QWidget):
             font-weight: bold;
             border: 1px solid white;
         """)
-        self.img_label.setText("Pond DO Prediction Here\nIn Development :(")
+        self.img_label.setText("Pond DO Prediction Missing\nIn Development")
         self.img_label.setAlignment(Qt.AlignCenter)
         
         # END TODO: END OF TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
@@ -366,7 +366,7 @@ class ResultWindow(QWidget):
         ax.scatter(time, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='ysi')
         ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=5, alpha=1)
         ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=5, alpha=1)
-        ax.legend(fontsize=16)
+        ax.legend(fontsize=16, labelcolor=accent_color, framealpha=0.2)
         
         # Convert plot to QPixmap
         buf = io.BytesIO()
