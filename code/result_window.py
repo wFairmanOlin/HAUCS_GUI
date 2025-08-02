@@ -70,7 +70,7 @@ class ResultWindow(QWidget):
         #     0, 0,
         #     w, h
         # )
-        self.setStyleSheet("background-color: #4D4D4D; color: white;")
+        self.setStyleSheet("background-color: black; color: white;")
 
         layout_main = QVBoxLayout()
 

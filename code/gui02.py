@@ -27,7 +27,7 @@ class DOApp(QWidget):
         self.current_time = datetime.now()
 
         self.setWindowTitle("DO Monitor")
-        self.setStyleSheet("background-color: #4D4D4D; color: white;")
+        self.setStyleSheet("background-color: black; color: white;")
 
         screen_size = QApplication.primaryScreen().size()
         self.base_font_size = int(screen_size.height() * 0.03)
