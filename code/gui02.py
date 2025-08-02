@@ -33,7 +33,7 @@ class DOApp(QWidget):
         self.base_font_size = int(screen_size.height() * 0.03)
         self.label_font_size = int(screen_size.height() * 0.06)
         self.label_font_large = int(screen_size.height() * 0.1)
-        self.label_font_xlarge = int(screen_size.height() * 0.12)
+        self.label_font_xlarge = int(screen_size.height() * 0.14)
         self.status_font = int(screen_size.height() * 0.08)
         self.unit_font = int(screen_size.height() * 0.05)
 
@@ -192,24 +192,6 @@ class DOApp(QWidget):
         info_grid.addWidget(self.status,    2, 3, 1, 2, Qt.AlignLeft)
         
         main_layout.addLayout(info_grid)
-
-        # ==== Calibration Bar ====
-        calib_bar = QHBoxLayout()
-
-        calib_label = QLabel('Last Calibration')
-        
-        self.calib_val = QLabel(str(self.last_calibration))
-        calib_label.setStyleSheet(f"font-size: {self.label_font_size}px;")
-        self.calib_val.setStyleSheet(f"font-size: {self.label_font_size}px;")
-
-        self.calib_val.setFixedHeight(int(1.5 * self.label_font_size))
-        calib_label.setFixedHeight(int(1.5 * self.label_font_size))
-
-        calib_bar.addWidget(calib_label, Qt.AlignRight)
-        calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
-        calib_bar.addStretch(3)
-
-        main_layout.addLayout(calib_bar)
 
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
