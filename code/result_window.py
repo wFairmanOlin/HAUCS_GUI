@@ -139,7 +139,7 @@ class ResultWindow(QWidget):
 
         # ADD PID LAYOUT
         pid_layout = QHBoxLayout()
-        pid_layout.setSpacing(int(font_size * 1.0))
+        pid_layout.setSpacing(int(font_size * 0.8))
         btn_edit = QPushButton("Edit")
         btn_edit.setStyleSheet(f"font-size: {int(self.large_font*0.6)}px; padding: 0px; color: black;")
         btn_edit.setFixedHeight(int(self.large_font * 1.2))
@@ -180,7 +180,7 @@ class ResultWindow(QWidget):
         # === Right Layout (60%) ===
         layout_right = QVBoxLayout()
         self.img_label = QLabel()
-        img_width = int(w * 0.6)   # 0.9 * 60%
+        img_width = int(w * 0.5)   # 0.9 * 60%
         img_height = int(h * 0.2)   # 60%
 
         self.img_label.setFixedSize(img_width, img_height)
