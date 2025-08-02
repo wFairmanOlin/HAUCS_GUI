@@ -81,7 +81,7 @@ class ResultWindow(QWidget):
         layout_left = QVBoxLayout()
         info_grid = QGridLayout()
 
-        pid_label   = QLabel('Pond ID')
+        pid_label   = QLabel('Pond')
         hboi_label  = QLabel('HBOI DO')
         ysi_label   = QLabel('YSI DO')
         dur_label   = QLabel('Length')

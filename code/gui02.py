@@ -151,6 +151,7 @@ class DOApp(QWidget):
         self.hboi_val  = QLabel('-')
         self.timer_val = QLabel('-')
         self.status   = QLabel('')
+        self.status.setWordWrap(True) #allow multiple lines
 
         self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
