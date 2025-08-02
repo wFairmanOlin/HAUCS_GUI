@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayo
 from PyQt5.QtCore import Qt
 
 class CustomYesNoDialog(QDialog):
-    def __init__(self, message, parent=None):
+    def __init__(self, message, calibration, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Confirm Action")
         self.setModal(True)
@@ -13,6 +13,20 @@ class CustomYesNoDialog(QDialog):
         label.setStyleSheet("font-size: 40px;")
         label.setWordWrap(True)
         label.setAlignment(Qt.AlignCenter)
+
+        # ----- Calibration ------
+        calib_bar = QHBoxLayout()
+        calib_label = QLabel('Last Calibration')
+        self.calib_val = QLabel(calibration)
+        calib_label.setStyleSheet("font-size: 40px;")
+        self.calib_val.setStyleSheet("font-size: 40px;")
+
+        # self.calib_val.setFixedHeight(60)
+        # calib_label.setFixedHeight(60)
+
+        calib_bar.addWidget(calib_label, Qt.AlignRight)
+        calib_bar.addWidget(self.calib_val, Qt.AlignLeft)
+        # calib_bar.addStretch(3)
 
         # ----- Buttons -----
         yes_btn = QPushButton("Yes")
@@ -46,6 +60,7 @@ class CustomYesNoDialog(QDialog):
         layout.addSpacing(30)
         layout.addWidget(label)
         layout.addSpacing(30)
+        layout.addLayout(calib_bar)
         layout.addLayout(button_layout)
         layout.addSpacing(20)
 

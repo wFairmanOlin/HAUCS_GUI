@@ -35,6 +35,7 @@ class DOApp(QWidget):
         self.label_font_large = int(screen_size.height() * 0.1)
         self.label_font_xlarge = int(screen_size.height() * 0.12)
         self.status_font = int(screen_size.height() * 0.08)
+        self.unit_font = int(screen_size.height() * 0.05)
 
         # retrieve and apply settings
         self.settings = self.load_local_csv("settings.csv")
@@ -158,20 +159,20 @@ class DOApp(QWidget):
 
         pid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
         sid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
-        ysi_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
-        hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
-        timer_label.setStyleSheet(f"font-size: {self.label_font_large}px;") 
+        ysi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
+        hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
+        timer_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;") 
         
 
-        self.pid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
-        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
+        self.pid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
+        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
         self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
-        self.status.setStyleSheet(f"font-size: {self.status_font}px;")
+        self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
 
         self.hboi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
-        self.hboi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
+        self.ysi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
         self.timer_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
         
 
@@ -188,7 +189,7 @@ class DOApp(QWidget):
         info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
         info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
         info_grid.addWidget(self.timer_unit,2, 2, Qt.AlignLeft)
-        info_grid.addWidget(self.status,    2, 3, 1, 2, Qt.AlignCenter)
+        info_grid.addWidget(self.status,    2, 3, 1, 2, Qt.AlignLeft)
         
         main_layout.addLayout(info_grid)
 
@@ -213,7 +214,7 @@ class DOApp(QWidget):
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
         buttons = [
-            ("Calibrate DO", self.on_calibrate_do_click),
+            ("Calibrate HBOI", self.on_calibrate_do_click),
             ("Calibrate YSI", self.on_calibrate_ysi_click),
             ("History Log", self.on_history_log_click),
         ]
@@ -396,14 +397,8 @@ class DOApp(QWidget):
         self.thread.toggle_unit(self.unit)
 
     def on_calibrate_do_click(self):
-        dialog = CustomYesNoDialog(
-            "Get sensor ready:\n"
-            "1) Dip in water\n"
-            "2) Shake off water\n"
-            "3) Press Yes to start CALIBRATION\n\n"
-            "Are you sure you want to\nCALIBRATE DO?",
-            self
-        )
+        msg = "Get sensor ready:\n1) Dip in water\n2) Shake off water\n3) Press Yes to start CALIBRATION\n\nAre you sure you want to\nCALIBRATE?"
+        dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
             print("ok, calibrate")
@@ -511,7 +506,7 @@ class DOApp(QWidget):
                     self.result_window = None
                 self.thread.update_logger_text("info", "Program close.")
                 os.system("sudo shutdown now")
-                event.ignore()  # ไม่ให้ close ที่นี่ ให้ OS จัดการ
+                event.ignore()
 
             elif dialog.result == "restart":
                 print("Rebooting...")
