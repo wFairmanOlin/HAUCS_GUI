@@ -503,6 +503,9 @@ class DOApp(QWidget):
                 os.system("sudo reboot")
                 event.ignore()
 
+            elif dialog.result == "test":
+                print("starting test sequence")
+
             else:
                 event.ignore()
 

@@ -14,14 +14,14 @@ class NumpadDialog(QDialog):
 
         # ดึงขนาดหน้าจอ
         screen = QApplication.primaryScreen().size()
-        btn_w = screen.width() // 4      # 4 ปุ่มแนวนอน
-        btn_h = screen.height() // 7     # 4 แถวตัวเลข + input + OK/Cancel
-        font_size = int(btn_h * 0.6)  # หรือค่าที่เหมาะสม เช่น 0.5–0.7 ขึ้นกับความชอบ
+        btn_w = screen.width() // 4
+        btn_h = screen.height() // 7
+        font_size = int(btn_h * 0.6)
 
         # Input field
         self.input_field = QLineEdit()
         self.input_field.setText(init_value)
-        self.input_field.selectAll()  # ✅ Highlight ทั้งข้อความเมื่อ dialog เปิด
+        self.input_field.selectAll()
         self.input_field.setReadOnly(True)
         self.input_field.setAlignment(Qt.AlignRight)
         self.input_field.setStyleSheet(f"background-color: white; color: black; font-size: {font_size}px; font-weight: bold;")
