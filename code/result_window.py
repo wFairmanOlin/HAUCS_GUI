@@ -45,24 +45,24 @@ class ResultWindow(QWidget):
         self.setWindowTitle("Result Summary")
         self.setup_ui(self.image_path)
         self.setup_timer()
-        self.show()
+        self.showFullScreen()
 
     def setup_ui(self, image_path):
         screen = self.screen().size()
-        w = int(screen.width() * 0.98)
-        h = int(screen.height() * 0.90)
+        w = screen.width()
+        h = screen.height()
         font_size = int(h * 0.05)
         self.font_size = font_size
         self.large_font = int(h * 0.08)
         btn_font_size = int(h * 0.03)
         self.unit_font = int(h * 0.05)
 
-        self.setGeometry(
-            # int((screen.width() - w) / 2),
-            # int((screen.height() - h) / 3),
-            0, 0,
-            w, h
-        )
+        # self.setGeometry(
+        #     # int((screen.width() - w) / 2),
+        #     # int((screen.height() - h) / 3),
+        #     0, 0,
+        #     w, h
+        # )
         self.setStyleSheet("background-color: #4D4D4D; color: white;")
 
         layout_main = QVBoxLayout()
@@ -77,8 +77,8 @@ class ResultWindow(QWidget):
         pid_label   = QLabel('Pond ID')
         hboi_label  = QLabel('HBOI DO')
         ysi_label   = QLabel('YSI DO')
-        dur_label   = QLabel('Duration')
-        temp_label  = QLabel('Water Temp')
+        dur_label   = QLabel('Length')
+        temp_label  = QLabel('WT')
         date_label  = QLabel('Time')
         depth_label = QLabel('Depth')
 
