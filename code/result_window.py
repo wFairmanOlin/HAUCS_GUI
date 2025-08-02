@@ -35,17 +35,24 @@ class ResultWindow(QWidget):
         self.good_do = good_do
         self.data = data
 
-        # Get DO Color
-        self.do_color = 'limegreen'
+        # Set DO Colors
+        self.hboi_color = 'limegreen'
         if self.data['do_mgl'] < self.min_do:
-             self.do_color = 'red'
+             self.hboi_color = 'red'
         elif self.min_do <= self.data['do_mgl'] < self.good_do:
-             self.do_color = 'yellow'
+             self.hboi_color = 'yellow'
+
+        self.ysi_color = 'limegreen'
+        if self.data['do_mgl'] < self.min_do:
+             self.ysi_color = 'red'
+        elif self.min_do <= self.data['do_mgl'] < self.good_do:
+             self.ysi_color = 'yellow'
 
         self.setWindowTitle("Result Summary")
         self.setup_ui(self.image_path)
         self.setup_timer()
         self.showFullScreen()
+
 
     def setup_ui(self, image_path):
         screen = self.screen().size()
@@ -117,8 +124,8 @@ class ResultWindow(QWidget):
         depth_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;")
 
         self.pid_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;") 
-        hboi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.do_color};") 
-        ysi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.do_color};")
+        hboi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.hboi_color};") 
+        ysi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.ysi_color};")
         dur_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;")  
         temp_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;") 
         date_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;")  
