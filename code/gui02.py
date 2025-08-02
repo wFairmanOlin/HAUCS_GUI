@@ -19,6 +19,7 @@ from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
 from custom_yesno_dialog import CustomYesNoDialog
+import pickle
 
 class DOApp(QWidget):
     def __init__(self):
@@ -505,6 +506,22 @@ class DOApp(QWidget):
 
             elif dialog.result == "test":
                 print("starting test sequence")
+                with open('test.pickle', 'rb') as file:
+                    fake_data = pickle.load(file)
+                try:
+                    # save any current data
+                    real_data = self.thread.sdata
+                    real_ysi_arr = self.thread.ysi_do_mgl_arr
+                    # inject fake data
+                    self.thread.ysi_do_mgl_arr = fake_data['ysi_do_mgl_arr']
+                    self.thread.sdata = fake_data
+                    # run results script
+                    self.thread.update_sdata_value(['test'], update_pond_data= True)
+                    # add back real data
+                    self.thread.sdata = real_data
+                    self.thread.ysi_do_mgl_arr = real_ysi_arr
+                except:
+                    print("test sequence failed")
 
             else:
                 event.ignore()
