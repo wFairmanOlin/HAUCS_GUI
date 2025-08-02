@@ -84,11 +84,11 @@ class ResultWindow(QWidget):
 
         dur_unit   = QLabel('s')
         temp_unit  = QLabel('℉')
-        depth_unit = QLabel('Depth')
+        depth_unit = QLabel('in')
 
         self.pid_val = QLabel(self.data['pid']) #modifiable
         temp_val     = QLabel(f"{to_fahrenheit(self.data['water_temp']):.1f}")
-        depth_val    = QLabel('Depth')
+        depth_val    = QLabel(f"{self.data['sample_depth']:.1f}")
         dur_val      = QLabel(f"{self.data['sample_duration']}")
 
         # Handle DO Data
@@ -173,7 +173,7 @@ class ResultWindow(QWidget):
         # === Right Layout (60%) ===
         layout_right = QVBoxLayout()
         self.img_label = QLabel()
-        img_width = int(w * 0.4)   # 0.9 * 60%
+        img_width = int(w * 0.6)   # 0.9 * 60%
         img_height = int(h * 0.2)   # 60%
 
         self.img_label.setFixedSize(img_width, img_height)
