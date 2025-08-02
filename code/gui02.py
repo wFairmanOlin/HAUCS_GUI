@@ -150,6 +150,10 @@ class DOApp(QWidget):
         self.hboi_val  = QLabel('-')
         self.timer_val = QLabel('-')
         self.status   = QLabel('')
+
+        self.hboi_unit = QLabel('%' if self.unit is 'percent' else 'mg/l')
+        self.ysi_unit  = QLabel('%' if self.unit is 'percent' else 'mg/l')
+        self.timer_unit = QLabel('s')
         
 
         pid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
@@ -165,19 +169,26 @@ class DOApp(QWidget):
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.status.setStyleSheet(f"font-size: {self.status_font}px;")
+
+        self.hboi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
+        self.hboi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
+        self.timer_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
         
 
-        info_grid.addWidget(hboi_label,    0, 0, Qt.AlignRight)
-        info_grid.addWidget(self.hboi_val, 0, 1, Qt.AlignLeft)
-        info_grid.addWidget(pid_label,     0, 2, Qt.AlignRight)
-        info_grid.addWidget(self.pid_val,  0, 3, Qt.AlignLeft)
-        info_grid.addWidget(ysi_label,     1, 0, Qt.AlignRight)
-        info_grid.addWidget(self.ysi_val,  1, 1, Qt.AlignLeft)
-        info_grid.addWidget(sid_label,     1, 2, Qt.AlignRight)
-        info_grid.addWidget(self.sid_val,  1, 3, Qt.AlignLeft)
-        info_grid.addWidget(timer_label,   2, 0, Qt.AlignRight)
-        info_grid.addWidget(self.timer_val,2, 1, Qt.AlignLeft)
-        info_grid.addWidget(self.status,   2, 2, 1, 2, Qt.AlignCenter)
+        info_grid.addWidget(hboi_label,     0, 0, Qt.AlignLeft)
+        info_grid.addWidget(self.hboi_val,  0, 1, Qt.AlignRight)
+        info_grid.addWidget(self.hboi_unit, 0, 2, Qt.AlignLeft)
+        info_grid.addWidget(pid_label,      0, 3, Qt.AlignLeft)
+        info_grid.addWidget(self.pid_val,   0, 4, Qt.AlignRight)
+        info_grid.addWidget(ysi_label,      1, 0, Qt.AlignLeft)
+        info_grid.addWidget(self.ysi_val,   1, 1, Qt.AlignRight)
+        info_grid.addWidget(self.ysi_unit , 1, 2, Qt.AlignLeft)
+        info_grid.addWidget(sid_label,      1, 3, Qt.AlignLeft)
+        info_grid.addWidget(self.sid_val,   1, 4, Qt.AlignRight)
+        info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
+        info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
+        info_grid.addWidget(self.timer_unit,2, 2, Qt.AlignLeft)
+        info_grid.addWidget(self.status,    2, 3, 1, 2, Qt.AlignCenter)
         
         main_layout.addLayout(info_grid)
 
@@ -286,8 +297,10 @@ class DOApp(QWidget):
         if 'do' in data_dict:
             if self.unit == "percent":
                 self.hboi_val.setText(f"{100 * data_dict['do']:.1f}")
+                self.hboi_unit.setText('%')
             else:
                 self.hboi_val.setText(f"{data_dict['do_mgl']:.1f}")
+                self.hboi_unit.setText('mg/l')
 
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
@@ -322,8 +335,10 @@ class DOApp(QWidget):
                 self.ysi_val.setText('-')
             else:
                 self.ysi_val.setText(f"{100 * do_ps:.1f}")
+            self.ysi_unit.setText('%')
         else:
             self.ysi_val.setText(f"{do_mgl:.1f}")
+            self.ysi_unit.setText('mg/l')
 
         # update ysi color
         if do_mgl < self.min_do:
