@@ -30,31 +30,21 @@ class ResultWindow(QWidget):
         self.remaining_time = auto_close_sec
         self.timer_active = True
 
-        self.setWindowTitle("Result Summary")
-        self.setup_ui(self.image_path)
-        self.setup_timer()
         self.unit = unit
         self.min_do = min_do
         self.good_do = good_do
         self.data = data
-        # set values
-        self.update_value("PID", self.data["pid"])
-        self.update_value("Temp", f"{to_fahrenheit(self.data['water_temp']):.1f} °F")
-        self.update_value("Press", f"{self.data['sample_depth']:.1f} in")
-        
-        # HANDLE DO CONVERSIONS
-        if self.unit == "percent":
-            self.update_value("HBOI", f"{100 * self.data['do']:.1f} %")
-            self.update_value("YSI", f"{100 * self.data['ysi_do']:.1f} %")
-        else:
-            self.update_value("HBOI", f"{self.data['do_mgl']:.1f} mg/l")
-            self.update_value("YSI", f"{self.data['ysi_do_mgl']:.1f} mg/l")
 
-        self.update_value("SD", f"{self.data['sample_duration']} s")
+        # Get DO Color
+        self.do_color = 'limegreen'
+        if self.data['do_mgl'] < self.min_do:
+             self.do_color = 'red'
+        elif self.min_do <= self.data['do_mgl'] < self.good_do:
+             self.do_color = 'yellow'
 
-        now = datetime.now()
-        formatted_time = now.strftime("%I:%M %p")
-        self.update_value("Date", formatted_time)
+        self.setWindowTitle("Result Summary")
+        self.setup_ui(self.image_path)
+        self.setup_timer()
         self.show()
 
     def setup_ui(self, image_path):
@@ -63,9 +53,9 @@ class ResultWindow(QWidget):
         h = int(screen.height() * 0.90)
         font_size = int(h * 0.05)
         self.font_size = font_size
-        large_font_size = int(h * 0.08)
-        self.large_font_size = large_font_size
+        self.large_font = int(h * 0.08)
         btn_font_size = int(h * 0.03)
+        self.unit_font = int(h * 0.05)
 
         self.setGeometry(
             # int((screen.width() - w) / 2),
@@ -83,47 +73,97 @@ class ResultWindow(QWidget):
         # === Left Layout (40%) ===
         layout_left = QVBoxLayout()
         info_grid = QGridLayout()
-        self.data_labels = {}
 
-        labels = [
-            ("Pond ID", "PID"),
-            ("HBOI DO", "HBOI"),
-            ("YSI DO", "YSI"),
-            ("Duration", "SD"),
-            ("Water Temp", "Temp"),
-            ("Time", "Date"),
-            ("Depth", "Press"),
-        ]
+        pid_label   = QLabel('Pond ID')
+        hboi_label  = QLabel('HBOI DO')
+        ysi_label   = QLabel('YSI DO')
+        dur_label   = QLabel('Duration')
+        temp_label  = QLabel('Water Temp')
+        date_label  = QLabel('Time')
+        depth_label = QLabel('Depth')
 
-        for i, (text, key) in enumerate(labels):
-            label = QLabel(text)
-            label.setStyleSheet(f"font-size: {large_font_size}px; padding-right: 5px;")
+        dur_unit   = QLabel('s')
+        temp_unit  = QLabel('℉')
+        depth_unit = QLabel('Depth')
 
-            if key == "PID":
-                pid_layout = QHBoxLayout()
-                pid_layout.setSpacing(int(font_size * 1.0))
-                value = QLabel("-")
-                value.setStyleSheet(f"font-size: {large_font_size}px; font-weight: bold; padding-left: 5px;")
-                self.data_labels[key] = value
+        self.pid_val = QLabel(self.data['pid']) #modifiable
+        temp_val     = QLabel(f"{to_fahrenheit(self.data['water_temp']):.1f}")
+        depth_val    = QLabel('Depth')
+        dur_val      = QLabel(f"{self.data['sample_duration']}")
 
-                btn_edit = QPushButton("Edit")
-                btn_edit.setStyleSheet(f"font-size: {int(large_font_size*0.6)}px; padding: 0px; color: black;")
-                btn_edit.setFixedHeight(int(large_font_size * 1.2))
-                btn_edit.setFixedWidth(int(large_font_size * 2.4))
-                btn_edit.clicked.connect(self.edit_pid_dialog)
+        # Handle DO Data
+        if self.unit == "percent":
+            hboi_val  = QLabel(f"{100 * self.data['do']:.1f}")
+            ysi_val   = QLabel(f"{100 * self.data['ysi_do']:.1f}")
+            hboi_unit = QLabel('%')
+            ysi_unit  = QLabel('%')
+        else:
+            hboi_val  = QLabel(f"{self.data['do_mgl']:.1f}")
+            ysi_val   = QLabel(f"{self.data['ysi_do_mgl']:.1f}")
+            hboi_unit = QLabel('mg/l')
+            ysi_unit  = QLabel('mg/l')
+        
+        # Handle Date
+        now = datetime.now()
+        formatted_time = now.strftime("%I:%M %p")
+        date_val = QLabel(formatted_time)
+        
+        pid_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;") 
+        hboi_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;") 
+        ysi_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;")
+        dur_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;")  
+        temp_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;") 
+        date_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;")  
+        depth_label.setStyleSheet(f"font-size: {self.large_font}px; padding-left:10px;")
 
-                pid_layout.addWidget(value)
-                pid_layout.addWidget(btn_edit)
-                pid_widget = QWidget()
-                pid_widget.setLayout(pid_layout)
-                info_grid.addWidget(label, i, 0, Qt.AlignRight)
-                info_grid.addWidget(pid_widget, i, 1, Qt.AlignLeft)
-            else:
-                value = QLabel("-")
-                value.setStyleSheet(f"font-size: {large_font_size}px; font-weight: bold; padding-left: 5px;")                
-                info_grid.addWidget(label, i, 0, Qt.AlignRight)
-                info_grid.addWidget(value, i, 1, Qt.AlignLeft)
-                self.data_labels[key] = value
+        self.pid_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;") 
+        hboi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.do_color};") 
+        ysi_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold; color: {self.do_color};")
+        dur_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;")  
+        temp_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;") 
+        date_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;")  
+        depth_val.setStyleSheet(f"font-size: {self.large_font}px; font-weight: bold;")
+
+        hboi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        ysi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        dur_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        temp_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        depth_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+
+        # ADD PID LAYOUT
+        pid_layout = QHBoxLayout()
+        pid_layout.setSpacing(int(font_size * 1.0))
+        btn_edit = QPushButton("Edit")
+        btn_edit.setStyleSheet(f"font-size: {int(self.large_font*0.6)}px; padding: 0px; color: black;")
+        btn_edit.setFixedHeight(int(self.large_font * 1.2))
+        btn_edit.setFixedWidth(int(self.large_font * 2.4))
+        btn_edit.clicked.connect(self.edit_pid_dialog)
+        pid_layout.addWidget(self.pid_val)
+        pid_layout.addWidget(btn_edit)
+        pid_widget = QWidget()
+        pid_widget.setLayout(pid_layout)
+
+        # Setup INFO GRID
+        info_grid.addWidget(pid_label, 0, 0, Qt.AlignLeft)
+        info_grid.addWidget(pid_widget, 0, 1, 1, 2, Qt.AlignRight)
+
+        info_grid.addWidget(hboi_label,  1, 0, Qt.AlignLeft)
+        info_grid.addWidget(hboi_val,    1, 1, Qt.AlignRight)
+        info_grid.addWidget(hboi_unit,   1, 2, Qt.AlignLeft)
+        info_grid.addWidget(ysi_label,   2, 0, Qt.AlignLeft)
+        info_grid.addWidget(ysi_val,     2, 1, Qt.AlignRight)
+        info_grid.addWidget(ysi_unit,    2, 2, Qt.AlignLeft)
+        info_grid.addWidget(dur_label,   3, 0, Qt.AlignLeft)
+        info_grid.addWidget(dur_val,     3, 1, Qt.AlignRight)
+        info_grid.addWidget(dur_unit,    3, 2, Qt.AlignLeft)
+        info_grid.addWidget(temp_label,  4, 0, Qt.AlignLeft)
+        info_grid.addWidget(temp_val,    4, 1, Qt.AlignRight)
+        info_grid.addWidget(temp_unit,   4, 2, Qt.AlignLeft)
+        info_grid.addWidget(depth_label, 5, 0, Qt.AlignLeft)
+        info_grid.addWidget(depth_val,   5, 1, Qt.AlignRight)
+        info_grid.addWidget(depth_unit,  5, 2, Qt.AlignLeft)
+        info_grid.addWidget(date_label,  6, 0, Qt.AlignLeft)
+        info_grid.addWidget(date_val,    6, 1, Qt.AlignRight)
 
         layout_left.addStretch()
         layout_left.addLayout(info_grid)
@@ -151,7 +191,6 @@ class ResultWindow(QWidget):
         """)
         self.img_label.setText("Pond DO Prediction Missing\nIn Development")
         self.img_label.setAlignment(Qt.AlignCenter)
-        
         # END TODO: END OF TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
 
         layout_right.addStretch()
@@ -162,7 +201,6 @@ class ResultWindow(QWidget):
         self.img_label2 = QLabel()
         self.img_label2.setFixedSize(img_width, int(h * 0.6))
         self.img_label2.setAlignment(Qt.AlignCenter)
-        # self.img_label2.setStyleSheet("background-color: #c1c1c1; border: 1px solid white;")
         self.img_label2.setText("Engineering Image")
         self.img_label2.setVisible(True) #TODO: was FALSE
         layout_right.addStretch()
@@ -261,28 +299,8 @@ class ResultWindow(QWidget):
             }}
         """)
 
-    def update_value(self, key, value):
-        if key in self.data_labels:
-            self.data_labels[key].setText(str(value))
-            if key == "HBOI":
-                if self.data['do_mgl'] < self.min_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= self.data['do_mgl'] < self.good_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
-                else:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
-
-            elif key == "YSI":
-                if self.data['ysi_do_mgl'] < self.min_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: red;")
-                elif self.min_do <= self.data['ysi_do_mgl'] < self.good_do:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: yellow;")
-                else:
-                    self.data_labels[key].setStyleSheet(f"font-size: {self.large_font_size}px; font-weight: bold; padding-left: 5px; color: limegreen;")
-
-
     def closeEvent(self, event):
-        self.data['pid'] = self.data_labels['PID'].text()
+        self.data['pid'] = self.pid_val.text()
         self.closed_data.emit(self.data)
         super().closeEvent(event)
 
@@ -291,11 +309,11 @@ class ResultWindow(QWidget):
         self.checkbox_pause.setChecked(True)
         self.checkbox_pause.setEnabled(False)
         self.btn_close.setText(f"Close")
-        dialog = NumpadDialog(init_value=self.data_labels["PID"].text(), parent=self)
+        dialog = NumpadDialog(init_value=self.pid_val.text(), parent=self)
         if dialog.exec_() == QDialog.Accepted:
             new_value = dialog.get_value()
             if new_value.strip():
-                self.data_labels["PID"].setText(new_value.strip())
+                self.pid_val.setText(new_value.strip())
                 self.img_label.clear()
                 self.img_label.setStyleSheet("""
                     background-color: #444444;
