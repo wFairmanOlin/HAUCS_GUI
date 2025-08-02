@@ -16,7 +16,7 @@ class CustomYesNoDialog(QDialog):
 
         # ----- Calibration ------
         calib_bar = QHBoxLayout()
-        calib_label = QLabel('Last Calibration')
+        calib_label = QLabel('Last Calibration:')
         self.calib_val = QLabel(calibration)
         calib_label.setStyleSheet("font-size: 40px;")
         self.calib_val.setStyleSheet("font-size: 40px;")

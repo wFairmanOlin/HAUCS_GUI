@@ -152,8 +152,8 @@ class DOApp(QWidget):
         self.timer_val = QLabel('-')
         self.status   = QLabel('')
 
-        self.hboi_unit = QLabel('%' if self.unit is 'percent' else 'mg/l')
-        self.ysi_unit  = QLabel('%' if self.unit is 'percent' else 'mg/l')
+        self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
+        self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.timer_unit = QLabel('s')
         
 
@@ -171,9 +171,9 @@ class DOApp(QWidget):
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
 
-        self.hboi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
-        self.ysi_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
-        self.timer_unit.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
+        self.hboi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        self.ysi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        self.timer_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
         
 
         info_grid.addWidget(hboi_label,     0, 0, Qt.AlignLeft)
@@ -367,7 +367,7 @@ class DOApp(QWidget):
                 self.status.setText("collection stopped")
             else:
                 self.status.setText("")
-        self.timer_val.setText(f"{self.counter_time} s")
+        self.timer_val.setText(f"{self.counter_time}")
 
     def on_update_pond_data(self, data_dict):
         self.result_window = ResultWindow(data_dict, self.unit, self.min_do, self.good_do, int(self.settings['autoclose_sec']))
@@ -397,7 +397,7 @@ class DOApp(QWidget):
         self.thread.toggle_unit(self.unit)
 
     def on_calibrate_do_click(self):
-        msg = "Get sensor ready:\n1) Dip in water\n2) Shake off water\n3) Press Yes to start CALIBRATION\n\nAre you sure you want to\nCALIBRATE?"
+        msg = "1) Ensure sensor is not underwater\n2) Press Yes to start calibration\n\nAre you sure you want to\nCALIBRATE?"
         dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -408,7 +408,7 @@ class DOApp(QWidget):
 
             self.thread.messaging_active = True
             now = datetime.now()
-            formatted_time = now.strftime("%b %d, %Y %I:%M %p") 
+            formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
             self.last_calibration = formatted_time
             self.calibration['last_calibration'] = self.last_calibration
             self.calib_val.setText(str(self.last_calibration))
