@@ -508,7 +508,8 @@ class DOApp(QWidget):
                 print("starting test sequence")
                 with open('test.pickle', 'rb') as file:
                     fake_data = pickle.load(file)
-
+                    
+                fake_data['sample_duration'] = len(fake_data['do_vals']) / fake_data['sample_hz']
                 self.thread.update_pond_data.emit(fake_data)
                 event.ignore()
 
