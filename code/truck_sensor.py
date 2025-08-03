@@ -403,7 +403,7 @@ class TruckSensor(QThread):
     def update_database(self, data_dict):
         #TODO: data_dict is not really used
         csv_file = self.csv_file
-        data_dict['message_time'] = self.sdata['message_time']
+        # data_dict['message_time'] = self.sdata['message_time']
         time_str = datetime.now().strftime("%H:%M:%S")
 
         row = {
