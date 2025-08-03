@@ -6,6 +6,7 @@ firebase-admin
 adafruit-circuitpython-ble
 pyserial
 adafruit-circuitpython-gps
+adafruit-circuitpython-bno055
 shapely
 gpiozero
 pigpio

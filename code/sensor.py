@@ -11,6 +11,7 @@ import time
 from converter import *
 from gps_sensor import GPSSensor
 import board
+import adafruit_bno055
 
 class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float)
@@ -43,6 +44,8 @@ class I2CReader(QThread):
         self.ysi_adc = ADS1x15.ADS1115(1)
         # initialize GPS sensor
         self.gps = GPSSensor(i2c, timeout=2)
+        # initialize BNO055
+        self.imu = adafruit_bno055.BNO055_I2C(i2c)
 
         # initialize message schedule
         self.scheduled_msgs = {}
@@ -131,3 +134,13 @@ class I2CReader(QThread):
     def abort(self):
         self.logger_data.emit("info", "Stop YSI normal process")
         self._abort = True
+
+
+#TODO: Delete, just for testing
+if __name__ == "__main__":
+    sensors = I2CReader()
+    while(True):
+        print(sensors.euler())
+        print(sensors.gravity())
+        print(sensors.temperature())
+        time.sleep(1)
