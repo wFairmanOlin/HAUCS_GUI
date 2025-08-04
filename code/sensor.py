@@ -40,7 +40,7 @@ class I2CReader(QThread):
         i2c = board.I2C()
         
         # initialize YSI (ADS1x15) Sensor
-        self.ysi_adc = ADS1x15.ADS1115(1)
+        self.init_ysi_adc()
         # initialize GPS sensor
         self.gps = GPSSensor(i2c, timeout=2)
 
