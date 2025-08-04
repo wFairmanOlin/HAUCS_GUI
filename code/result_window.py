@@ -401,7 +401,7 @@ class ResultWindow(QWidget):
             self.img_label2.setPixmap(scaled)
         except:
             print(f"curve-fitting plot failed {self.data}")
-            self.img_label2.setText("Pond DO Prediction Missing\nIn Development")
+            self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 
 
