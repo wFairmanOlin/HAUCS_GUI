@@ -22,6 +22,8 @@ from custom_yesno_dialog import CustomYesNoDialog
 import pickle
 import logging
 
+logger = logging.getLogger(__name__)
+
 class DOApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -29,9 +31,7 @@ class DOApp(QWidget):
         ##### LOGGING #####
         logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
                             level=logging.INFO)
-        logger = logging.getLogger(__name__)
         logger.info('Starting')
-        
         # custom logger to display status
         logPrinter = customLogHandler()
         logPrinter.setLevel(logging.INFO)
