@@ -4,9 +4,11 @@ pulled_something="Unpacking objects"
 cd /home/haucs/Desktop/HAUCS_GUI
 
 status_resp=$(git status -s --untracked-files=no)
+echo "$status_resp"
 
-# if no files have been changed
-if [[ -z "$status_resp" ]]
+# if no files or just the settings file
+
+if [[ -z "$status_resp" || "$status_resp" == " M code/settings.csv" ]]
 then
     pull_resp=$(git pull origin main)
     #if local repo is updated to remote
