@@ -27,10 +27,14 @@ class DOApp(QWidget):
         super().__init__()
 
         ##### LOGGING #####
-        logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', filename=folder + 'buoy/log.log', encoding='utf-8',
+        logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
                             level=logging.INFO)
         logger = logging.getLogger(__name__)
         logger.info('Starting')
+        
+        logPrinter = customLogHandler()
+        logPrinter.setLevel(logging.INFO)
+        logging.getLogger('').addHandler(logPrinter)
 
         self.current_time = datetime.now()
 
@@ -522,6 +526,12 @@ class DOApp(QWidget):
             # User pressed Cancel or closed dialog
             event.ignore()
 
+class customLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+
+    def emit(self, record):
+        print(f"{record.level}: {record.msg}")
         
 
 

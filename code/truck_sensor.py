@@ -29,7 +29,6 @@ class TruckSensor(QThread):
     sensor_file = "sensor.json"
 
     ble = None
-    csv_file = ""
 
     app = None
     cred = None
@@ -257,8 +256,6 @@ class TruckSensor(QThread):
 
             update_json, _, sdata_key = self.ble.get_sample_text()
             self.update_any(sdata_key, update_json, True)
-
-            self.csv_file = self.ble.csv_file
             
             update_json, msg, sdata_key = self.ble.set_sample_reset()
             # END MAIN LOOP
@@ -354,9 +351,6 @@ class TruckSensor(QThread):
         self.update_data.emit(self.data_dict)
 
     def update_database(self, data_dict):
-        #TODO: data_dict is not really used
-        csv_file = self.csv_file
-        # data_dict['message_time'] = self.sdata['message_time']
         time_str = datetime.now().strftime("%H:%M:%S")
 
         row = {
@@ -368,7 +362,6 @@ class TruckSensor(QThread):
             "ysi_do_mgl": round(data_dict['ysi_do_mgl'],2),
             "temperature": round(data_dict['water_temp'],2),
             "depth": round(data_dict['sample_depth'],2),
-            "do_csv": csv_file,
             "upload_status": False,
             "message_time": data_dict['message_time'],
         }
