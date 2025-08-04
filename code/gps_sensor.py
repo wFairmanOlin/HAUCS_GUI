@@ -71,7 +71,7 @@ class GPSSensor:
         #calculate minimum distance in meters
         min_dist = distances.min() * 111_000
         #determine if min distance is acceptable
-        if min_dist < 1_000: #TODO: DISTANCES
+        if min_dist < 100:
             #find pond associated with minimum distance
             self.pond_id = str(self.pond_ids[np.argmin(distances)])
         else:

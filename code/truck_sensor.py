@@ -350,6 +350,7 @@ class TruckSensor(QThread):
                 ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
 
                 #TODO: JUST RETURN SDATA
+                
                 self.sdata["ysi_do"] = ysi_do
                 self.sdata["ysi_do_mgl"] = ysi_do_mgl
                 self.sdata['do'] = do
@@ -365,6 +366,7 @@ class TruckSensor(QThread):
                 self.data_dict["lng"] = self.sdata['lng']
                 self.data_dict["lat"] = self.sdata['lat']
                 self.data_dict['hdg'] = self.sdata['hdg']
+                self.data_dict['message_time'] = self.sdata['message_time']
  
                 self.update_pond_data.emit(self.data_dict)
 

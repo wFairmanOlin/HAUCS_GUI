@@ -395,7 +395,6 @@ class DOApp(QWidget):
             formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
             self.last_calibration = formatted_time
             self.calibration['last_calibration'] = self.last_calibration
-            self.calib_val.setText(str(self.last_calibration))
             self.save_local_csv(self.calibration, "calibration.csv")
         else:
             print("User clicked No")
