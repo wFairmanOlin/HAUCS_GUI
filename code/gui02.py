@@ -535,7 +535,8 @@ class customLogHandler(logging.Handler, QObject):
     log_message = pyqtSignal(dict)
 
     def __init__(self):
-        super().__init__()    
+        logging.Handler.__init__(self)
+        QObject.__init__(self)
 
     def emit(self, record):
         print(f"{record.levelname}: {record.msg}")
