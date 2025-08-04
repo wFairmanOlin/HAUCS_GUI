@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
-from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon
 from toggle_switch import ToggleSwitch
 import sys
@@ -316,7 +316,8 @@ class DOApp(QWidget):
                 QApplication.restoreOverrideCursor()
             else:
                 QApplication.setOverrideCursor(Qt.WaitCursor)
-    def on_logger_update(self, logMessage):
+    
+    def on_log_message(self, logMessage):
         self.status.setText(logMessage['msg'])
 
     def on_counter_running(self, value):
@@ -530,10 +531,11 @@ class DOApp(QWidget):
             # User pressed Cancel or closed dialog
             event.ignore()
 
-class customLogHandler(logging.Handler):
+class customLogHandler(logging.Handler, QObject):
+    log_message = pyqtSignal(dict)
+
     def __init__(self):
-        super().__init__()
-        self.log_message = pyqtSignal(dict)
+        super().__init__()    
 
     def emit(self, record):
         print(f"{record.levelname}: {record.msg}")
