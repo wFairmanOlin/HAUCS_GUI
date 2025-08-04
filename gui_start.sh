@@ -7,7 +7,8 @@ status_resp=$(git status -s --untracked-files=no)
 echo "$status_resp"
 
 # if no files or just the settings file
-if [[ -z "$status_resp" || "$status_resp" == "M code/settings.csv" ]]
+
+if [[ -z "$status_resp" || "$status_resp" == " M code/settings.csv" ]]
 then
     pull_resp=$(git pull origin main)
     #if local repo is updated to remote
