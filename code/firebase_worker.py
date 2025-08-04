@@ -9,6 +9,10 @@ from datetime import datetime
 import numpy as np
 import shutil
 import pickle
+import logging
+
+#init logger
+logger = logging.getLogger(__name__)
 
 def convert_numpy(obj):
     if isinstance(obj, np.generic):
@@ -21,7 +25,6 @@ def convert_numpy(obj):
         return obj
 
 class FirebaseWorker(QThread):
-    logger_data = pyqtSignal(str, str)
 
     app = None
     cred = None
@@ -37,21 +40,21 @@ class FirebaseWorker(QThread):
     def __init__(self):
         super().__init__()
         self._abort = False
+        logger.info("starting firebase worker")
 
     def init_firebase(self):
         try:
-            self.logger_data.emit("info", f'use firebase key:{self.fb_key}')
             if os.path.exists(self.fb_key):
                 self.cred = credentials.Certificate(self.fb_key)
                 self.app = firebase_admin.initialize_app(self.cred, {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
             else:
                 print("firebase failed to initialize")
-                self.logger_data.emit("warning", 'Firebase initialize failed, no fb_key')
+                logger.error('firebase initialization failed bc no fb_key found')
         except Exception as error:
-            self.logger_data.emit("warning", f'Firebase initialize failed {str(error)}')
+            logger.error(f'Firebase initialize failed {str(error)}')
 
     def restart_firebase(self, in_app):
-        self.logger_data.emit('info', 'Attempting to restart Firebase Connection')
+        logger.info("attempting to restart firebase")
         if in_app is not None:
             firebase_admin.delete_app(in_app)
             self.msleep(10000)
@@ -94,7 +97,7 @@ class FirebaseWorker(QThread):
         with open(file_path, 'wb') as file:
             pickle.dump(sdata, file)
         
-        self.logger_data.emit("info", f"saved pickle: {file_path}")
+        logger.info(f"saved pickle: {file_path}")
 
     def move_pickle_to_completed(self, sdata):
         save_time = sdata['message_time'].replace(":", "-")
@@ -104,11 +107,11 @@ class FirebaseWorker(QThread):
         try:
             os.makedirs(self.completed_folder, exist_ok=True)
             shutil.move(src_path, dst_path)
-            self.logger_data.emit("info", f"Moved pickle file to completed: {dst_path}")
+            logger.info(f"Moved pickle file to completed: {dst_path}")
         except FileNotFoundError:
-            self.logger_data.emit("warning", f"Source file not found, saving new pickle: {dst_path}")
+            logger.warning(f"Source file not found, saving new pickle: {dst_path}")
         except Exception as e:
-            self.logger_data.emit("error", f"Failed to move pickle: {src_path} → {dst_path} — {e}")
+            logger.error(f"Failed to move pickle: {src_path} → {dst_path} — {e}")
     
 
     def run(self):
@@ -132,7 +135,6 @@ class FirebaseWorker(QThread):
             self.msleep(2000)
 
     def abort(self):
-        self.logger_data.emit("info", "Stop Firebase worker, normal process")
         self._abort = True
 
     def update_firebase_when_internet(self):
@@ -144,7 +146,7 @@ class FirebaseWorker(QThread):
   
                 self.move_pickle_to_completed(sdata)
 
-                self.logger_data.emit("info", "upload data to firebase completed (update_firebase_when_internet)")
+                logger.info('data upload to firebase complete')
                 del self.sdatas[i]
 
                 # UPDATE LOCAL CSV FILE
@@ -164,8 +166,7 @@ class FirebaseWorker(QThread):
                             df.to_csv(file_path, index=False)
                     
                 except Exception as e:
-                    print("failed ot generate CSV")
-                    self.logger_data.emit("error", f"Failed to update CSV status for {msg_time_str}: {e}")
+                    logger.warning('failed to update csv')
 
     def update_firebase(self, sdata):
         
@@ -193,8 +194,7 @@ class FirebaseWorker(QThread):
             else:
                 return False
         except Exception as error:
-            print("An exception occurred:", error)
-            self.logger_data.emit("warning", "uploading data to firebase failed")
+            logger.warning(f"uploading data to firebase failed: {error}")
             self.fail_counter +=1
             if self.fail_counter >= self.max_fail:
                 self.app = self.restart_firebase(self.app)

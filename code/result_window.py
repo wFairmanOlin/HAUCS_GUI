@@ -16,6 +16,10 @@ import io
 import pandas as pd
 from datetime import datetime, timedelta
 from converter import *
+import logging
+
+#init logger
+logger = logging.getLogger(__name__)
 
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
@@ -400,7 +404,7 @@ class ResultWindow(QWidget):
             scaled = pixmap.scaled(self.img_label2.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.img_label2.setPixmap(scaled)
         except:
-            print(f"curve-fitting plot failed {self.data}")
+            logger.error(f"curve-fitting plot failed {self.data}")
             self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 

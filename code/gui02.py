@@ -20,10 +20,17 @@ from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
 from custom_yesno_dialog import CustomYesNoDialog
 import pickle
+import logging
 
 class DOApp(QWidget):
     def __init__(self):
         super().__init__()
+
+        ##### LOGGING #####
+        logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', filename=folder + 'buoy/log.log', encoding='utf-8',
+                            level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        logger.info('Starting')
 
         self.current_time = datetime.now()
 
@@ -245,7 +252,6 @@ class DOApp(QWidget):
 
         self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)
-        self.thread.finished.connect(self.on_thread_finished)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
         self.thread.counter_is_running.connect(self.on_counter_running)
         self.thread.ysi_data.connect(self.on_ysi_update)
@@ -277,7 +283,7 @@ class DOApp(QWidget):
                 self.led_status.set_status("disconnected")
         if 'name' in data_dict:
             self.sid_val.setText(str(data_dict['name']))
-        if 'gps' in data_dict:
+        if 'pid' in data_dict:
             self.pid_val.setText(str(data_dict['pid']))
         if 'do' in data_dict:
             if self.unit == "percent":
@@ -362,9 +368,6 @@ class DOApp(QWidget):
         # print("Result window closed. Data received:", result_data)
         self.thread.update_database(result_data)
         self.result_window = None
-
-    def on_thread_finished(self):
-        print("Thread Abort")
 
     def on_toggle_click(self):
         if self.unit_toggle.isChecked() and self.unit != "percent":
@@ -475,7 +478,7 @@ class DOApp(QWidget):
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                self.thread.update_logger_text("info", "Program close.")
+                logger.info("user closed program")
                 print("Program close")
                 super().closeEvent(event)
 
@@ -487,7 +490,7 @@ class DOApp(QWidget):
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                self.thread.update_logger_text("info", "Program close.")
+                logger.info("user triggered shutdown")
                 os.system("sudo shutdown now")
                 event.ignore()
 
@@ -499,7 +502,7 @@ class DOApp(QWidget):
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                self.thread.update_logger_text("info", "Program close.")
+                logger.info("user triggered restart")
                 os.system("sudo reboot")
                 event.ignore()
 
@@ -526,3 +529,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = DOApp()
     sys.exit(app.exec_())
+
+
+

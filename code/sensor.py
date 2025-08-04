@@ -12,6 +12,10 @@ from converter import *
 from gps_sensor import GPSSensor
 import board
 import adafruit_bno055
+import logging
+
+#init logger
+logger = logging.getLogger(__name__)
 
 class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float)
@@ -132,7 +136,6 @@ class I2CReader(QThread):
 
 
     def abort(self):
-        self.logger_data.emit("info", "Stop YSI normal process")
         self._abort = True
 
 

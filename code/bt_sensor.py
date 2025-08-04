@@ -2,7 +2,7 @@ from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
 from adafruit_ble.services.nordic import UARTService
 
-import random, csv
+import random
 import numpy as np
 from scipy.optimize import curve_fit
 import pandas as pd
@@ -15,6 +15,9 @@ from subprocess import call
 from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
+
+#init logger
+logger = logging.getLogger(__name__)
 
 class BluetoothReader(QObject):
     data_updated = pyqtSignal(dict)
@@ -36,9 +39,6 @@ class BluetoothReader(QObject):
     do = 0
     temp_val = 0
     pressure_val = 0
-    csv_file = None
-
-    do_vals_log = "DO_data/"
 
    # dictionary of commands (tx) and expected retunrs (rx)
     commands = {
@@ -54,26 +54,14 @@ class BluetoothReader(QObject):
         's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
     }
 
-    ################## logger #########################
-    logger_status = "normal"
-    logger_string = ""
-
-    def update_logger(self, logger_status, logger_string):
-        self.logger_status = logger_status
-        self.logger_string = logger_string
-
-    def call_logger(self):
-        return self.logger_status, self.logger_string
-    ################ end logger #######################
-
-    def __init__(self, sensor_file="sensor.json"):
+    def __init__(self, *args):
         super().__init__()
         self.ble = BLERadio()
         self._abort = False
-        self.sensor_file = sensor_file
         #set a flag to indicate first time connect to the payload
         self.check_size = -1 # check the dsize
         self.batt_cnt = 0
+        logger.info('BluetoothReader started')
 
     def connect(self):
         print("searching for sensor ...")
@@ -98,11 +86,9 @@ class BluetoothReader(QObject):
             self.send_receive_command(self.commands['xmas'])
             self.connection_status = "connected"
             self.sdata['connection'] = self.connection_status
-            self.update_logger("info", 'first time connected to the payload (boot up)')
             update_json, msg = True, True
             return update_json, msg, ['name', 'connection']
         else:
-            self.update_logger("warning", "BLE connect failed")
             #fails['ble'] += 1
             self.status_string = "BLE connect failed"
             self.connection_status = "not connected"
@@ -114,13 +100,12 @@ class BluetoothReader(QObject):
         # prioritize status from uart connection 
         connected = False
         if not (self.uart_connection and self.uart_connection.connected):
-            self.update_logger("warning", "BLE connect failed - maybe underwater")
             self.connection_status = "not connected"
             self.sdata['connection'] = self.connection_status
             self.previous_connect = False
         # use timeouts to predict disconnect
         elif self.transmission_timeouts > 0:
-            self.update_logger("warning", "BLE transmission timeout - maybe disconnected")
+            logger.info("BLE transmission caused timeout")
             self.connection_status = "not connected"
             self.sdata['connection'] = self.connection_status
             self.previous_connect = False
@@ -144,13 +129,11 @@ class BluetoothReader(QObject):
                 self.sdata['connection'] = self.connection_status
                 update_json = True
                 if not self.previous_connect:
-                    self.update_logger("info", 'reconnect after disconnect - finished sampling and re-emerge')
                     self.previous_connect = True
                 # self.check_size = 1
                 msg = True
                 return update_json, msg, ['connection']
             else:
-                self.update_logger("warning", "BLE connect failed - maybe underwater")
                 #fails['ble'] += 1
                 self.status_string = "BLE connect failed - maybe underwater"
                 msg = False
@@ -237,7 +220,6 @@ class BluetoothReader(QObject):
         elif key == "dstart":
             self.prev_sample_size = self.current_sample_size
             self.current_sample_size = int(value[0].strip())
-            self.csv_file = self.init_csv_file()
             self.data_counter = 0
             self.do_vals = []
             self.temp_vals = []
@@ -252,9 +234,6 @@ class BluetoothReader(QObject):
                 do = 0
                 temp_val = 0
                 pressure_val = 0
-                
-            if self.csv_file is not None:
-                self.writeCSV(self.csv_file, [float(value[0]), do, temp_val, pressure_val])
 
             self.do_vals.append(do) # DO
             self.temp_vals.append(temp_val)   # tempuerature 
@@ -315,29 +294,3 @@ class BluetoothReader(QObject):
         # reset transmission timeouts on successfull transmission 
         self.transmission_timeouts = 0
         return msg
-
-    def writeCSV(self, ofile, data):
-        with open(ofile,'a',newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(data)
-
-    def init_csv_file(self):
-        #global folder
-        try:
-            header = ['time', 'do', 'temperature', 'pressure']
-            filePath = self.do_vals_log
-            date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-
-            if not os.path.exists(filePath):
-                os.mkdir(filePath)
-
-            csvFile = filePath + date + ".csv"
-
-            with open(csvFile,'w',newline='') as csvfile:
-                writer = csv.writer(csvfile, delimiter=',')
-                writer.writerow(header)
-        except Exception as e:
-            print("Failed to create csv file {csvfile}", str(e))
-            self.update_logger("warning", f"Failed to create csv file {csvfile} {str(e)}")
-
-        return csvFile

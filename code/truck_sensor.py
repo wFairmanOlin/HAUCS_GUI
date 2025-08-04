@@ -14,13 +14,13 @@ import numpy as np
 
 from firebase_worker import FirebaseWorker
 
+import logging
+logger = logging.getLogger(__name__)
+
 class TruckSensor(QThread):
     update_data = pyqtSignal(dict) 
-    status_data = pyqtSignal(str)
-    logger_data = pyqtSignal(dict)
     counter_is_running = pyqtSignal(str)
     update_pond_data = pyqtSignal(dict)
-    finished = pyqtSignal()
     ysi_data = pyqtSignal(float, float)
 
     _abort = False
@@ -59,13 +59,7 @@ class TruckSensor(QThread):
     def initialize(self):
         date = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 
-        if not os.path.exists(self.log_folder):
-            os.makedirs(self.log_folder)
-
-        logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', filename=f"{self.log_folder}log_{date}.log", encoding='utf-8',
-                    level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-        self.update_logger_text("info", 'DO Sensor Starting')
+        logger.info('truck .py starting')
         self.init_firebase()
 
         # initialize I2C sensor bus
@@ -96,16 +90,12 @@ class TruckSensor(QThread):
         self.firebase_worker = FirebaseWorker()
         self.firebase_worker.max_fail = self.max_fail
         self.firebase_worker.completed_upload = self.completed_upload
-        self.firebase_worker.logger_data.connect(self.on_logger_update)
         self.firebase_worker.init_firebase()
         self.firebase_worker.start()
 
     def stop_firebase(self):
         self.firebase_worker.abort()
         self.firebase_worker.wait()
-
-    def on_logger_update(self, level, msg):
-        self.update_logger_text(level, msg)
 
     def underwater_status(self, value):
         if value == "True":
@@ -115,8 +105,6 @@ class TruckSensor(QThread):
             self.underwater = False
             self.sensors.underwater = False
 
-        print(f"I am {'' if self.underwater else 'not'} underwater!")
-
 
     def init_ble(self):
         self.ble = BluetoothReader()
@@ -124,14 +112,13 @@ class TruckSensor(QThread):
         print("connect ble")
         update_json, msg, sdata_key = self.ble.run_connection_first()
         if msg:
-            self.status_data.emit("Sensor Connection complete")
+            logger.info("Sensor Connection complete")
 
         self.update_sdata_value(sdata_key)
-        self.update_logger_value()
 
     def init_sensor_status(self):
         self.ble.set_calibration_pressure()
-        self.update_logger_text("info", f"Calibration Pressure complete")
+        logger.info("pressure calibration complete")
 
         update_json, msg, sdata_key = self.ble.get_init_do()
         self.update_any(sdata_key, update_json)
@@ -170,9 +157,8 @@ class TruckSensor(QThread):
         if sdata_key is None:
             return True
         self.update_any(sdata_key, update_json)
-        self.status_data.emit(self.ble.status_string)
         if just_reconnect:
-            self.update_logger_value()
+            pass #TODO
         return msg
 
     def on_gps_update(self, data):
@@ -182,16 +168,13 @@ class TruckSensor(QThread):
         for key, val in data.items():
             self.sdata[key] = val
 
-        data['gps'] = True # TODO remove this
-
         self.update_data.emit(data)
         if self.sdata["prev_pid"] != self.sdata["pid"]:
-            self.update_logger_text("info", f"move to pond ID: {self.sdata['pid']}")
+            logger.info(f"move to pond ID: {self.sdata['pid']}")
         
     def calibrate_DO(self):
         self.ble.set_calibration_do()
-        self.update_logger_text("info", f"Calibration DO complete")
-        self.status_data.emit("Calibration DO complete")
+        logger.info("do calibration complete")
 
     def run(self):
         self._abort = False
@@ -200,7 +183,6 @@ class TruckSensor(QThread):
         while self.ble is None or not self.ble.check_connection_status():
             self.init_ble()
             self.init_sensor_status()
-            self.update_logger_text("info", f"Initialize sensor, get init_do, init_pressure")
             self.msleep(100)
 
         self.init_message_scheduler()
@@ -220,12 +202,10 @@ class TruckSensor(QThread):
             if not connected:
                 # first disconnect event
                 if connection_count == 0:
-                    self.status_data.emit("BLE connection failed - maybe underwater")
+                    logger.info('disconnect noticed')
                     data_dict = {'connection' : self.ble.sdata['connection']}
                     self.update_data.emit(data_dict)
-                    print("counter started because sensor lost connection")
                     self.counter_is_running.emit("True")
-                    self.update_logger_value()
                 # do not try to reconnect for first 5000 ms
                 elif connection_count > 25:
                     connected = self.reconnection(just_reconnect)
@@ -260,39 +240,31 @@ class TruckSensor(QThread):
                         print("underwater, trigger first time events")
                         self.counter_is_running.emit("True")
                         self.status_data.emit("Collecting Data")
-                        self.update_logger_text("info", f"Sensor is underwater, while still connected. {self.ble.current_sample_size} {self.ble.prev_sample_size}")
+                        logger.info('Sensor is underwater, while still connected')
                     continue # continue sampling
 
             # ignore sample sizes less than 4, reset ysi mgl array
             if self.ble.current_sample_size < 4:
+                logger.warning("sensor reconnected without data")
                 self.ble.set_sample_reset()
                 self.ysi_do_mgl_arr = []
                 continue
 
-            # THE FOLLOWING ONLY RUNS WHEN DATA HAS BEEN COLLECTED
-            self.status_data.emit("data is ready, starting to read")
-            print("counter stopped because sensor reconnected with data available")
             self.counter_is_running.emit("False")
 
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
 
             update_json, _, sdata_key = self.ble.get_sample_text()
-            if self.ble.logger_status == "warning":
-                self.update_logger_text(self.ble.logger_status, self.ble.logger_string)
-            self.status_data.emit("Read data finished")
             self.update_any(sdata_key, update_json, True)
 
             self.csv_file = self.ble.csv_file
             
             update_json, msg, sdata_key = self.ble.set_sample_reset()
-            self.update_logger_text("info", f"Reset sample")
-            
-        self.update_logger_text("info", f"ble thread abort {self._abort}")
-        self.finished.emit()
+            # END MAIN LOOP
 
     def abort(self):
-        self.update_logger_text("info", "Stop ble normal process")
+        logger.warning("truck thread stopped")
         self._abort = True
 
     def update_any(self, sdata_key, update_json, update_pond_data = False):
@@ -380,27 +352,6 @@ class TruckSensor(QThread):
         self.data_dict['ysi_do'] = self.sdata['ysi_do']
         self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
         self.update_data.emit(self.data_dict)
-
-    def update_logger_value(self):
-        log = {}
-        log["status"] = self.ble.logger_status
-        log["message"] = self.ble.logger_string
-        print(self.ble.logger_status, self.ble.logger_string)
-        if log["status"] == "info":
-            self.logger.info(log["message"])
-        elif log["status"] == "warning":
-            self.logger.warning(log["message"])
-        self.logger_data.emit(log)
-
-    def update_logger_text(self, logger_status, logger_string):
-        log = {}
-        log["status"] = logger_status
-        log["message"] = logger_string
-        if log["status"] == "info":
-            self.logger.info(log["message"])
-        elif log["status"] == "warning":
-            self.logger.warning(log["message"])
-        self.logger_data.emit(log)
 
     def update_database(self, data_dict):
         #TODO: data_dict is not really used
