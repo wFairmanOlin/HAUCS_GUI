@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
-from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
 from toggle_switch import ToggleSwitch
 import sys
@@ -32,9 +32,11 @@ class DOApp(QWidget):
         logger = logging.getLogger(__name__)
         logger.info('Starting')
         
+        # custom logger to display status
         logPrinter = customLogHandler()
         logPrinter.setLevel(logging.INFO)
         logging.getLogger('').addHandler(logPrinter)
+        logPrinter.log_message.connect(self.on_log_message)
 
         self.current_time = datetime.now()
 
@@ -314,6 +316,8 @@ class DOApp(QWidget):
                 QApplication.restoreOverrideCursor()
             else:
                 QApplication.setOverrideCursor(Qt.WaitCursor)
+    def on_logger_update(self, logMessage):
+        self.status.setText(logMessage['msg'])
 
     def on_counter_running(self, value):
         if value == "True":
@@ -529,9 +533,11 @@ class DOApp(QWidget):
 class customLogHandler(logging.Handler):
     def __init__(self):
         super().__init__()
+        self.log_message = pyqtSignal(dict)
 
     def emit(self, record):
-        print(f"{record.level}: {record.msg}")
+        print(f"{record.levelname}: {record.msg}")
+        self.log_message.emit({'level':record.levelname, 'msg':record.message})
         
 
 
