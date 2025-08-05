@@ -133,8 +133,8 @@ class TruckSensor(QThread):
         #update sdata with new gps data
         for key, val in data.items():
             self.sdata[key] = val
-
-        self.update_data.emit(data)
+            
+        self.sync_ble_sdata()
         if self.sdata["prev_pid"] != self.sdata["pid"]:
             logger.info(f"moved to pid: {self.sdata['pid']}")
         

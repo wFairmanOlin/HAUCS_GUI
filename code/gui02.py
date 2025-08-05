@@ -63,7 +63,7 @@ class DOApp(QWidget):
         self.label_font_size = int(screen_size.height() * 0.06)
         self.label_font_large = int(screen_size.height() * 0.1)
         self.label_font_xlarge = int(screen_size.height() * 0.14)
-        self.status_font = int(screen_size.height() * 0.08)
+        self.status_font = int(screen_size.height() * 0.07)
         self.unit_font = int(screen_size.height() * 0.05)
 
         # retrieve and apply settings
@@ -76,14 +76,11 @@ class DOApp(QWidget):
         self.calibration = self.load_local_csv("calibration.csv")
         self.last_calibration = self.calibration.get("last_calibration", "-")
 
-        self.is_first = True        #TODO REMOVE THIS
-        self.check_conn_first = True#TODO REMOVE THIS
         self.setup_ui()
         self.showFullScreen()
         self.setup_thread()
 
         # setup timer for timer Qlabel
-        self.timer_active = False 
         self.counter_time = 0
         self.timer = QTimer()
         self.timer.setInterval(1000)
@@ -289,16 +286,9 @@ class DOApp(QWidget):
                 batt_percent = 100
             batt_charge = ("not charging" != data_dict['batt_status'][:12])
             self.battery_widget.set_battery_status(batt_percent, batt_charge)
-            if self.is_first:
-                self.led_status.set_status("connected_ready")
-                self.is_first = False
         if 'connection' in data_dict:
             if data_dict['connection'] == "connected":
-                if self.check_conn_first:
-                    self.led_status.set_status("connected_not_ready")
-                    self.check_conn_first = False
-                else:
-                    self.led_status.set_status("connected_ready")
+                self.led_status.set_status("connected_ready")
             else:
                 self.led_status.set_status("disconnected")
         if 'name' in data_dict:
@@ -312,7 +302,6 @@ class DOApp(QWidget):
             else:
                 self.hboi_val.setText(f"{data_dict['do_mgl']:.1f}")
                 self.hboi_unit.setText('mg/l')
-
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
             if do_val < self.min_do:
@@ -324,7 +313,6 @@ class DOApp(QWidget):
         
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'])
-
         if 'mouse' in data_dict:
             if data_dict['mouse'] == 'normal':
                 QApplication.restoreOverrideCursor()
@@ -334,14 +322,14 @@ class DOApp(QWidget):
     def on_underwater_signal(self, value):
         # true if underwater, otherwise false
         if value == "True":
-            if not self.timer.isActive():
-                self.timer.start()
+            self.counter_time = 0
+            self.timer.start()
             self.send_status('collecting data')
 
         else:
             if self.timer.isActive():
                 self.timer.stop()
-                self.send_status('collection stopped')
+            self.send_status('collection stopped')
 
     def on_ysi_update(self, do_ps, do_mgl):
         if self.unit == "percent":
