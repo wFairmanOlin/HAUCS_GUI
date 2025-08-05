@@ -44,7 +44,7 @@ class DOApp(QWidget):
         logPrinter = customLogHandler()
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger('').addHandler(logPrinter)
-        logPrinter.log_message.connect(self.on_log_message)
+        logPrinter.log_message.connect(self.send_status)
 
         self.current_time = datetime.now()
 
@@ -422,7 +422,7 @@ class DOApp(QWidget):
             self.thread.sample_stop_time = self.counter_time
             self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
             if self.counter_time < self.settings['underwater_counter']:
-                self.send_status({'text':'collecting data'})
+                self.send_status('collecting data')
             else:
                 self.send_status('ready to pick up')
         else:
@@ -606,8 +606,12 @@ class customLogHandler(logging.Handler, QObject):
             print(f"{record.relativeCreated/100:.2f}: {record.levelname} {record.message}")
         # if from truck sensor code or level greater than info
         if record.name == "truck_sensor" or record.levelno > 20:
-            msg = record.message[:100] # limit to first 100 characters
-            self.log_message.emit({'level':record.levelno, 'msg':record.message})
+            color = "white"
+            if record.levelno > 20:
+                color = "orange"
+            elif record.levelno > 30:
+                color = "red"
+            self.log_message.emit(record.msg, color)
         
 
 
