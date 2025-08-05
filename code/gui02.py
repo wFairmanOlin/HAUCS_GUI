@@ -299,7 +299,7 @@ class DOApp(QWidget):
             self.pid_val.setText(str(data_dict['pid']))
         if 'do' in data_dict:
             if self.unit == "percent":
-                self.hboi_val.setText(f"{100 * data_dict['do']:.1f}")
+                self.hboi_val.setText(f"{100 * data_dict['do']:.0f}")
                 self.hboi_unit.setText('%')
             else:
                 self.hboi_val.setText(f"{data_dict['do_mgl']:.1f}")
@@ -312,9 +312,8 @@ class DOApp(QWidget):
                 self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;")
             else:
                 self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
-        
         if 'ysi_do' in data_dict:
-            self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'])
+            self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
         if 'mouse' in data_dict:
             if data_dict['mouse'] == 'normal':
                 QApplication.restoreOverrideCursor()
@@ -334,13 +333,27 @@ class DOApp(QWidget):
                 self.timer.stop()
                 self.send_status('collection stopped')
 
-    def on_ysi_update(self, do_ps, do_mgl):
+    def on_ysi_update(self, do_ps, do_mgl, smooth=False):
+        '''
+        smooth applies moving average to live display only.
+        '''
+        if smooth:
+            alpha = 0.5
+            try:
+                old_data = float(self.ysi_val.text())
+                if self.unit == "percent":
+                    do_ps = alpha * do_ps + (1 - alpha) * old_data
+                else:
+                    do_mgl = alpha * do_mgl + (1 - alpha) * old_data
+            except Exception as e:
+                logger.warning(f'failed smooth ysi data \n{e}')
+
         if self.unit == "percent":
             # water temperature and/or pressure have not been recorded
             if do_ps == -1:
                 self.ysi_val.setText('-')
             else:
-                self.ysi_val.setText(f"{100 * do_ps:.1f}")
+                self.ysi_val.setText(f"{100 * do_ps:.0f}")
             self.ysi_unit.setText('%')
         else:
             self.ysi_val.setText(f"{do_mgl:.1f}")
