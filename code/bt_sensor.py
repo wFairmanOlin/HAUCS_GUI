@@ -22,23 +22,10 @@ logger = logging.getLogger(__name__)
 class BluetoothReader(QObject):
     data_updated = pyqtSignal(dict)
     uart_connection = None
-    status_string = ""
-    sdata = {}
-    init_do_val = 0
-    init_p_val = 0
-    batt_v = 0
-    batt_status = "no batt"
-    connection_status = "not connected"
-    previous_connect = False
-    sensor_name = "xyz"
-    current_sample_size = -1
-    prev_sample_size = 0
-    do_vals = []
-    temp_vals = []
-    pressure_vals = []
-    do = 0
-    temp_val = 0
-    pressure_val = 0
+    sdata = {'connection':'not connected', 'name':'generic'}
+    current_sample_size = 0
+    previous_sample_size = 0
+
 
    # dictionary of commands (tx) and expected retunrs (rx)
     commands = {
@@ -58,129 +45,80 @@ class BluetoothReader(QObject):
         super().__init__()
         self.ble = BLERadio()
         self._abort = False
-        #set a flag to indicate first time connect to the payload
-        self.check_size = -1 # check the dsize
-        self.batt_cnt = 0
-        logger.info('BluetoothReader started')
 
     def connect(self):
-        print("searching for sensor ...")
+        logger.debug('starting ble scan')
         for adv in self.ble.start_scan(ProvideServicesAdvertisement):
-            #print('ble:'+adv.services)
             if UARTService in adv.services:
-                print(f"found sensor with UART service {adv.complete_name}")
+                logger.debug(f"found sensor with UART service {adv.complete_name}")
                 self.uart_connection = self.ble.connect(adv)
                 if self.uart_connection.connected:
-                    self.status_string = "connected to: " + adv.complete_name
                     self.sensor_name = adv.complete_name
                     self.sdata['name'] = adv.complete_name[9:]
+                    self.sdata['connection'] = 'connected'
                     return True   
         self.ble.stop_scan()
+        self.sdata['connection'] = 'not connected'
         return False
-
-    def run_connection_first(self):
-        # os.popen('sudo hciconfig hci0 reset')
-        # self.status_string = "doing hciconfig hci0 reset"
-        # time.sleep(5)
-        if self.connect():
-            self.send_receive_command(self.commands['xmas'])
-            self.connection_status = "connected"
-            self.sdata['connection'] = self.connection_status
-            update_json, msg = True, True
-            return update_json, msg, ['name', 'connection']
-        else:
-            #fails['ble'] += 1
-            self.status_string = "BLE connect failed"
-            self.connection_status = "not connected"
-            self.sdata['connection'] = self.connection_status
-        update_json, msg = False, False
-        return update_json, msg, None
 
     def check_connection_status(self):
         # prioritize status from uart connection 
         connected = False
         if not (self.uart_connection and self.uart_connection.connected):
-            self.connection_status = "not connected"
-            self.sdata['connection'] = self.connection_status
-            self.previous_connect = False
+            logger.debug("uart_connection.connected triggered not connected status")
+            self.sdata['connection'] = "not connected"
         # use timeouts to predict disconnect
         elif self.transmission_timeouts > 0:
-            logger.info("BLE transmission caused timeout")
-            self.connection_status = "not connected"
-            self.sdata['connection'] = self.connection_status
-            self.previous_connect = False
+            logger.debug("send_receive timeout triggered not connected status")
+            self.sdata['connection'] = "not connected"
         # sensor is connected
         else:
+            logger.debug('check connections status returned connected')
             connected = True
         return connected
 
     def reconnect(self):
         if not (self.uart_connection and self.uart_connection.connected):
-            update_json = False
             if self.sdata.get('connection') != "not connected":
-                self.connection_status = "not connected"
-                self.sdata['connection'] = self.connection_status
-                self.previous_connect = False
-                update_json = True
-                
-            self.status_string = "trying to reconnect"
-            if self.connect():
-                self.connection_status = "connected"
-                self.sdata['connection'] = self.connection_status
-                update_json = True
-                if not self.previous_connect:
-                    self.previous_connect = True
-                # self.check_size = 1
-                msg = True
-                return update_json, msg, ['connection']
-            else:
-                #fails['ble'] += 1
-                self.status_string = "BLE connect failed - maybe underwater"
-                msg = False
-                return update_json, msg, ['connection']
-
-        else: # do nothing
-            update_json, msg = None, None
-            return update_json, msg, None
+                logger.info('sdata reported connected while uart_connection.connected is false')
+                self.sdata['connection'] = "not connected"
+            return self.connect()
+        
+        logger.debug('reconnect attempted, already connected, do nothing')
+        return True
 
     def get_init_do(self):
         self.sdata["init_do"] = 0
-        update_json = False
-        msg = self.send_receive_command(self.commands['init_do'])
-        return update_json, msg, ["init_do"]
+        self.send_receive_command(self.commands['init_do'])
+        return self.sdata['init_do']
 
     def get_init_pressure(self):
         self.sdata["init_pressure"] = 0
-        update_json = False
-        msg = self.send_receive_command(self.commands['init_ps'])
-        return update_json, msg, ["init_pressure"]
+        self.send_receive_command(self.commands['init_ps'])
+        return self.sdata['init_pressure']
     
     def get_sampling_rate(self):
         self.sdata["sample_hz"] = 1
-        update_json = False
-        msg = self.send_receive_command(self.commands['s_rate'])
-        return update_json, msg, ["sample_hz"]
-
+        self.send_receive_command(self.commands['s_rate'])
+        return self.sdata['sample_hz']
+    
     def get_battery(self):
-        update_json = True
-        msg = self.send_receive_command(self.commands['battery'])
-        return update_json, msg, ['battv', 'batt_status']
-
-    def set_sample_reset(self):
-        update_json = False
-        msg = self.send_receive_command(self.commands['s_reset'])
-        self.prev_sample_size = 0
-        self.current_sample_size = 0
-        return update_json, msg, None
-
+        self.send_receive_command(self.commands['battery'])
+        return self.sdata['battv'], self.sdata['batt_status']
+    
     def get_sample_size(self):
         return self.send_receive_command(self.commands['s_size'])
+    
+    def set_sample_reset(self):
+        self.send_receive_command(self.commands['s_reset'])
+        self.previous_sample_size = 0
+        self.current_sample_size = 0
 
-    def get_sample_text(self):
-        update_json = True
+
+
+    def get_sample_data(self):
         msg = self.send_receive_command(self.commands['s_print'], timeout=5)
-        keys = ["init_do", "init_pressure", 'battv', 'batt_status', "do_vals", "temp_vals", "pressure_vals", "sample_hz", 'name']
-        return update_json, msg, keys
+        return msg == 'dfinish'
     
     def set_calibration_pressure(self):
         return self.send_receive_command(self.commands['cal_ps']) 
@@ -192,62 +130,62 @@ class BluetoothReader(QObject):
         command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
         self.send_receive_command(command)
 
+    def set_lights(self, pattern):
+        command = {'tx':f"set light {pattern}", 'rx':''}
+        self.send_receive_command(command)
+
 
     def extract_message(self, msg):
         #TODO: break this into individual callbacks for each message
-        # print(f"extract: {msg}")
         key, value = msg[0], msg[1:]
-        if key == "init_do":
-            self.init_do_val = float(value[0].strip())
-            self.sdata["init_do"] = self.init_do_val
-        elif key == "init_p":
-            self.init_p_val = float(value[0].strip())
-            self.sdata["init_pressure"] = self.init_p_val
+        try:
+            if key == "init_do":
+                self.sdata["init_do"] = float(value[0].strip())
 
-        elif key == 'v' and len(value) == 3:
-            self.batt_v = float(value[0])
-            self.batt_status = value[2].strip()
-            self.sdata['battv'] = self.batt_v
-            self.sdata['batt_status'] = self.batt_status
-        elif key == 'sample_hz':
-            self.sdata['sample_hz'] = float(value[0])
-        elif key == "dsize":
-            self.prev_sample_size = self.current_sample_size
-            try:
-                self.current_sample_size = int(value[0])
-            except:
-                print(f"failed to get sample size, msg: {value[0]}")
-        elif key == "dstart":
-            self.prev_sample_size = self.current_sample_size
-            self.current_sample_size = int(value[0].strip())
-            self.data_counter = 0
-            self.do_vals = []
-            self.temp_vals = []
-            self.pressure_vals = []
+            elif key == "init_p":
+                self.sdata["init_pressure"] = float(value[0].strip())
 
-        elif key == "ts":
-            try:
-                do = float(value[2])
-                temp_val = float(value[4])
-                pressure_val = float(value[6])
-            except:
-                do = 0
-                temp_val = 0
-                pressure_val = 0
+            elif key == 'v' and len(value) == 3:
+                self.sdata['battv'] = float(value[0])
+                self.sdata['batt_status'] = value[2].strip()
 
-            self.do_vals.append(do) # DO
-            self.temp_vals.append(temp_val)   # tempuerature 
-            self.pressure_vals.append(pressure_val) # pressure
-            self.data_counter = self.data_counter + 1  
+            elif key == 'sample_hz':
+                self.sdata['sample_hz'] = float(value[0])
 
-        elif "dfinish" in key:
+            elif key == "dsize":
+                self.previous_sample_size = self.current_sample_size
+                self.current_sample_size = int(value[0])         
 
-            self.sdata["init_do"] = self.init_do_val
-            self.sdata['battv'] = self.batt_v
-            self.sdata['batt_status'] = self.batt_status
-            self.sdata["do_vals"] = self.do_vals
-            self.sdata["temp_vals"] = self.temp_vals
-            self.sdata["pressure_vals"] = self.pressure_vals
+            elif key == "dstart":
+                self.prev_sample_size = self.current_sample_size
+                self.current_sample_size = int(value[0].strip())
+                self.data_counter = 0
+                self.sdata["do_vals"] = []
+                self.sdata["temp_vals"] = []
+                self.sdata["pressure_vals"] = []
+
+            elif key == "ts":
+                try:
+                    do = float(value[2])
+                    temp_val = float(value[4])
+                    pressure_val = float(value[6])
+                except:
+                    logger.warning(f'data corrupted in ble transfer {key, value}')
+                    do = 0
+                    temp_val = 0
+                    pressure_val = 0
+
+                self.sdata['do_vals'].append(do)
+                self.sdata["temp_vals"].append(temp_val)
+                self.sdata["pressure_vals"].append(pressure_val)
+                self.data_counter = self.data_counter + 1  
+
+            elif "dfinish" in key:
+                # compare data counter to current sample size
+                if self.data_counter != self.current_sample_size:
+                    logger.warning(f"size mismatch between data collected on sensor and data received: {self.current_sample_size} vs. {self.data_counter}")
+        except:
+            logger.warning(f'failed to parse {key} message, received: {value}')
 
     def send_receive_command(self, command, timeout=1):
         '''
@@ -269,6 +207,7 @@ class BluetoothReader(QObject):
         while len(command['rx']) > 0:
             # check timeout
             if (time.time() - start_time > timeout):
+                logger.debug('timeout triggered')
                 self.transmission_timeouts += 1
                 return ""
             # wait till buffer has something
@@ -293,4 +232,5 @@ class BluetoothReader(QObject):
                         break
         # reset transmission timeouts on successfull transmission 
         self.transmission_timeouts = 0
+        logger.debug(f"sent {command}, received {msg}")
         return msg

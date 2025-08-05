@@ -41,6 +41,7 @@ class FirebaseWorker(QThread):
         super().__init__()
         self._abort = False
         logger.info("starting firebase worker")
+        self.init_firebase() #TODO unecessary function
 
     def init_firebase(self):
         try:
