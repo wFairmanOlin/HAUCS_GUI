@@ -423,19 +423,19 @@ class DOApp(QWidget):
         dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            print("ok, calibrate")
             self.thread.messaging_active = False
-            self.thread.calibrate_DO()
+            success = self.thread.calibrate_DO()
             QApplication.restoreOverrideCursor()
-
             self.thread.messaging_active = True
-            now = datetime.now()
-            formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
-            self.last_calibration = formatted_time
-            self.calibration['last_calibration'] = self.last_calibration
-            self.save_local_csv(self.calibration, "calibration.csv")
+            if success:
+                now = datetime.now()
+                formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
+                self.last_calibration = formatted_time
+                self.calibration['last_calibration'] = self.last_calibration
+                self.save_local_csv(self.calibration, "calibration.csv")
         else:
-            print("User clicked No")
+            # user clicked no
+            pass
         
     def on_calibrate_ysi_click(self):
         dialog = CustomYesNoDialog(
@@ -444,12 +444,12 @@ class DOApp(QWidget):
         )
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            print("User clicked Yes")
+            # user clicked yes
         else:
-            print("User clicked No")
+            # user clicked no
+            pass
 
     def on_history_log_click(self):
-        print("?? History Log clicked")
         window = HistoryLogWindow(self.unit, self.min_do, self.good_do, parent=self)
         window.exec_() 
 
@@ -463,7 +463,7 @@ class DOApp(QWidget):
             self.settings['min_do'] = self.min_do
             self.settings['good_do'] = self.good_do
             self.save_local_csv(self.settings, "settings.csv")
-            # print("Updated:", new_values)
+            logger.info('user updated settings')
 
     def save_local_csv(self, data_dict, filename):
         try:
@@ -472,9 +472,9 @@ class DOApp(QWidget):
                 writer.writeheader()
                 for key, value in data_dict.items():
                     writer.writerow({"param": key, "value": str(value)})
-            print(f"saved to {filename}")
+            logger.info(f"saved to {filename}")
         except Exception as e:
-            print(f"Failed to save: {e}")
+            logger.warning(f"Failed to save: {e}")
 
     def load_local_csv(self, filename):
         '''
@@ -497,7 +497,7 @@ class DOApp(QWidget):
                         value = row['value']
                     data_dict[key] = value
         else:
-            print(f"created file for {filename}")
+            logger.info(f"created file for {filename}")
             with open(filename, 'a', newline='') as csvfile:
                 pass
         
@@ -507,42 +507,39 @@ class DOApp(QWidget):
         dialog = ShutdownDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             if dialog.result == "close":
+                logger.info("user closed program")
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                logger.info("user closed program")
-                print("Program close")
                 super().closeEvent(event)
 
             elif dialog.result == "shutdown":
-                print("Shutting down...")
+                logger.info("user triggered shutdown")
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                logger.info("user triggered shutdown")
                 os.system("sudo shutdown now")
                 event.ignore()
 
             elif dialog.result == "restart":
-                print("Rebooting...")
+                logger.info("user triggered restart")
                 self.thread.abort()
                 self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
                     self.result_window = None
-                logger.info("user triggered restart")
                 os.system("sudo reboot")
                 event.ignore()
 
             elif dialog.result == "test":
-                print("starting test sequence")
+                logger.info("sending test data to bring up results page")
                 with open('test.pickle', 'rb') as file:
                     fake_data = pickle.load(file)
                     

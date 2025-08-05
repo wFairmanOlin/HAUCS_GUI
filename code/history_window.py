@@ -113,7 +113,7 @@ class HistoryLogWindow(QDialog):
 
                         rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, depth))
                     except:
-                        print("couldn't append history rows")
+                        logger.warning("couldn't append history rows")
 
         rows.sort(key=lambda x: (x[0], x[1]), reverse=True)
         self.table.setRowCount(len(rows))

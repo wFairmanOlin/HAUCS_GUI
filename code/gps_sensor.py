@@ -2,6 +2,8 @@ import adafruit_gps
 import pandas as pd
 import time
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
 
 class GPSSensor:
 
@@ -49,7 +51,7 @@ class GPSSensor:
             if self.gps.track_angle_deg:
                 self.heading = self.gps.track_angle_deg
         except:
-            print('GPS update failed')
+            logger.info('gps update failed')
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
@@ -61,7 +63,7 @@ class GPSSensor:
         try:
             point = np.array([float(lng), float(lat)])
         except:
-            print("malformed latitude and longitude")
+            logger.warning('get pond id received malformed coordinates')
             self.pond_id = self.default_pond_id
             return self.pond_id
         

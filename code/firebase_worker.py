@@ -49,7 +49,6 @@ class FirebaseWorker(QThread):
                 self.cred = credentials.Certificate(self.fb_key)
                 self.app = firebase_admin.initialize_app(self.cred, {'databaseURL': 'https://haucs-monitoring-default-rtdb.firebaseio.com'})
             else:
-                print("firebase failed to initialize")
                 logger.error('firebase initialization failed bc no fb_key found')
         except Exception as error:
             logger.error(f'Firebase initialize failed {str(error)}')
@@ -92,7 +91,6 @@ class FirebaseWorker(QThread):
         save_time = message_time.replace(":","-")
         file_path = os.path.join(self.unsaved_folder, save_time + ".pickle")
         self.sdatas.append(sdata)
-        print("appended sdata")
 
         os.makedirs(self.unsaved_folder, exist_ok=True)
         with open(file_path, 'wb') as file:

@@ -280,7 +280,6 @@ class ResultWindow(QWidget):
         self.checkbox_pause.setEnabled(False)
         self.btn_close.setText(f"Close")
         self.img_label2.setVisible(True)
-        print("Engineering Analysis clicked")
 
     def mousePressEvent(self, event):
         clicked_widget = self.childAt(event.pos())

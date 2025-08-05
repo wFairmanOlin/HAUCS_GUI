@@ -1,6 +1,8 @@
 import math
 import numpy as np
 from scipy.optimize import curve_fit
+import logging
+logger = logging.getLogger(__name__)
 
 def to_fahrenheit(temp):
     return (temp / 5) * 9 + 32
@@ -95,7 +97,7 @@ def calculate_do_fit(do_vals, max_time=30, sample_hz=1):
         fit_type = "curve"
 
     except Exception as e:
-        print("Curve fit failed:", e)
+        logger.info("curve fit failed, defaulting to line of best fit")
 
         popt = np.polyfit(time, do_vals, 1)
         fit_type = "linear"

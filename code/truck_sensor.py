@@ -139,8 +139,12 @@ class TruckSensor(QThread):
             logger.info(f"moved to pid: {self.sdata['pid']}")
         
     def calibrate_DO(self):
-        self.ble.set_calibration_do()
-        logger.info("do calibration complete")
+        status = self.ble.set_calibration_do()
+        if status:
+            logger.info("do calibration complete")
+        else:
+            logger.warning("do calibration failed")
+        return status
 
     def run(self):
         self._abort = False

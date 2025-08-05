@@ -77,7 +77,6 @@ class ShutdownDialog(QDialog):
 
     def try_close(self):
         #TODO UNCOMMENT WHEN DEPLOYED
-        print(self.password_input.text())
         if self.password_input.text() == "test":
             self.result = "test"
             self.accept()
