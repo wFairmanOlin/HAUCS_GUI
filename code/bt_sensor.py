@@ -24,7 +24,7 @@ class BluetoothReader(QObject):
     uart_connection = None
     sdata = {'connection':'not connected', 'name':'generic'}
     current_sample_size = 0
-    previous_sample_size = 0
+    prev_sample_size = 0
 
 
    # dictionary of commands (tx) and expected retunrs (rx)
@@ -110,7 +110,7 @@ class BluetoothReader(QObject):
     
     def set_sample_reset(self):
         self.send_receive_command(self.commands['s_reset'])
-        self.previous_sample_size = 0
+        self.prev_sample_size = 0
         self.current_sample_size = 0
 
 
@@ -152,7 +152,7 @@ class BluetoothReader(QObject):
                 self.sdata['sample_hz'] = float(value[0])
 
             elif key == "dsize":
-                self.previous_sample_size = self.current_sample_size
+                self.prev_sample_size = self.current_sample_size
                 self.current_sample_size = int(value[0])         
 
             elif key == "dstart":

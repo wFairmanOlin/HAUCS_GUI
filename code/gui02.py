@@ -330,10 +330,10 @@ class DOApp(QWidget):
         font = font // (len(msg) // 10) #shrink font size as message size scales
         
         # warning color
-        if logMessage['levelno'] > 20:
+        if logMessage['level'] > 20:
             color = "orange"
         # error color
-        elif logMessage['levelno'] > 30:
+        elif logMessage['level'] > 30:
             color = "red"
 
         self.status.setStyleSheet(f"font-size: {self.status_font}px; color: {color}; font-weight: bold;")
