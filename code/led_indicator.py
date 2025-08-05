@@ -7,8 +7,8 @@ from PyQt5.QtCore import QSize
 class LEDIndicatorWidget(QWidget):
     def __init__(self, parent=None, status="disconnected"):
         super().__init__(parent)
-        self.status = status  # "disconnected", "connected_not_ready", "connected_ready"
-        self.setFixedSize(50, 50)  # ขนาดกลมเท่าปุ่ม X
+        self.status = status
+        self.setFixedSize(50, 50)
 
     def set_status(self, status):
         self.status = status
@@ -20,21 +20,19 @@ class LEDIndicatorWidget(QWidget):
 
         # สีตามสถานะ
         if self.status == "disconnected":
-            color = QColor(255, 0, 0)  # แดง
+            color = QColor(255, 0, 0)
         elif self.status == "connected_not_ready":
-            color = QColor(255, 255, 0)  # เหลือง
+            color = QColor(255, 255, 0)
         elif self.status == "connected_ready":
-            color = QColor(50, 255, 50)  # เขียว lime
+            color = QColor(50, 255, 50)
         else:
-            color = QColor(128, 128, 128)  # สีเทากลางกรณีไม่รู้
+            color = QColor(128, 128, 128)
 
-        # สร้าง gradient มีมิติ
         gradient = QRadialGradient(self.width() / 2, self.height() / 2, self.width() / 2)
-        gradient.setColorAt(0, QColor(255, 255, 255, 200))  # จุดกลาง
-        gradient.setColorAt(0.3, color.lighter(150))  # ขอบใน
-        gradient.setColorAt(1, color.darker(180))  # ขอบนอก
+        gradient.setColorAt(0, QColor(255, 255, 255, 200))
+        gradient.setColorAt(0.3, color.lighter(150))
+        gradient.setColorAt(1, color.darker(180))
 
-        # วาดวงกลม
         brush = QBrush(gradient)
         painter.setBrush(brush)
         pen = QPen(Qt.black)
@@ -79,4 +77,4 @@ class LEDStatusWidget(QWidget):
         self.label.adjustSize()
 
     def sizeHint(self):
-        return QSize(140, 40)  # ปรับตาม text
+        return QSize(140, 40)

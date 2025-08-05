@@ -63,7 +63,7 @@ class DOApp(QWidget):
         self.label_font_size = int(screen_size.height() * 0.06)
         self.label_font_large = int(screen_size.height() * 0.1)
         self.label_font_xlarge = int(screen_size.height() * 0.14)
-        self.status_font = int(screen_size.height() * 0.07)
+        self.status_font = int(screen_size.height() * 0.08)
         self.unit_font = int(screen_size.height() * 0.05)
 
         # retrieve and apply settings
@@ -324,6 +324,7 @@ class DOApp(QWidget):
         if value == "True":
             self.counter_time = 0
             self.timer.start()
+            self.timer_val.setText(f"{self.counter_time}")
             self.send_status('collecting data')
 
         else:
@@ -360,10 +361,10 @@ class DOApp(QWidget):
                 pass
         
             if isinstance(msg, dict):
-                font = self.status_font // (1 + len(msg) // 10) #shrink font size as message size scales
                 txt = msg.get('text', 'status error')
                 txt = txt[:100] # limit to first 100 characters
                 color = msg.get('color', 'white')
+                font = self.status_font // (1 + len(txt) // 10) #shrink font size as message size scales
 
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
