@@ -49,8 +49,10 @@ class DOApp(QWidget):
         logger.info('\nSTARTING APPLICATION')
         # custom logger to display status
         logPrinter = customLogHandler()
+        localFilter = localOnlyFilter()
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger('').addHandler(logPrinter)
+        logging.getLogger('').addFilter(localFilter)
         logPrinter.log_message.connect(self.send_status)
 
         self.current_time = datetime.now()
@@ -368,11 +370,11 @@ class DOApp(QWidget):
                 if len(txt) > 20: 
                     font = int(self.status_font * 0.75)
                 elif len(txt) > 40:
-                    font = int(self.status_font * 0.5)
+                    font = int(self.status_font * 0.45)
                 elif len(txt) > 60:
-                    font = int(self.status_font * 0.4)
+                    font = int(self.status_font * 0.3)
                 else:
-                    font = self.status_font// (1 + len(txt) // 10) 
+                    font = self.status_font
 
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
@@ -559,6 +561,11 @@ class DOApp(QWidget):
         else:
             # User pressed Cancel or closed dialog
             event.ignore()
+
+class localOnlyFilter(logging.Filter):
+    names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
+    def filter(self, record):
+        return record.name in self.names
 
 class customLogHandler(logging.Handler, QObject):
     log_message = pyqtSignal(str, str)
