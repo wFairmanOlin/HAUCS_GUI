@@ -339,20 +339,6 @@ class DOApp(QWidget):
                 QApplication.restoreOverrideCursor()
             else:
                 QApplication.setOverrideCursor(Qt.WaitCursor)
-    
-    def on_log_message(self, logMessage):
-        '''
-        connects to pyqtsignal from customLogHandler
-        '''
-        color = "white"
-        msg = logMessage['msg']
-        # warning color
-        if logMessage['level'] > 20:
-            color = "orange"
-        # error color
-        elif logMessage['level'] > 30:
-            color = "red"
-        self.send_status(msg, color)
 
     def on_counter_running(self, value):
         if value == "True":
@@ -594,7 +580,7 @@ class DOApp(QWidget):
             event.ignore()
 
 class customLogHandler(logging.Handler, QObject):
-    log_message = pyqtSignal(dict)
+    log_message = pyqtSignal(str, str)
 
     def __init__(self):
         logging.Handler.__init__(self)
