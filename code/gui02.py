@@ -329,7 +329,7 @@ class DOApp(QWidget):
         else:
             if self.timer.isActive():
                 self.timer.stop()
-            self.send_status('collection stopped')
+                self.send_status('collection stopped')
 
     def on_ysi_update(self, do_ps, do_mgl):
         if self.unit == "percent":

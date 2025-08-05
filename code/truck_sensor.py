@@ -133,7 +133,7 @@ class TruckSensor(QThread):
         #update sdata with new gps data
         for key, val in data.items():
             self.sdata[key] = val
-            
+
         self.sync_ble_sdata()
         if self.sdata["prev_pid"] != self.sdata["pid"]:
             logger.info(f"moved to pid: {self.sdata['pid']}")
@@ -206,6 +206,7 @@ class TruckSensor(QThread):
                 if self.underwater:
                     logger.info('sensor reconnected with no data, try again')
                     self.sensor_underwater.emit("False")
+                self.ysi_do_mgl_arr = []
                 continue # continue sampling
             # sensor has data
             elif self.ble.current_sample_size > 0:
@@ -220,8 +221,11 @@ class TruckSensor(QThread):
             # ignore sample sizes less than 4, reset ysi mgl array
             if self.ble.current_sample_size < 4:
                 logger.warning(f"sensor reconnected with {self.ble.current_sample_size} data points, try again")
+                if self.underwater:
+                    self.sensor_underwater.emit("False")
                 self.ble.set_sample_reset()
                 self.ysi_do_mgl_arr = []
+
                 continue
             
             # RUNS WHEN DATA IS AVAILABLE
