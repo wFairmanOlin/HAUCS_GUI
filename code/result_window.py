@@ -354,22 +354,26 @@ class ResultWindow(QWidget):
             record_time = 30 #TODO: this should be in setting.setting
             x_plot = np.linspace(0, sample_stop_time, 5 * sample_stop_time)
 
-            # generate time array
-            time = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
-            time = time[time <= sample_stop_time]
+            # generate time array for hboi
+            time_hboi = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+            time_hboi = time_hboi[time_hboi <= sample_stop_time]
 
+            # generate time array for ysi sensor
+            time_ysi = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+            time_ysi = time_ysi[time_ysi <= sample_stop_time]
+            
             # fit for HBOI SENSOR
             p, f = calculate_do_fit(do_arr, record_time, self.data['sample_hz'])
             y_fit = generate_do(x_plot, p, f)
             y_fit = [scale * i for i in y_fit]
-            y_scatter = do_arr[:len(time)]
+            y_scatter = do_arr[:len(time_hboi)]
             y_scatter = [scale * i for i in y_scatter]
             
             # fit for YSI SENSOR
             p, f = calculate_do_fit(ysi_do_arr, record_time, self.data['sample_hz'])
             y_fit_ysi = generate_do(x_plot, p, f)
             y_fit_ysi = [scale * i for i in y_fit_ysi]
-            y_scatter_ysi = ysi_do_arr[:len(time)]
+            y_scatter_ysi = ysi_do_arr[:len(time_ysi)]
             y_scatter_ysi = [scale * i for i in y_scatter_ysi]
 
             fig = Figure(figsize=(((self.img_label2.width())/ 100.0), self.img_label2.height() / 100.0), dpi=100)
@@ -399,8 +403,8 @@ class ResultWindow(QWidget):
             pixmap = QPixmap.fromImage(img)
             scaled = pixmap.scaled(self.img_label2.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.img_label2.setPixmap(scaled)
-        except:
-            print(f"curve-fitting plot failed {self.data}")
+        except Exception as error:
+            print(f"curve-fitting plot failed\n{self.data}\n{error}")
             self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 
