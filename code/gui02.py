@@ -21,6 +21,10 @@ from setting_dialog import SettingDialog
 from custom_yesno_dialog import CustomYesNoDialog
 import pickle
 
+if os.environ.get('DISPLAY','') == '':
+    print('no display found. Using :0.0')
+    os.environ.__setitem__('DISPLAY', ':0.0')
+
 class DOApp(QWidget):
     def __init__(self):
         super().__init__()
