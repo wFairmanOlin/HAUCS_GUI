@@ -333,7 +333,7 @@ class DOApp(QWidget):
                 self.timer.stop()
                 self.send_status('collection stopped')
 
-    def on_ysi_update(self, do_ps, do_mgl, smooth=False):
+    def on_ysi_update(self, do_ps, do_mgl, smooth=True):
         '''
         smooth applies moving average to live display only.
         '''
@@ -342,7 +342,7 @@ class DOApp(QWidget):
             try:
                 old_data = float(self.ysi_val.text())
                 if self.unit == "percent":
-                    do_ps = alpha * do_ps + (1 - alpha) * old_data
+                    do_ps = alpha * do_ps + (1 - alpha) * old_data / 100
                 else:
                     do_mgl = alpha * do_mgl + (1 - alpha) * old_data
             except Exception as e:
@@ -388,7 +388,7 @@ class DOApp(QWidget):
                     font = int(self.status_font * 0.3)
                 else:
                     font = self.status_font
-
+                txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
                 self.status_timer.start()
@@ -593,11 +593,13 @@ class customLogHandler(logging.Handler, QObject):
             print(f"{record.relativeCreated/100:.2f}: {record.levelname} {record.message}")
         # if from truck sensor code or level greater than info
         if record.name == "truck_sensor" or record.levelno > 20:
-            color = "white"
-            if record.levelno > 20:
-                color = "orange"
-            elif record.levelno > 30:
+            
+            if record.levelno > 30:
                 color = "red"
+            elif record.levelno > 20:
+                color = "orange"
+            else:
+                color = "white"
             self.log_message.emit(record.msg, color)
         
 
