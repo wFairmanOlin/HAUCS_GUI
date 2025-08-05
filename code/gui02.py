@@ -1,5 +1,4 @@
-# set true to print and save debug messages
-ENABLE_DEBUG = False
+ENABLE_DEBUG = False # set true to print logs to console and collect debug level logs
 
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
@@ -566,7 +565,6 @@ class DOApp(QWidget):
 class localOnlyFilter(logging.Filter):
     names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
     def filter(self, record):
-        print(record.name)
         return record.name in self.names
 
 class customLogHandler(logging.Handler, QObject):
