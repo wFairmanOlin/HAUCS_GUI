@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class BluetoothReader(QObject):
     data_updated = pyqtSignal(dict)
     uart_connection = None
-    sdata = {'connection':'not connected', 'name':'generic', 'sample_hz':1}
+    sdata = {'connection':False, 'name':'generic', 'sample_hz':1}
     current_sample_size = 0
     prev_sample_size = 0
 
@@ -55,32 +55,34 @@ class BluetoothReader(QObject):
                 if self.uart_connection.connected:
                     self.sensor_name = adv.complete_name
                     self.sdata['name'] = adv.complete_name[9:]
-                    self.sdata['connection'] = 'connected'
+                    self.sdata['connection'] = True
                     return True   
         self.ble.stop_scan()
-        self.sdata['connection'] = 'not connected'
+        self.sdata['connection'] = False
         return False
 
     def check_connection_status(self):
         connected = False
         if not (self.uart_connection and self.uart_connection.connected):
-            logger.debug("uart_connection.connected triggered not connected status")
-            self.sdata['connection'] = "not connected"
+            if self.sdata['connection']:
+                logger.debug("uart_connection.connected triggered not connected status in check_connection_status")
         # use timeouts to predict disconnect
         elif self.transmission_timeouts > 0:
-            logger.debug("send_receive timeout triggered not connected status")
-            self.sdata['connection'] = "not connected"
+            if self.sdata['connection']:
+                logger.debug("send_receive timeout triggered not connected status")
         # sensor is connected
         else:
-            logger.debug('check_connections_status returned connected')
+            if self.sdata['connection'] == False:
+                logger.info('sdata reported disconnected but uart_connection.connected is true')
             connected = True
+        self.sdata['connection'] = connected
         return connected
 
     def reconnect(self):
         if not (self.uart_connection and self.uart_connection.connected):
-            if self.sdata.get('connection') != "not connected":
+            if self.sdata['connection'] != False:
                 logger.info('sdata reported connected while uart_connection.connected is false')
-                self.sdata['connection'] = "not connected"
+                self.sdata['connection'] = False
             return self.connect()
         
         logger.debug('reconnect attempted, already connected, do nothing')

@@ -289,7 +289,7 @@ class DOApp(QWidget):
             batt_charge = ("not charging" != data_dict['batt_status'][:12])
             self.battery_widget.set_battery_status(batt_percent, batt_charge)
         if 'connection' in data_dict:
-            if data_dict['connection'] == "connected":
+            if data_dict['connection']:
                 self.led_status.set_status("connected_ready")
             else:
                 self.led_status.set_status("disconnected")
