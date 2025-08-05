@@ -339,14 +339,15 @@ class DOApp(QWidget):
         '''
         if smooth:
             alpha = 0.5
-            try:
-                old_data = float(self.ysi_val.text())
-                if self.unit == "percent":
-                    do_ps = alpha * do_ps + (1 - alpha) * old_data / 100
-                else:
-                    do_mgl = alpha * do_mgl + (1 - alpha) * old_data
-            except Exception as e:
-                logger.warning(f'failed smooth ysi data \n{e}')
+            if self.ysi_val.text().isnumeric():
+                try:
+                    old_data = float(self.ysi_val.text())
+                    if (self.unit == "percent") and (do_ps != -1):
+                        do_ps = alpha * do_ps + (1 - alpha) * old_data / 100
+                    else:
+                        do_mgl = alpha * do_mgl + (1 - alpha) * old_data
+                except Exception as e:
+                    logger.warning(f'failed smooth ysi data \n{e}')
 
         if self.unit == "percent":
             # water temperature and/or pressure have not been recorded
@@ -385,7 +386,7 @@ class DOApp(QWidget):
                 elif len(txt) > 40:
                     font = int(self.status_font * 0.45)
                 elif len(txt) > 60:
-                    font = int(self.status_font * 0.3)
+                    font = int(self.status_font * 0.25)
                 else:
                     font = self.status_font
                 txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
