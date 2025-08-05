@@ -252,39 +252,33 @@ class TruckSensor(QThread):
         self._abort = True
 
     def generate_pond_data(self):
-        data_dict = {'do_vals':self.sdata['do_vals'],
-                     'temp_vals':self.sdata['temp_vals'],
-                     'pressure_vals':self.sdata['pressure_vals']}
 
-        # sample duration
-        sample_rate = self.sdata.get('sample_hz', 1)
-        sample_duration = len(self.sdata['do_vals']) / sample_rate
-        data_dict['sample_hz'] = sample_rate
-        data_dict['sample_duration'] = sample_duration
+        sample_duration = len(self.sdata['do_vals']) / self.sdata['sample_hz']
+        self.sdata['sample_duration'] = sample_duration
 
         # IDEAL RECORD TIME FOR DATA
         record_time = 30 #TODO: this should be in setting.setting
 
         # water temperature
         self.water_temp = sum(self.sdata['temp_vals'])/len(self.sdata['temp_vals'])
-        data_dict['water_temp'] = self.water_temp
+        self.sdata['water_temp'] = self.water_temp
         # Pressure
         self.air_pressure = self.sdata['init_pressure']
-        data_dict['sample_pressure'] = sum(self.sdata['pressure_vals'])/len(self.sdata['pressure_vals'])
-        self.sample_depth = pressure_to_depth(data_dict['sample_pressure'], self.air_pressure)
+        self.sdata['sample_pressure'] = sum(self.sdata['pressure_vals'])/len(self.sdata['pressure_vals'])
+        self.sample_depth = pressure_to_depth(self.sdata['sample_pressure'], self.air_pressure)
         
-        data_dict['sample_depth'] = self.sample_depth
+        self.sdata['sample_depth'] = self.sample_depth
 
         #  HBOI DO
         do_arr = self.sdata['do_vals']
-        p, f = calculate_do_fit(do_arr, record_time, sample_rate)
+        p, f = calculate_do_fit(do_arr, record_time, self.sdata['sample_hz'])
         do_guess = generate_do(record_time, p, f)
         do = do_guess if do_guess > 0 else do_arr[-1]
         do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
         do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
         
         # YSI DO
-        p, f = calculate_do_fit(self.ysi_do_mgl_arr,record_time, sample_rate)
+        p, f = calculate_do_fit(self.ysi_do_mgl_arr,record_time, self.sdata['sample_hz'])
         do_guess = generate_do(record_time, p, f)
         ysi_do_mgl = do_guess if do_guess > 0 else self.ysi_do_mgl_arr[-1]
         ysi_do_arr = convert_mgl_to_raw(self.ysi_do_mgl_arr, self.water_temp, self.air_pressure)
@@ -296,27 +290,21 @@ class TruckSensor(QThread):
         self.sdata["ysi_do_mgl"] = ysi_do_mgl
         self.sdata['do'] = do
         self.sdata['do_mgl'] = do_mgl
-        data_dict['ysi_do'] = ysi_do
-        data_dict['ysi_do_mgl'] = ysi_do_mgl
-        data_dict['do'] = do
-        data_dict['do_mgl'] = do_mgl
-        data_dict['do_mgl_arr'] = do_mgl_arr
-        data_dict['ysi_do_mgl_arr'] = self.ysi_do_mgl_arr
-        data_dict['ysi_do_arr'] = ysi_do_arr
-        data_dict["pid"] = self.sdata['pid']
-        data_dict["lng"] = self.sdata['lng']
-        data_dict["lat"] = self.sdata['lat']
-        data_dict['hdg'] = self.sdata['hdg']
-        data_dict['message_time'] = self.sdata['message_time']
+        self.sdata['do_mgl_arr'] = do_mgl_arr
+        self.sdata['ysi_do_mgl_arr'] = self.ysi_do_mgl_arr
+        self.sdata['ysi_do_arr'] = ysi_do_arr
 
-        self.update_pond_data.emit(data_dict)
-        self.update_data.emit(data_dict)
+        self.update_pond_data.emit(self.sdata)
+        self.update_data.emit(self.sdata)
 
     def toggle_unit(self, unit):
         self.unit = unit
         self.sync_ble_sdata()
 
     def update_database(self, data_dict):
+        '''
+        Use argument data_dict instead of self.sdata because it may contain user-corrected variables
+        '''
         time_str = datetime.now().strftime("%H:%M:%S")
 
         row = {

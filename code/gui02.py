@@ -41,7 +41,7 @@ class DOApp(QWidget):
         logger.info('\nSTARTING APPLICATION')
         # custom logger to display status
         logPrinter = customLogHandler()
-        logPrinter.setLevel(logging.INFO)
+        logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger('').addHandler(logPrinter)
         logPrinter.log_message.connect(self.on_log_message)
 
