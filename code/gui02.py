@@ -83,11 +83,12 @@ class DOApp(QWidget):
         self.setup_thread()
 
         # setup timer for timer Qlabel
-        self.timer_active = False
+        self.timer_active = False 
         self.counter_time = 0
         self.timer = QTimer()
+        self.timer.setInterval(1000)
         self.timer.timeout.connect(self.update_counter)
-        self.timer.start(1000)
+        # self.timer.start()
 
     def setup_ui(self):
         os.popen('sudo hciconfig hci0 reset')
@@ -261,14 +262,6 @@ class DOApp(QWidget):
         main_layout.addLayout(btn_layout)
         self.setLayout(main_layout)
 
-    def setup_timer(self):
-        self.timer_active = False
-        self.counter_time = 0
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_counter)
-        self.timer.start(1000)
-
     def setup_thread(self):
         self.thread = TruckSensor()
 
@@ -280,7 +273,7 @@ class DOApp(QWidget):
         self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
-        self.thread.sensor_underwater.connect(self.on_counter_running)
+        self.thread.sensor_underwater.connect(self.on_underwater_signal)
         self.thread.ysi_data.connect(self.on_ysi_update)
         self.thread.start()
         self.ble_running = True
@@ -338,13 +331,17 @@ class DOApp(QWidget):
             else:
                 QApplication.setOverrideCursor(Qt.WaitCursor)
 
-    def on_counter_running(self, value):
+    def on_underwater_signal(self, value):
+        # true if underwater, otherwise false
         if value == "True":
-            if not self.timer_active:
-                self.counter_time = 0
-            self.timer_active = True
+            if not self.timer.isActive():
+                self.timer.start()
+            self.send_status('collecting data')
+
         else:
-            self.timer_active = False
+            if self.timer.isActive():
+                self.timer.stop()
+                self.send_status('collection stopped')
 
     def on_ysi_update(self, do_ps, do_mgl):
         if self.unit == "percent":
@@ -396,23 +393,15 @@ class DOApp(QWidget):
  
 
     def update_counter(self):
-        if self.timer_active:
-            if hasattr(self, 'result_window') and self.result_window is not None:
-                if self.result_window.isVisible():
-                    self.result_window.close()
-                self.result_window = None
-
-            self.counter_time += 1
-            self.thread.sample_stop_time = self.counter_time
-            self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
-            if self.counter_time < self.settings['underwater_counter']:
-                self.send_status('collecting data')
-            else:
-                self.send_status('ready to pick up')
-        else:
-            if self.counter_time > 0:
-                self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
-                self.send_status('collection stopped')
+        self.counter_time += 1
+        # close result if open
+        if hasattr(self, 'result_window') and self.result_window is not None:
+            if self.result_window.isVisible():
+                self.result_window.close()
+            self.result_window = None
+        
+        if self.counter_time == 30: # TODO: this should be exposed in settings.csv
+            self.send_status('ready to pick up')
 
         self.timer_val.setText(f"{self.counter_time}")
 
