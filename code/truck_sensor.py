@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class TruckSensor(QThread):
     update_data = pyqtSignal(dict) 
-    counter_is_running = pyqtSignal(str)
+    sensor_underwater = pyqtSignal(str)
     update_pond_data = pyqtSignal(dict)
     ysi_data = pyqtSignal(float, float)
 
@@ -28,7 +28,6 @@ class TruckSensor(QThread):
     data_dict = {}
 
     ble = None
-
     app = None
     cred = None
 
@@ -60,7 +59,7 @@ class TruckSensor(QThread):
         self.ysi_do_mgl_arr = []
 
         # initialzie PyQt Signals
-        self.counter_is_running.connect(self.underwater_status) #TODO underwaters status should trigger counter
+        self.sensor_underwater.connect(self.underwater_status_change)
         self.sensors.gps_publisher.connect(self.on_gps_update)
         self.sensors.ysi_publisher.connect(self.on_ysi_update)
 
@@ -84,7 +83,7 @@ class TruckSensor(QThread):
         self.firebase_worker.abort()
         self.firebase_worker.wait()
 
-    def underwater_status(self, value):
+    def underwater_status_change(self, value):
         if value == "True":
             self.underwater = True
             self.sensors.underwater = True
@@ -156,48 +155,58 @@ class TruckSensor(QThread):
         self.init_message_scheduler()
 
         connection_count = 0
-        just_reconnect = False
 
         # reset all buffer in system
         self.ble.set_sample_reset()
+
+        # create local connection variable
+        connected = self.ble_check_connection_status()
 
         # Main Loop
         while not self._abort:
 
             self.msleep(50)
 
-            connected = self.ble.check_connection_status()
-            if not connected:
-                # first disconnect event
-                if connection_count == 0:
-                    logger.info('disconnect noticed')
-                    data_dict = {'connection' : self.ble.sdata['connection']}
-                    self.update_data.emit(data_dict)
-                    self.counter_is_running.emit("True")
-                # do not try to reconnect for first 5000 ms
-                elif connection_count > 25:
-                    connected = self.ble.reconnect()
-                # continue if still not connected
+            # check if still connected
+            if connected:
+                connected = self.ble_check_connection_status()
                 if not connected:
-                    connection_count += 1
+                    connection_count = 0
                     self.msleep(150)
                     continue
-
-            if just_reconnect:
-                data_dict = {}
-                data_dict['connection'] = self.ble.sdata['connection']
-                self.update_data.emit(data_dict)
-            just_reconnect = False
-            connection_count = 0
+            # handle not connected case
+            else:
+                connected = self.ble.check_connection_status()
+                if not connected:
+                    # first disconnect event
+                    if connection_count == 0:
+                        logger.debug(f'sensor disconnected, connection count {connection_count}')
+                        self.sensor_underwater.emit("True")
+                        self.sync_ble_sdata()
+                        
+                    # do not try to reconnect for first 5000 ms
+                    elif connection_count > 25:
+                        logger.debug(f"attempting reconnect after waiting {connection_count * 200} ms")
+                        connected = self.ble.reconnect()
+                    # continue if still not connected
+                    if not connected:
+                        connection_count += 1
+                        self.msleep(150)
+                        continue
+                # first reconnect
+                else:
+                    connection_count = 0
+                    self.sync_ble_sdata()
+            
+            # RUNS WHEN SENSOR IS CONNECTED 
 
             self.send_scheduled_messages()
-
             # sensor is connected with no data
             if self.ble.current_sample_size <= 0:
                 # sensor reconncected with no data available
                 if self.underwater:
-                    print("sensor has no data, probably disconnected without going underwater")
-                    self.counter_is_running.emit("False")
+                    logger.info('sensor reconnected with no data, try again')
+                    self.sensor_underwater.emit("False")
                 continue # continue sampling
             # sensor has data
             elif self.ble.current_sample_size > 0:
@@ -205,30 +214,29 @@ class TruckSensor(QThread):
                 if self.ble.prev_sample_size < self.ble.current_sample_size:
                     # underwater, trigger any underwater events
                     if not self.underwater:
-                        print("underwater, trigger first time events")
-                        self.counter_is_running.emit("True")
-                        self.status_data.emit("Collecting Data")
-                        logger.info('Sensor is underwater, while still connected')
+                        self.sensor_underwater.emit("True")
+                        logger.info('sensor is collecting data while connected')
                     continue # continue sampling
 
             # ignore sample sizes less than 4, reset ysi mgl array
             if self.ble.current_sample_size < 4:
-                logger.warning("sensor reconnected without data")
+                logger.warning(f"sensor reconnected with {self.ble.current_sample_size} data points, try again")
                 self.ble.set_sample_reset()
                 self.ysi_do_mgl_arr = []
                 continue
             
+            # RUNS WHEN DATA IS AVAILABLE
 
-            self.counter_is_running.emit("False")
+            self.sensor_underwater.emit("False")
 
             message_time = time.strftime('%Y%m%d_%H:%M:%S', time.gmtime()) #GMT time
             self.sdata['message_time'] = message_time
 
-            self.ble.get_sample_data()
-            self.sync_ble_sdata()
-            self.generate_pond_data()
-            self.ble.set_sample_reset()
-
+            self.ble.get_sample_data()  # retrieve data 
+            self.sync_ble_sdata()       # sync data to self.sdata
+            self.generate_pond_data()   # start firebase/display routine
+            self.ble.set_sample_reset() # reset sample buffer
+            self.ysi_do_mgl_arr = []    # clear ysi data buffer
             # END MAIN LOOP
 
     def sync_ble_sdata(self):
@@ -238,7 +246,7 @@ class TruckSensor(QThread):
         for key in self.ble.sdata:
             self.sdata[key] = self.ble.sdata[key]
         
-        self.update_data.emit(self.data_dict)
+        self.update_data.emit(self.sdata)
 
 
     def abort(self):
@@ -246,7 +254,7 @@ class TruckSensor(QThread):
         self._abort = True
 
     def generate_pond_data(self):
-                # sample duration
+        # sample duration
         sample_rate = self.sdata.get('sample_hz', 1)
         sample_duration = len(self.data_dict['do_vals']) / sample_rate
         self.data_dict['sample_hz'] = sample_rate

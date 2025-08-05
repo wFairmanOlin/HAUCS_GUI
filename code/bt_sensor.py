@@ -62,7 +62,6 @@ class BluetoothReader(QObject):
         return False
 
     def check_connection_status(self):
-        # prioritize status from uart connection 
         connected = False
         if not (self.uart_connection and self.uart_connection.connected):
             logger.debug("uart_connection.connected triggered not connected status")
@@ -73,7 +72,7 @@ class BluetoothReader(QObject):
             self.sdata['connection'] = "not connected"
         # sensor is connected
         else:
-            logger.debug('check connections status returned connected')
+            logger.debug('check_connections_status returned connected')
             connected = True
         return connected
 

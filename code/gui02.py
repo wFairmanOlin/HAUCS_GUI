@@ -263,7 +263,7 @@ class DOApp(QWidget):
         self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
-        self.thread.counter_is_running.connect(self.on_counter_running)
+        self.thread.sensor_underwater.connect(self.on_counter_running)
         self.thread.ysi_data.connect(self.on_ysi_update)
         self.thread.start()
         self.ble_running = True
@@ -368,8 +368,7 @@ class DOApp(QWidget):
         else:
             if self.counter_time > 0:
                 self.status.setText("collection stopped")
-            else:
-                self.status.setText("")
+                
         self.timer_val.setText(f"{self.counter_time}")
 
     def on_update_pond_data(self, data_dict):
@@ -527,10 +526,8 @@ class DOApp(QWidget):
                 fake_data['sample_duration'] = len(fake_data['do_vals']) / fake_data['sample_hz']
                 self.thread.update_pond_data.emit(fake_data)
                 event.ignore()
-
             else:
                 event.ignore()
-
         else:
             # User pressed Cancel or closed dialog
             event.ignore()
