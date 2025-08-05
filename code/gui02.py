@@ -1,3 +1,6 @@
+# set true to print and save debug messages
+ENABLE_DEBUG = False
+
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
@@ -23,9 +26,6 @@ import pickle
 import logging
 import queue
 
-# set true to print and save debug messages
-ENABLE_DEBUG = False
-
 logger = logging.getLogger(__name__)
 
 # if os.environ.get('DISPLAY','') == '':
@@ -45,14 +45,15 @@ class DOApp(QWidget):
 
         ##### LOGGING #####
         logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
-                            level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+                            level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO),)
         logger.info('\nSTARTING APPLICATION')
         # custom logger to display status
         logPrinter = customLogHandler()
         localFilter = localOnlyFilter()
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
-        logging.getLogger('').addHandler(logPrinter)
-        logging.getLogger('').addFilter(localFilter)
+        logging.getLogger().addHandler(logPrinter)
+        for handler in logging.root.handlers:
+            handler.addFilter(localFilter)
         logPrinter.log_message.connect(self.send_status)
 
         self.current_time = datetime.now()
@@ -565,6 +566,7 @@ class DOApp(QWidget):
 class localOnlyFilter(logging.Filter):
     names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
     def filter(self, record):
+        print(record.name)
         return record.name in self.names
 
 class customLogHandler(logging.Handler, QObject):
