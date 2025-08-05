@@ -50,7 +50,10 @@ class I2CReader(QThread):
         # initialize GPS sensor
         self.gps = GPSSensor(i2c, timeout=2)
         # initialize BNO055
-        self.imu = adafruit_bno055.BNO055_I2C(i2c)
+        try:
+            self.imu = adafruit_bno055.BNO055_I2C(i2c)
+        except Exception as error:
+            logger.error(f'cannot initialize bno055: {error}')
 
         # initialize message schedule
         self.scheduled_msgs = {}
