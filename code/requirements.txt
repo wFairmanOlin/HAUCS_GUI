@@ -1,5 +1,6 @@
 pandas
 numpy
+atcom
 ADS1x15-ADC
 scipy
 firebase-admin

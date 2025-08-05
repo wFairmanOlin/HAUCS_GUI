@@ -35,7 +35,7 @@ class DOApp(QWidget):
         ##### LOGGING #####
         logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
                             level=logging.INFO)
-        logger.info('Starting')
+        logger.info('\nSTARTING APPLICATION')
         # custom logger to display status
         logPrinter = customLogHandler()
         logPrinter.setLevel(logging.INFO)
@@ -322,6 +322,21 @@ class DOApp(QWidget):
                 QApplication.setOverrideCursor(Qt.WaitCursor)
     
     def on_log_message(self, logMessage):
+        
+        font = self.status_font
+        color = "white"
+
+        msg = logMessage['msg']
+        font = font // (len(msg) // 10) #shrink font size as message size scales
+        
+        # warning color
+        if logMessage['levelno'] > 20:
+            color = "orange"
+        # error color
+        elif logMessage['levelno'] > 30:
+            color = "red"
+
+        self.status.setStyleSheet(f"font-size: {self.status_font}px; color: {color}; font-weight: bold;")
         self.status.setText(logMessage['msg'])
 
     def on_counter_running(self, value):
@@ -361,14 +376,16 @@ class DOApp(QWidget):
 
             self.counter_time += 1
             self.thread.sample_stop_time = self.counter_time
+            self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
             if self.counter_time < self.settings['underwater_counter']:
                 self.status.setText("collecting data")
             else:
                 self.status.setText("ready to pick up")
         else:
             if self.counter_time > 0:
+                self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
                 self.status.setText("collection stopped")
-                
+
         self.timer_val.setText(f"{self.counter_time}")
 
     def on_update_pond_data(self, data_dict):
@@ -540,8 +557,11 @@ class customLogHandler(logging.Handler, QObject):
         QObject.__init__(self)
 
     def emit(self, record):
-        print(f"{record.levelname}: {record.msg}")
-        self.log_message.emit({'level':record.levelname, 'msg':record.message})
+        # print(f"{record.levelname}: {record.msg}")
+        # if from truck sensor code or level greater than info
+        if record.name == "truck_sensor" or record.levelno > 20:
+            msg = record.message[:100] # limit to first 100 characters
+            self.log_message.emit({'level':record.levelno, 'msg':record.message})
         
 
 

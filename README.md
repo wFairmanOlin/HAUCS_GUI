@@ -98,6 +98,11 @@ chmod +x /home/haucs/Desktop/HAUCS_CODE/gui_start.sh
 
 Following this [guide](https://docs.sixfab.com/page/sending-at-commands) to setup and install `atcom` in the truck virtual environment.
 
+Here is an example of sending an AT command with `atcom`:
+```
+atcom AT+CGDCONT=1,\"IPV4V6\",\"super\"
+```
+
 ### ECM Setup
 
 Follow this [installation guide](https://docs.sixfab.com/page/cellular-internet-connection-in-ecm-mode) to setup the cellular hat in ECM mode. We are currently using the Quectel modems. 
@@ -112,8 +117,13 @@ nmcli connection
 ```
 The name should be something like `Wired\ connection\ 2`.
 #### Increase Metric for USB Connection
-The interfaces with lower metrics will run first. Give the usb connection a higher priority than the WiFi connection. 
+The interfaces with lower metrics will run first. Give the usb connection a higher metric than the WiFi connection. 
 ```
 nmcli connection modify <connection-name> ipv4.route-metric 700
 ```
 Reboot to the RPI when finished.
+
+Use the following command to see the change:
+```
+route -n
+```

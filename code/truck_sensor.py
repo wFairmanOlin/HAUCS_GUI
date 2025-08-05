@@ -160,7 +160,7 @@ class TruckSensor(QThread):
         self.ble.set_sample_reset()
 
         # create local connection variable
-        connected = self.ble_check_connection_status()
+        connected = self.ble.check_connection_status()
 
         # Main Loop
         while not self._abort:
@@ -169,7 +169,7 @@ class TruckSensor(QThread):
 
             # check if still connected
             if connected:
-                connected = self.ble_check_connection_status()
+                connected = self.ble.check_connection_status()
                 if not connected:
                     connection_count = 0
                     self.msleep(150)
@@ -250,7 +250,6 @@ class TruckSensor(QThread):
 
 
     def abort(self):
-        logger.warning("truck thread stopped")
         self._abort = True
 
     def generate_pond_data(self):
