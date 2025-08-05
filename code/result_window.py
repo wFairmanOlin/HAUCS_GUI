@@ -388,8 +388,8 @@ class ResultWindow(QWidget):
             ax.set_xlabel("Seconds", color=accent_color, fontsize=16)
             ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color=accent_color, fontsize=16)
             
-            ax.scatter(time, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='HBOI')
-            ax.scatter(time, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='YSI')
+            ax.scatter(time_hboi, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='HBOI')
+            ax.scatter(time_ysi, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='YSI')
             ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=5, alpha=1)
             ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=5, alpha=1)
             ax.legend(fontsize=16, labelcolor=accent_color, framealpha=0.2)
