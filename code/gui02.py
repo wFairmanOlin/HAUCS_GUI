@@ -364,7 +364,15 @@ class DOApp(QWidget):
                 txt = msg.get('text', 'status error')
                 txt = txt[:100] # limit to first 100 characters
                 color = msg.get('color', 'white')
-                font = self.status_font // (1 + len(txt) // 10) #shrink font size as message size scales
+                #shrink font size as message size scales
+                if len(txt) > 20: 
+                    font = int(self.status_font * 0.75)
+                elif len(txt) > 40:
+                    font = int(self.status_font * 0.5)
+                elif len(txt) > 60:
+                    font = int(self.status_font * 0.4)
+                else:
+                    font = self.status_font// (1 + len(txt) // 10) 
 
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
