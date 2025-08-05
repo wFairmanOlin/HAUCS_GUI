@@ -358,22 +358,26 @@ class ResultWindow(QWidget):
             record_time = 30 #TODO: this should be in setting.setting
             x_plot = np.linspace(0, sample_stop_time, 5 * sample_stop_time)
 
-            # generate time array
-            time = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
-            time = time[time <= sample_stop_time]
+            # generate time array for hboi
+            time_hboi = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+            time_hboi = time_hboi[time_hboi <= sample_stop_time]
 
+            # generate time array for ysi sensor
+            time_ysi = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+            time_ysi = time_ysi[time_ysi <= sample_stop_time]
+            
             # fit for HBOI SENSOR
             p, f = calculate_do_fit(do_arr, record_time, self.data['sample_hz'])
             y_fit = generate_do(x_plot, p, f)
             y_fit = [scale * i for i in y_fit]
-            y_scatter = do_arr[:len(time)]
+            y_scatter = do_arr[:len(time_hboi)]
             y_scatter = [scale * i for i in y_scatter]
             
             # fit for YSI SENSOR
             p, f = calculate_do_fit(ysi_do_arr, record_time, self.data['sample_hz'])
             y_fit_ysi = generate_do(x_plot, p, f)
             y_fit_ysi = [scale * i for i in y_fit_ysi]
-            y_scatter_ysi = ysi_do_arr[:len(time)]
+            y_scatter_ysi = ysi_do_arr[:len(time_ysi)]
             y_scatter_ysi = [scale * i for i in y_scatter_ysi]
 
             fig = Figure(figsize=(((self.img_label2.width())/ 100.0), self.img_label2.height() / 100.0), dpi=100)
@@ -388,8 +392,8 @@ class ResultWindow(QWidget):
             ax.set_xlabel("Seconds", color=accent_color, fontsize=16)
             ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color=accent_color, fontsize=16)
             
-            ax.scatter(time, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='HBOI')
-            ax.scatter(time, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='YSI')
+            ax.scatter(time_hboi, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='HBOI')
+            ax.scatter(time_ysi, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='YSI')
             ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=5, alpha=1)
             ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=5, alpha=1)
             ax.legend(fontsize=16, labelcolor=accent_color, framealpha=0.2)
@@ -403,8 +407,8 @@ class ResultWindow(QWidget):
             pixmap = QPixmap.fromImage(img)
             scaled = pixmap.scaled(self.img_label2.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.img_label2.setPixmap(scaled)
-        except:
-            logger.error(f"curve-fitting plot failed {self.data}")
+        except Exception as error:
+            logger.error(f"curve-fitting plot failed\n{self.data}\n{error}")
             self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 

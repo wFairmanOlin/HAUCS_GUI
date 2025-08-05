@@ -63,7 +63,7 @@ class I2CReader(QThread):
             if time.time() - message['timer'] > message['period']:
                 message['timer'] = time.time()
                 # only trigger callback if above water or message has underwater priority
-                if not self.underwater or message['underwater']:
+                if (not self.underwater) or message['underwater']:
                     message['callback']()
 
     def init_ysi_adc(self):
