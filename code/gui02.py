@@ -36,6 +36,13 @@ class DOApp(QWidget):
     def __init__(self):
         super().__init__()
 
+        #status message queue
+        self.status_q = queue.Queue()
+        #status message timer
+        self.status_timer = QTimer()
+        self.status_timer.timeout.connect(self.on_status_timer)
+        self.status_timer.setInterval(5000)
+
         ##### LOGGING #####
         logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
                             level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO))
@@ -75,21 +82,12 @@ class DOApp(QWidget):
         self.showFullScreen()
         self.setup_thread()
 
-
-
         # setup timer for timer Qlabel
         self.timer_active = False
         self.counter_time = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_counter)
         self.timer.start(1000)
-
-        #status message queue
-        self.status_q = queue.Queue()
-        #status message timer
-        self.status_timer = QTimer()
-        self.status_timer.timeout.connect(self.on_status_timer)
-        self.status_timer.setInterval(5000)
 
     def setup_ui(self):
         os.popen('sudo hciconfig hci0 reset')
