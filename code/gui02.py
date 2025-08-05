@@ -21,6 +21,7 @@ from setting_dialog import SettingDialog
 from custom_yesno_dialog import CustomYesNoDialog
 import pickle
 import logging
+import queue
 
 # set true to print and save debug messages
 ENABLE_DEBUG = False
@@ -73,7 +74,22 @@ class DOApp(QWidget):
         self.setup_ui()
         self.showFullScreen()
         self.setup_thread()
-        self.setup_timer()
+
+
+
+        # setup timer for timer Qlabel
+        self.timer_active = False
+        self.counter_time = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_counter)
+        self.timer.start(1000)
+
+        #status message queue
+        self.status_q = queue.Queue()
+        #status message timer
+        self.status_timer = QTimer()
+        self.status_timer.timeout.connect(self.on_status_timer)
+        self.status_timer.setInterval(5000)
 
     def setup_ui(self):
         os.popen('sudo hciconfig hci0 reset')
@@ -325,22 +341,18 @@ class DOApp(QWidget):
                 QApplication.setOverrideCursor(Qt.WaitCursor)
     
     def on_log_message(self, logMessage):
-        
-        font = self.status_font
+        '''
+        connects to pyqtsignal from customLogHandler
+        '''
         color = "white"
-
         msg = logMessage['msg']
-        font = font // (len(msg) // 10) #shrink font size as message size scales
-        
         # warning color
         if logMessage['level'] > 20:
             color = "orange"
         # error color
         elif logMessage['level'] > 30:
             color = "red"
-
-        self.status.setStyleSheet(f"font-size: {self.status_font}px; color: {color}; font-weight: bold;")
-        self.status.setText(logMessage['msg'])
+        self.send_status(msg, color)
 
     def on_counter_running(self, value):
         if value == "True":
@@ -370,6 +382,35 @@ class DOApp(QWidget):
         else:
             self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
 
+    def on_status_timer(self):
+        msg = ""
+        if self.status_q.qsize() > 0:
+            try:
+                msg = self.status_q.get_nowait()
+            except:
+                pass
+        
+            if isinstance(msg, dict):
+                font = self.status_font // (1 + len(msg) // 10) #shrink font size as message size scales
+                txt = msg.get('text', 'status error')
+                txt = txt[:100] # limit to first 100 characters
+                color = msg.get('color', 'white')
+
+                self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
+                self.status.setText(txt)
+                self.status_timer.start()
+
+    def send_status(self, msg, color="white"):
+        '''
+        call this function to add a message to the status queue
+        parameters:
+        '''
+        self.status_q.put({'text':msg, 'color':color})
+        # not messages currently displayed
+        if not self.status_timer.isActive():
+            self.on_status_timer()
+ 
+
     def update_counter(self):
         if self.timer_active:
             if hasattr(self, 'result_window') and self.result_window is not None:
@@ -381,13 +422,13 @@ class DOApp(QWidget):
             self.thread.sample_stop_time = self.counter_time
             self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
             if self.counter_time < self.settings['underwater_counter']:
-                self.status.setText("collecting data")
+                self.send_status({'text':'collecting data'})
             else:
-                self.status.setText("ready to pick up")
+                self.send_status('ready to pick up')
         else:
             if self.counter_time > 0:
                 self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
-                self.status.setText("collection stopped")
+                self.send_status('collection stopped')
 
         self.timer_val.setText(f"{self.counter_time}")
 

@@ -136,7 +136,7 @@ class TruckSensor(QThread):
 
         self.update_data.emit(data)
         if self.sdata["prev_pid"] != self.sdata["pid"]:
-            logger.info(f"moved to pond ID: {self.sdata['pid']}")
+            logger.info(f"moved to pid: {self.sdata['pid']}")
         
     def calibrate_DO(self):
         self.ble.set_calibration_do()
