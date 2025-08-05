@@ -25,7 +25,6 @@ class TruckSensor(QThread):
 
     _abort = False
     sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0}
-    data_dict = {}
 
     ble = None
     app = None
@@ -253,27 +252,31 @@ class TruckSensor(QThread):
         self._abort = True
 
     def generate_pond_data(self):
+        data_dict = {'do_vals':self.sdata['do_vals'],
+                     'temp_vals':self.sdata['temp_vals'],
+                     'pressure_vals':self.sdata['pressure_vals']}
+
         # sample duration
         sample_rate = self.sdata.get('sample_hz', 1)
-        sample_duration = len(self.data_dict['do_vals']) / sample_rate
-        self.data_dict['sample_hz'] = sample_rate
-        self.data_dict['sample_duration'] = sample_duration
+        sample_duration = len(self.sdata['do_vals']) / sample_rate
+        data_dict['sample_hz'] = sample_rate
+        data_dict['sample_duration'] = sample_duration
 
         # IDEAL RECORD TIME FOR DATA
         record_time = 30 #TODO: this should be in setting.setting
 
         # water temperature
-        self.water_temp = sum(self.data_dict['temp_vals'])/len(self.data_dict['temp_vals'])
-        self.data_dict['water_temp'] = self.water_temp
+        self.water_temp = sum(self.sdata['temp_vals'])/len(self.sdata['temp_vals'])
+        data_dict['water_temp'] = self.water_temp
         # Pressure
         self.air_pressure = self.sdata['init_pressure']
-        self.data_dict['sample_pressure'] = sum(self.sdata['pressure_vals'])/len(self.sdata['pressure_vals'])
-        self.sample_depth = pressure_to_depth(self.data_dict['sample_pressure'], self.air_pressure)
+        data_dict['sample_pressure'] = sum(self.sdata['pressure_vals'])/len(self.sdata['pressure_vals'])
+        self.sample_depth = pressure_to_depth(data_dict['sample_pressure'], self.air_pressure)
         
-        self.data_dict['sample_depth'] = self.sample_depth
+        data_dict['sample_depth'] = self.sample_depth
 
         #  HBOI DO
-        do_arr = self.data_dict['do_vals']
+        do_arr = self.sdata['do_vals']
         p, f = calculate_do_fit(do_arr, record_time, sample_rate)
         do_guess = generate_do(record_time, p, f)
         do = do_guess if do_guess > 0 else do_arr[-1]
@@ -293,30 +296,25 @@ class TruckSensor(QThread):
         self.sdata["ysi_do_mgl"] = ysi_do_mgl
         self.sdata['do'] = do
         self.sdata['do_mgl'] = do_mgl
-        self.data_dict['ysi_do'] = ysi_do
-        self.data_dict['ysi_do_mgl'] = ysi_do_mgl
-        self.data_dict['do'] = do
-        self.data_dict['do_mgl'] = do_mgl
-        self.data_dict['do_mgl_arr'] = do_mgl_arr
-        self.data_dict['ysi_do_mgl_arr'] = self.ysi_do_mgl_arr
-        self.data_dict['ysi_do_arr'] = ysi_do_arr
-        self.data_dict["pid"] = self.sdata['pid']
-        self.data_dict["lng"] = self.sdata['lng']
-        self.data_dict["lat"] = self.sdata['lat']
-        self.data_dict['hdg'] = self.sdata['hdg']
-        self.data_dict['message_time'] = self.sdata['message_time']
+        data_dict['ysi_do'] = ysi_do
+        data_dict['ysi_do_mgl'] = ysi_do_mgl
+        data_dict['do'] = do
+        data_dict['do_mgl'] = do_mgl
+        data_dict['do_mgl_arr'] = do_mgl_arr
+        data_dict['ysi_do_mgl_arr'] = self.ysi_do_mgl_arr
+        data_dict['ysi_do_arr'] = ysi_do_arr
+        data_dict["pid"] = self.sdata['pid']
+        data_dict["lng"] = self.sdata['lng']
+        data_dict["lat"] = self.sdata['lat']
+        data_dict['hdg'] = self.sdata['hdg']
+        data_dict['message_time'] = self.sdata['message_time']
 
-        self.update_pond_data.emit(self.data_dict)
-        self.update_data.emit(self.data_dict)
+        self.update_pond_data.emit(data_dict)
+        self.update_data.emit(data_dict)
 
     def toggle_unit(self, unit):
-        #TODO: this function should be removed
         self.unit = unit
-        self.data_dict['do'] = self.sdata['do']
-        self.data_dict['do_mgl'] = self.sdata['do_mgl']
-        self.data_dict['ysi_do'] = self.sdata['ysi_do']
-        self.data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
-        self.update_data.emit(self.data_dict)
+        self.sync_ble_sdata()
 
     def update_database(self, data_dict):
         time_str = datetime.now().strftime("%H:%M:%S")

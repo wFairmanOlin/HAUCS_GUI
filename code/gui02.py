@@ -22,6 +22,9 @@ from custom_yesno_dialog import CustomYesNoDialog
 import pickle
 import logging
 
+# set true to print and save debug messages
+ENABLE_DEBUG = False
+
 logger = logging.getLogger(__name__)
 
 # if os.environ.get('DISPLAY','') == '':
@@ -34,7 +37,7 @@ class DOApp(QWidget):
 
         ##### LOGGING #####
         logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
-                            level=logging.INFO)
+                            level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logger.info('\nSTARTING APPLICATION')
         # custom logger to display status
         logPrinter = customLogHandler()
@@ -557,7 +560,9 @@ class customLogHandler(logging.Handler, QObject):
         QObject.__init__(self)
 
     def emit(self, record):
-        # print(f"{record.levelname}: {record.msg}")
+        # print logs
+        if ENABLE_DEBUG:
+            print(f"{record.relativeCreated/100:.2f}: {record.levelname} {record.message}")
         # if from truck sensor code or level greater than info
         if record.name == "truck_sensor" or record.levelno > 20:
             msg = record.message[:100] # limit to first 100 characters
