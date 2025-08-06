@@ -41,7 +41,8 @@ class I2CReader(QThread):
         self._abort = False
 
         # store calibration dict
-        self.set_calibration(calibration['ysi_zero_scale'], calibration['ysi_full_scale'])
+        self.set_calibration(calibration.get('ysi_zero_scale',self.zero_scale),
+                             calibration.get('ysi_full_scale', self.full_scale))
         # I2C Bus
         i2c = board.I2C()
         
@@ -117,6 +118,7 @@ class I2CReader(QThread):
         self.scheduled_msgs['ysi']['period'] = self.ysi_sampling_period
     
     def set_calibration(self, zero, full_scale):
+        if 
         self.zero_scale = zero
         self.full_scale = full_scale
 
