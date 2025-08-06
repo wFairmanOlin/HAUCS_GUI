@@ -27,6 +27,7 @@ import logging
 import queue
 import argparse
 import sensor
+import truck_sensor
 
 logger = logging.getLogger(__name__)
 
@@ -344,17 +345,18 @@ class DOApp(QWidget):
                         do_mgl = alpha * do_mgl + (1 - alpha) * old_data
                 except Exception as e:
                     logger.warning(f'failed smooth ysi data \n{e}')
-
-        if self.unit == "percent":
-            # water temperature and/or pressure have not been recorded
-            if do_ps == -1:
-                self.ysi_val.setText('-')
+        # only update main screen when in normal operations
+        if self.thread.mode == truck_sensor.Mode.normal:
+            if self.unit == "percent":
+                # water temperature and/or pressure have not been recorded
+                if do_ps == -1:
+                    self.ysi_val.setText('-')
+                else:
+                    self.ysi_val.setText(f"{100 * do_ps:.0f}")
+                self.ysi_unit.setText('%')
             else:
-                self.ysi_val.setText(f"{100 * do_ps:.0f}")
-            self.ysi_unit.setText('%')
-        else:
-            self.ysi_val.setText(f"{do_mgl:.1f}")
-            self.ysi_unit.setText('mg/l')
+                self.ysi_val.setText(f"{do_mgl:.1f}")
+                self.ysi_unit.setText('mg/l')
 
         # update ysi color
         if do_mgl < self.min_do:
@@ -389,6 +391,10 @@ class DOApp(QWidget):
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
                 self.status_timer.start()
+                print(f"status width {self.status.width()}")
+        # display nothing
+        else:
+            self.status.setText("")
 
     def send_status(self, msg, color="white"):
         '''
@@ -471,6 +477,7 @@ class DOApp(QWidget):
             self.save_local_csv(self.calibration, "calibration.csv")
             self.thread.set_ysi_calibration(data['zero'], data['full_scale'])
             logger.info(f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}")
+            self.send_status('ysi calibration success', 'limegreen')
         else:
             logger.warning("ysi calibration failed")
 

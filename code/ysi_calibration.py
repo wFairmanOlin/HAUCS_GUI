@@ -150,7 +150,6 @@ class YsiCalibrationWindow(QWidget):
             if self.max_val.text().isnumeric():
                 old_data = int(self.max_val.text())
         data = alpha * val + (1 - alpha) * old_data
-        print(f"raw data received {val} old {old_data} new {data}")
         if zero_btn:
             self.zero_val.setText(f"{data:.0f}")
         elif max_btn:
@@ -165,7 +164,6 @@ class YsiCalibrationWindow(QWidget):
             self.max_btn.setChecked(False)
     
     def on_max_btn_press(self):
-        print(f"max button pressed, was: {self.max_btn.isChecked()}")
         if self.zero_btn.isChecked():
             self.zero_btn.setChecked(False)
 
@@ -184,8 +182,7 @@ class YsiCalibrationWindow(QWidget):
 
         success &= (zero >= full_scale) # return false if zero is less than full scale
         success &= save # return false if save parameter is false
-
-        print({'zero':zero, 'full_scale':full_scale, 'success':success})
+        
         self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale, 'success':success})
         super().closeEvent(event)
 
