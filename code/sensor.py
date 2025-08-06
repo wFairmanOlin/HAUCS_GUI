@@ -14,12 +14,19 @@ import board
 import adafruit_bno055
 import logging
 from enum import Enum
+from functools import total_ordering
+
 #init logger
 logger = logging.getLogger(__name__)
 
+@total_ordering
 class Priority(Enum):
     low = 0
     high = 1
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
 
 class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float, float)
