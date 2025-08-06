@@ -118,7 +118,6 @@ class I2CReader(QThread):
         self.scheduled_msgs['ysi']['period'] = self.ysi_sampling_period
     
     def set_calibration(self, zero, full_scale):
-        if 
         self.zero_scale = zero
         self.full_scale = full_scale
 
