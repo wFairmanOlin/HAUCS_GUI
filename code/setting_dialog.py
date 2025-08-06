@@ -12,16 +12,16 @@ class SettingDialog(QDialog):
         self.setModal(True)
         self.setFocusPolicy(Qt.ClickFocus)
 
-        self.min_do_box = BigSpinBox(min_do, min_val=0.5, max_val=15, step=0.1, digits=1)
-        self.good_do_box = BigSpinBox(good_do, min_val=0.5, max_val=15, step=0.1, digits=1)
-        self.auto_close_box = BigSpinBox(autoclose_sec, min_val=5, max_val=100, step=1, digits=0)
+        self.min_do_box = BigSpinBox(min_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
+        self.good_do_box = BigSpinBox(good_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
+        self.auto_close_box = BigSpinBox(autoclose_sec, min_val=5, max_val=100, step=1, sig_digits=0)
 
         font_style = "font-size: 32px;"
         label1 = QLabel("low DO level (mg/l)")
         label1.setStyleSheet(font_style)
         label2 = QLabel("good DO level (mg/l)")
         label2.setStyleSheet(font_style)
-        label3 = QLabel("time to show results before auto-close (sec)")
+        label3 = QLabel("auto-close Results (sec)")
         label3.setStyleSheet(font_style)
 
         grid = QGridLayout()
