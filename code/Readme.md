@@ -6,7 +6,7 @@ The following sections describe the purpose of each file.
 ---
 
 ## Main GUI
-- **gui02.py** – The main GUI file that manages display, user interactions, and communication between the GUI and backend (`truck_sensor.py`).
+- *gui.py** – The main GUI file that manages display, user interactions, and communication between the GUI and backend (`truck_sensor.py`).
 
 ---
 
