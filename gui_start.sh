@@ -27,5 +27,4 @@ fi
 cd code
 
 echo "running script"
-# /home/haucs/buoy/bin/python3 buoy/main.py
-/home/haucs/truck/bin/python3 gui02.py
+/home/haucs/truck/bin/python3 gui.py $1

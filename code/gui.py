@@ -24,6 +24,7 @@ from custom_yesno_dialog import CustomYesNoDialog
 import pickle
 import logging
 import queue
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -606,7 +607,13 @@ class customLogHandler(logging.Handler, QObject):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    parser = argparse.ArgumentParser(prog="gui")
+    parser.add_argument('-debug', '-d', '-D', action='store_true')
+
+    args = parser.parse_args()
+    ENABLE_DEBUG = args.debug
+
+    app = QApplication()
     window = DOApp()
     sys.exit(app.exec_())
 

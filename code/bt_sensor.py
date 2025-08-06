@@ -51,7 +51,10 @@ class BluetoothReader(QObject):
         for adv in self.ble.start_scan(ProvideServicesAdvertisement):
             if UARTService in adv.services:
                 logger.debug(f"found sensor with UART service {adv.complete_name}")
-                self.uart_connection = self.ble.connect(adv)
+                try:
+                    self.uart_connection = self.ble.connect(adv)
+                except:
+                    logger.error('failed to connect to {adv}')
                 if self.uart_connection.connected:
                     self.sensor_name = adv.complete_name
                     self.sdata['name'] = adv.complete_name[9:]
