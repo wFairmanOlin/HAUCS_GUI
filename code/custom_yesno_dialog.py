@@ -77,4 +77,4 @@ class CustomYesNoDialog(QDialog):
         )
 
     def focusOutEvent(self, event):
-        self.close()
+        self.reject()

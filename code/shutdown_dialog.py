@@ -98,6 +98,6 @@ class ShutdownDialog(QDialog):
     def restart(self):
         self.result = "restart"
         self.accept()
-        
+
     def focusOutEvent(self, event):
-        self.close()
+        self.reject()

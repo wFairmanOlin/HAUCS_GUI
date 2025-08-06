@@ -2,11 +2,12 @@ from PyQt5.QtWidgets import (
     QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout
 )
 from PyQt5.QtCore import Qt
-from bigspin_widget import BigSpinBox  # สมมุติว่าคุณมีไฟล์นี้แยกไว้แล้ว
+from bigspin_widget import BigSpinBox
 
 class SettingDialog(QDialog):
     def __init__(self, min_do, good_do, autoclose_sec, parent=None):
         super().__init__(parent)
+        self.setFocusPolicy(Qt.ClickFocus)
         self.setWindowTitle("Setting")
         self.setStyleSheet("background-color: #666666; color: white;")
         self.setModal(True)
@@ -23,23 +24,18 @@ class SettingDialog(QDialog):
         label3 = QLabel("time to show results before auto-close (sec)")
         label3.setStyleSheet(font_style)
 
-        # ===== Grid Layout สำหรับ Labels + Spinboxes =====
         grid = QGridLayout()
         grid.setHorizontalSpacing(80)
         grid.setVerticalSpacing(25)
 
-        # แถว 0: Label บรรทัดแรก
         grid.addWidget(label1, 0, 0, alignment=Qt.AlignLeft)
         grid.addWidget(label2, 0, 1, alignment=Qt.AlignLeft)
 
-        # แถว 1: Spinbox DO
         grid.addWidget(self.min_do_box, 1, 0, alignment=Qt.AlignLeft)
         grid.addWidget(self.good_do_box, 1, 1, alignment=Qt.AlignLeft)
 
-        # แถว 2: Label auto-close
         grid.addWidget(label3, 2, 0, 1, 2, alignment=Qt.AlignLeft)
 
-        # แถว 3: Spinbox auto-close
         grid.addWidget(self.auto_close_box, 3, 0, 1, 2, alignment=Qt.AlignLeft)
 
         self.engineer_btn = QPushButton("Engineer")
@@ -81,7 +77,6 @@ class SettingDialog(QDialog):
         bottom_buttons.addWidget(ok_btn)
         bottom_buttons.addWidget(cancel_btn)
 
-        # Layout หลัก
         layout = QVBoxLayout()
         layout.addLayout(grid)
         layout.addSpacing(30)
@@ -104,3 +99,5 @@ class SettingDialog(QDialog):
             "good_do": self.good_do_box.get_value(),
             "autoclose_sec": self.auto_close_box.get_value()
         }
+    def focusOutEvent(self, event):
+        self.reject()
