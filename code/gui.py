@@ -191,7 +191,7 @@ class DOApp(QWidget):
         self.timer_val = QLabel('-')
         self.status   = QLabel('')
         self.status.setWordWrap(True) #allow multiple lines
-        self.status.setfixedWidth(460)
+        self.status.setFixedWidth(460)
 
         self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
@@ -474,6 +474,7 @@ class DOApp(QWidget):
         self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
     def ysi_calibration_complete(self, data, save):
+        logger.debug(f"setting page closed save? {save} \n{data}")
         self.thread.stop_ysi_calibration()
         if save:
             self.calibration['ysi_zero_scale'] = data['zero']
@@ -493,7 +494,7 @@ class DOApp(QWidget):
         self.settings_window.setting_complete.connect(self.setting_complete)
 
     def setting_complete(self, data, save):
-        self.thread.stop_ysi_calibration()
+        logger.debug(f"setting page closed save? {save} \n{data}")
         if save:
             for i in data:
                 self.settings[i] = data[i]

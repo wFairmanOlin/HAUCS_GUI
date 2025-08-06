@@ -179,7 +179,7 @@ class YsiCalibrationWindow(QWidget):
             full_scale = 0
             success = False
 
-        success &= (zero >= full_scale) # return false if zero is less than full scale
+        success &= (zero < full_scale) # return false if zero is less than full scale
         success &= self.save # return false if save parameter is false
 
         self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale}, success)
