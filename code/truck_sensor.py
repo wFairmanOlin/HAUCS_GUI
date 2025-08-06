@@ -69,17 +69,19 @@ class TruckSensor(QThread):
 
     # YSI COMMANDS
     def on_ysi_update(self, do_mgl, raw_adc):
+        print(f"ysi_update called {self.mode}")
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
         else:
             do_ps = -1
+        # emit when in calibration mode
+        if self.mode == Mode.ysi_cal:
+            self.ysi_Data.emit(raw_adc, raw_adc)
         # only emit data when underwater
-        if self.underwater:
+        elif self.underwater:
             self.ysi_do_mgl_arr.append(do_mgl)
             self.ysi_data.emit(do_ps, do_mgl)
-        # emit when in calibration mode
-        elif self.mode == Mode.ysi_cal:
-            self.ysi_Data.emit(raw_adc, raw_adc)
+        
 
     def set_ysi_sample_rate(self, sample_hz):
             self.sensors.set_ysi_sample_rate(sample_hz)

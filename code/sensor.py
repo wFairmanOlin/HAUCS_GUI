@@ -89,17 +89,9 @@ class I2CReader(QThread):
         do_mgl = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
         # set to zero if less than zero
         do_mgl = 0 if do_mgl < 0 else do_mgl
-
+        self.ysi_publisher.emit(do_mgl, val)
         return do_mgl, val
 
-    def measure_ysi_raw_adc(self):
-        try:
-            val = self.ysi_adc.readADC_Differential_0_1()
-        except:
-            logger.info('failed to read raw ADC value')
-            val = 0
-        self.ysi_publisher.emit(val)
-        return val
         
     def set_schedule(self, name, callback, period, underwaterFlag):
         """

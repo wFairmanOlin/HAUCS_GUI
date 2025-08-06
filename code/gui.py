@@ -464,7 +464,7 @@ class DOApp(QWidget):
             pass
         
     def on_calibrate_ysi_click(self):
-
+        print("increasing sample rate")
         self.thread.set_ysi_sample_rate(5)
         self.thread.mode = Mode.ysi_cal
         self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
