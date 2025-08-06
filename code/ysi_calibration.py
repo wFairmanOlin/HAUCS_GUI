@@ -27,8 +27,11 @@ btn_style = """
                 border-radius: 10px;
                 padding: 10px;
             }
-            QPushButton:hover {
-                background-color: #777777;
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 80);
+            }
+            QPushButton:checked {
+                background-color: limegreen;
             }
         """
 #init logger
@@ -36,11 +39,6 @@ logger = logging.getLogger(__name__)
 
 # Global Parameters
 alpha = 0.1
-
-class State(Enum):
-    normal = 0
-    zero = 1
-    full_scale = 2 
 
 class YsiCalibrationWindow(QWidget):
     ysi_calibration_complete = pyqtSignal(dict)
@@ -51,7 +49,6 @@ class YsiCalibrationWindow(QWidget):
         super().__init__()
         if ysi_raw_data:
             ysi_raw_data.connect(self.on_raw_data)
-        self.state = State.normal
         self.setWindowTitle("YSI Calibration Routine")
         self.setup_ui()
         self.showFullScreen()
@@ -60,7 +57,7 @@ class YsiCalibrationWindow(QWidget):
         screen = self.screen().size()
         w = screen.width()
         h = screen.height()
-        self.font = int(h * 0.03)
+        self.font = int(h * 0.05)
         self.large_font = int(h * 0.08)
 
         self.setStyleSheet("background-color: black; color: white;")
@@ -93,22 +90,26 @@ class YsiCalibrationWindow(QWidget):
         self.max_val.setStyleSheet(f"font-size: {self.large_font}px;") 
 
         # calibration buttons
-        zero_btn = QPushButton("ZERO")
-        zero_btn.setStyleSheet(btn_style)
-        zero_btn.setFixedSize(360, 60)
-        zero_btn.clicked.connect(self.on_zero_btn_press)
-        max_btn = QPushButton("FULL SCALE")
-        max_btn.setStyleSheet(btn_style)
-        max_btn.setFixedSize(360, 60)
-        max_btn.clicked.connect(self.on_max_btn_press)
+        self.zero_btn = QPushButton("ZERO")
+        self.zero_btn.setStyleSheet(btn_style)
+        self.zero_btn.setFixedSize(360, 60)
+        self.zero_btn.setCheckable(True)
+        self.zero_btn.setChecked(False)
+        self.zero_btn.clicked.connect(self.on_zero_btn_press)
+        self.max_btn = QPushButton("FULL SCALE")
+        self.max_btn.setStyleSheet(btn_style)
+        self.max_btn.setFixedSize(360, 60)
+        self.max_btn.setCheckable(True)
+        self.max_btn.setChecked(False)
+        self.max_btn.clicked.connect(self.on_max_btn_press)
 
         info_grid = QGridLayout()
         info_grid.addWidget(zero_txt, 0, 0, Qt.AlignCenter)
         info_grid.addWidget(max_txt,  0, 1, Qt.AlignCenter)
         info_grid.addWidget(self.zero_val, 1, 0, Qt.AlignCenter)
         info_grid.addWidget(self.max_val,  1, 1, Qt.AlignCenter)
-        info_grid.addWidget(zero_btn, 2, 0, Qt.AlignCenter)
-        info_grid.addWidget(max_btn,  2, 1, Qt.AlignCenter)        
+        info_grid.addWidget(self.zero_btn, 2, 0, Qt.AlignCenter)
+        info_grid.addWidget(self.max_btn,  2, 1, Qt.AlignCenter)        
         layout_main.addLayout(info_grid)
         
         # close button
@@ -124,33 +125,31 @@ class YsiCalibrationWindow(QWidget):
         self.setLayout(layout_main)
 
     def on_raw_data(self, val, *args):
-        
+        zero_btn = self.zero_btn.isChecked()
+        max_btn = self.max_btn.isChecked()
         old_data = 0
-        if self.state == State.zero:
+        if zero_btn:
             if self.zero_val.text().isnumeric():
                 old_data = int(self.zero_val.text())
-        elif self.state == State.full_scale:
+        elif max_btn:
             if self.max_val.text().isnumeric():
                 old_data = int(self.max_val.text())
         data = alpha * val + (1 - alpha) * old_data
         print(f"raw data received {val} old {old_data} new {data}")
-        if self.state == State.zero:
+        if zero_btn:
             self.zero_val.setText(f"{data:.0f}")
-        elif self.state == State.full_scale:
+        elif max_btn:
             self.max_val.setText(f"{data:.0f}")
 
     
     def on_zero_btn_press(self):
-        if self.state == State.zero:
-            self.state = State.normal
-        else:
-            self.state = State.zero
+        if self.max_btn.isChecked():
+            self.max_btn.setChecked(False)
     
     def on_max_btn_press(self):
-        if self.state == State.full_scale:
-            self.state = State.normal
-        else:
-            self.state = State.full_scale
+        print(f"max button pressed, was: {self.max_btn.isChecked()}")
+        if self.zero_btn.isChecked():
+            self.zero_btn.setChecked(False)
 
     def closeEvent(self, event):
         '''
@@ -174,7 +173,8 @@ class YsiCalibrationWindow(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
-            
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = YsiCalibrationWindow()

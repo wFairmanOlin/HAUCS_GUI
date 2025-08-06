@@ -81,14 +81,16 @@ class TruckSensor(QThread):
         
 
     def start_ysi_calibration(self, sample_hz):
+        self.mode = Mode.ysi_cal
         self.sensors.set_ysi_sample_rate(sample_hz)
         self.sensors.message_priority = sensor.Priority.high
-        self.mode = Mode.ysi_cal
+        
     
     def stop_ysi_calibration(self):
+        self.mode = Mode.normal
         self.sensors.set_ysi_sample_rate(self.sdata['sample_hz'])
         self.sensors.message_priority = sensor.Priority.low
-        self.mode = Mode.normal
+        
     
     def set_ysi_calibration(self, zero, full_scale):
         self.sensors.set_calibration(zero, full_scale)
