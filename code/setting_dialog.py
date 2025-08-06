@@ -10,11 +10,12 @@ class SettingDialog(QDialog):
         self.setWindowTitle("Setting")
         self.setStyleSheet("background-color: #666666; color: white;")
         self.setModal(True)
-        self.setFocusPolicy(Qt.ClickFocus)
+        # self.setFocusPolicy(Qt.ClickFocus)
 
         self.min_do_box = BigSpinBox(min_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
         self.good_do_box = BigSpinBox(good_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
         self.auto_close_box = BigSpinBox(autoclose_sec, min_val=5, max_val=100, step=1, sig_digits=0)
+        self.p_threshold = BigSpinBox()
 
         font_style = "font-size: 32px;"
         label1 = QLabel("low DO level (mg/l)")
@@ -84,7 +85,7 @@ class SettingDialog(QDialog):
 
         self.setLayout(layout)
         self.adjustSize()
-        self.move_to_center()
+        # self.move_to_center()
 
     def move_to_center(self):
         screen = self.screen().geometry()
@@ -99,5 +100,5 @@ class SettingDialog(QDialog):
             "good_do": self.good_do_box.get_value(),
             "autoclose_sec": self.auto_close_box.get_value()
         }
-    def focusOutEvent(self, event):
-        self.reject()
+    # def focusOutEvent(self, event):
+    #     self.reject()
