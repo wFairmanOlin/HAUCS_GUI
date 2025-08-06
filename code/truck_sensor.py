@@ -49,11 +49,12 @@ class TruckSensor(QThread):
     database_folder = "database_truck"
 
 
-    def __init__(self, calibration, parent=None):
+    def __init__(self, calibration, settings, parent=None):
         super().__init__(parent)
         # initialize firebase
         self.init_firebase()
         self.calibration = calibration
+        self.settings = settings
         # initialize I2C sensor bus
         self.sensors = I2CReader(calibration)
         self.sensors.start()
@@ -85,12 +86,10 @@ class TruckSensor(QThread):
         self.sensors.set_ysi_sample_rate(sample_hz)
         self.sensors.message_priority = sensor.Priority.high
         
-    
     def stop_ysi_calibration(self):
         self.mode = Mode.normal
         self.sensors.set_ysi_sample_rate(self.sdata['sample_hz'])
         self.sensors.message_priority = sensor.Priority.low
-        
     
     def set_ysi_calibration(self, zero, full_scale):
         self.sensors.set_calibration(zero, full_scale)
@@ -124,16 +123,18 @@ class TruckSensor(QThread):
         logger.info("pressure calibration complete")
 
         self.ble.get_init_do()
-
         self.ble.get_init_pressure()
-
         self.ble.get_battery()
-
         self.ble.get_sampling_rate()
-
-        self.ble.set_threshold(10) #TODO: ADD TO SETTING PAGE
+        self.ble.set_threshold(self.settings['depth_threshold']) #TODO: ADD TO SETTING PAGE
 
         self.sync_ble_sdata()
+
+    def set_pressure_threshold(self, depth_in):
+        threshold = depth_to_pressure(depth_in, 0)
+        if not self.ble.set_threshold(threshold):
+            logger.error(f"setting pressure threshold failed {threshold}")
+
 
     def init_message_scheduler(self):
         self.scheduled_msgs = {}

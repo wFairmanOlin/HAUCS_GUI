@@ -266,7 +266,7 @@ class DOApp(QWidget):
         self.setLayout(main_layout)
 
     def setup_thread(self):
-        self.thread = TruckSensor(self.calibration)
+        self.thread = TruckSensor(self.calibration, self.settings)
         self.thread.unit = self.unit
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
@@ -462,42 +462,49 @@ class DOApp(QWidget):
         else:
             # user clicked no
             pass
-        
+    
+    def on_history_log_click(self):
+        window = HistoryLogWindow(self.unit, self.min_do, self.good_do, parent=self)
+        window.exec_() 
+
     def on_calibrate_ysi_click(self):
         logger.debug('starting ysi calibration')
         self.thread.start_ysi_calibration(5)
         self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
         self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
-    def ysi_calibration_complete(self, data):
+    def ysi_calibration_complete(self, data, save):
         self.thread.stop_ysi_calibration()
-        if data['success']:
+        if save:
             self.calibration['ysi_zero_scale'] = data['zero']
             self.calibration['ysi_full_scale'] = data['full_scale']
             self.save_local_csv(self.calibration, "calibration.csv")
+            self.thread.calibration = self.calibration
             self.thread.set_ysi_calibration(data['zero'], data['full_scale'])
             logger.info(f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}")
             self.send_status('ysi calibration success', 'limegreen')
         else:
-            logger.warning("ysi calibration failed")
-
-    def on_history_log_click(self):
-        window = HistoryLogWindow(self.unit, self.min_do, self.good_do, parent=self)
-        window.exec_() 
+            logger.info("ysi calibration not saved")
+            self.send_status('ysi calibration not saved')
 
     def open_settings_dialog(self):
-        dialog = SettingDialog(min_do=self.min_do, good_do=self.good_do, autoclose_sec=int(self.settings['autoclose_sec']))
-        if dialog.exec_() == QDialog.Accepted:
-            new_values = dialog.get_values()
-            self.min_do = new_values["min_do"]
-            self.good_do = new_values["good_do"]
-            self.settings['autoclose_sec'] = new_values["autoclose_sec"]
-            self.settings['min_do'] = self.min_do
-            self.settings['good_do'] = self.good_do
+        logger.debug('opening settings page')
+        self.settings_window = SettingDialog(self.settings)
+        self.settings_window.setting_complete.connect(self.setting_complete)
+
+    def setting_complete(self, data, save):
+        self.thread.stop_ysi_calibration()
+        if save:
+            for i in data:
+                self.settings[i] = data[i]
             self.save_local_csv(self.settings, "settings.csv")
-            logger.info('user updated settings')
+            self.thread.settings = self.settings
+            self.thread.set_pressure_threshold(data['depth_threshold'])
+            logger.info(f"settings successfully saved {data}")
+            self.send_status('settings saved', 'limegreen')
         else:
-            logger.info('no settings saved')
+            logger.info("settings not saved")
+            self.send_status('settings not saved')
 
     def save_local_csv(self, data_dict, filename):
         try:

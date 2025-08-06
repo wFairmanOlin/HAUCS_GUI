@@ -127,3 +127,10 @@ def pressure_to_depth(p, init_p):
     init_p: ambient air pressure
     '''
     return round(10.197 / 25.4 * (p - init_p), 1)
+
+def depth_to_pressure(d, init_p=0):
+    '''
+    d: depth in inches
+    init_p: ambient air pressure
+    '''
+    return round(init_p + d * 25.4 / 10.197, 1)

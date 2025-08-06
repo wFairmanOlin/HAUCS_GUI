@@ -11,3 +11,4 @@ unit,mgl
 autoclose_sec,10.0
 min_do,4.0
 good_do,5.0
+depth_threshold,6.0

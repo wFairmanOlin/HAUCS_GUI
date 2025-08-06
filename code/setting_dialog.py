@@ -1,29 +1,33 @@
 from PyQt5.QtWidgets import (
-    QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout
+    QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout, QApplication
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from bigspin_widget import BigSpinBox
+import sys
 
-class SettingDialog(QDialog):
-    def __init__(self, min_do, good_do, autoclose_sec, parent=None):
-        super().__init__(parent)
+class SettingDialog(QWidget):
+    setting_complete = pyqtSignal(dict, bool)
+    def __init__(self, settings):
+        self.save = False # flag to save settings on self.close
+        super().__init__()
         self.setWindowTitle("Setting")
-        self.setStyleSheet("background-color: #666666; color: white;")
-        self.setModal(True)
-        # self.setFocusPolicy(Qt.ClickFocus)
+        self.setStyleSheet("background-color: black; color: white;")
+        self.setFocusPolicy(Qt.ClickFocus)
 
-        self.min_do_box = BigSpinBox(min_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
-        self.good_do_box = BigSpinBox(good_do, min_val=0.5, max_val=15, step=0.1, sig_digits=1)
-        self.auto_close_box = BigSpinBox(autoclose_sec, min_val=5, max_val=100, step=1, sig_digits=0)
-        self.p_threshold = BigSpinBox()
+        self.min_do = BigSpinBox(settings['min_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
+        self.good_do = BigSpinBox(settings['good_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
+        self.auto_close = BigSpinBox(settings['autoclose_sec'], min_val=5, max_val=100, step=1, sig_digits=0)
+        self.p_threshold = BigSpinBox(settings['pressure_threshold'], min_val=1, max_val=50, step=0.5, sig_digits=1)
 
         font_style = "font-size: 32px;"
         label1 = QLabel("low DO level (mg/l)")
         label1.setStyleSheet(font_style)
         label2 = QLabel("good DO level (mg/l)")
         label2.setStyleSheet(font_style)
-        label3 = QLabel("auto-close Results (sec)")
+        label3 = QLabel("auto-close results (sec)")
         label3.setStyleSheet(font_style)
+        label4 = QLabel("sample threshold (in)")
+        label4.setStyleSheet(font_style)
 
         grid = QGridLayout()
         grid.setHorizontalSpacing(80)
@@ -31,31 +35,15 @@ class SettingDialog(QDialog):
 
         grid.addWidget(label1, 0, 0, alignment=Qt.AlignLeft)
         grid.addWidget(label2, 0, 1, alignment=Qt.AlignLeft)
+        grid.addWidget(self.min_do, 1, 0, alignment=Qt.AlignLeft)
+        grid.addWidget(self.good_do, 1, 1, alignment=Qt.AlignLeft)
+        grid.addWidget(label3, 2, 0, alignment=Qt.AlignLeft)
+        grid.addWidget(label4, 2, 1, alignment=Qt.AlignLeft)
+        grid.addWidget(self.auto_close, 3, 0, alignment=Qt.AlignLeft)
+        grid.addWidget(self.p_threshold, 3, 1, alignment=Qt.AlignLeft)
 
-        grid.addWidget(self.min_do_box, 1, 0, alignment=Qt.AlignLeft)
-        grid.addWidget(self.good_do_box, 1, 1, alignment=Qt.AlignLeft)
-
-        grid.addWidget(label3, 2, 0, 1, 2, alignment=Qt.AlignLeft)
-
-        grid.addWidget(self.auto_close_box, 3, 0, 1, 2, alignment=Qt.AlignLeft)
-
-        self.engineer_btn = QPushButton("Engineer")
-        self.engineer_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: 2px solid white;
-                border-radius: 8px;
-                font-size: 28px;
-                padding: 8px 20px;
-            }
-            QPushButton:hover {
-                background-color: #888888;
-            }
-        """)
-        self.engineer_btn.setVisible(False)
-
-        ok_btn = QPushButton("OK")
-        cancel_btn = QPushButton("Cancel")
+        ok_btn = QPushButton("save")
+        cancel_btn = QPushButton("cancel")
         for btn in (ok_btn, cancel_btn):
             btn.setFixedSize(150, 60)
             btn.setStyleSheet("""
@@ -69,13 +57,12 @@ class SettingDialog(QDialog):
                 }
             """)
 
-        ok_btn.clicked.connect(self.accept)
-        cancel_btn.clicked.connect(self.reject)
+        ok_btn.clicked.connect(self.close)
+        cancel_btn.clicked.connect(self.close)
 
         bottom_buttons = QHBoxLayout()
-        bottom_buttons.addWidget(self.engineer_btn)
-        bottom_buttons.addStretch()
         bottom_buttons.addWidget(ok_btn)
+        bottom_buttons.addStretch()
         bottom_buttons.addWidget(cancel_btn)
 
         layout = QVBoxLayout()
@@ -84,21 +71,29 @@ class SettingDialog(QDialog):
         layout.addLayout(bottom_buttons)
 
         self.setLayout(layout)
-        self.adjustSize()
-        # self.move_to_center()
+        self.showFullScreen()
 
-    def move_to_center(self):
-        screen = self.screen().geometry()
-        self.move(
-            screen.center().x() - self.width() // 2,
-            screen.center().y() - self.height() // 2
-        )
+    def on_save(self):
+        self.save = True
+        self.close()
 
-    def get_values(self):
-        return {
-            "min_do": self.min_do_box.get_value(),
-            "good_do": self.good_do_box.get_value(),
-            "autoclose_sec": self.auto_close_box.get_value()
-        }
-    # def focusOutEvent(self, event):
-    #     self.reject()
+
+    def closeEvent(self, event):
+        '''
+        Return dictionary with values from display and success flag.
+        '''
+        self.setting_complete.emit({'min_do':self.min_do.get_value(),
+                                    'good_do':self.good_do.get_value(),
+                                    'autoclose_sec':self.auto_close.get_value(),
+                                    'pressure_threshold':self.p_threshold.get_value(),
+                                    }, self.save)
+        super().closeEvent(event)
+
+    def focusOutEvent(self, event):
+        self.close()
+
+if __name__ == "__main__":
+    settings = {'min_do':0, 'good_do':1, 'autoclose_sec':3, 'pressure_threshold':4}
+    app = QApplication(sys.argv)
+    window = SettingDialog(settings)
+    sys.exit(app.exec_())

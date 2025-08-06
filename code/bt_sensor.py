@@ -138,7 +138,10 @@ class BluetoothReader(QObject):
     
     def set_threshold(self, hpa):
         command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
-        self.send_receive_command(command)
+        msg = self.send_receive_command(command)
+        if msg[0] == command['rx'] and msg[1] == f'{int(hpa)}':
+            return True
+        return False
 
     def set_lights(self, pattern):
         command = {'tx':f"set light {pattern}", 'rx':''}

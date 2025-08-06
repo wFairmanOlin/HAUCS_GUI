@@ -39,16 +39,13 @@ logger = logging.getLogger(__name__)
 
 # Global Parameters
 alpha = 0.1
-save = False
 
 class YsiCalibrationWindow(QWidget):
-    ysi_calibration_complete = pyqtSignal(dict)
+    ysi_calibration_complete = pyqtSignal(dict, bool)
     
-
-
- 
     def __init__(self, ysi_raw_data=None):
         super().__init__()
+        self.save = False #sets whether or not calibration is saved on close()
         self.setFocusPolicy(Qt.ClickFocus)
         if ysi_raw_data:
             ysi_raw_data.connect(self.on_raw_data)
@@ -158,7 +155,7 @@ class YsiCalibrationWindow(QWidget):
             self.max_val.setText(f"{data:.0f}")
 
     def on_save_press(self):
-        save = True
+        self.save = True
         self.close()
 
     def on_zero_btn_press(self):
@@ -183,9 +180,9 @@ class YsiCalibrationWindow(QWidget):
             success = False
 
         success &= (zero >= full_scale) # return false if zero is less than full scale
-        success &= save # return false if save parameter is false
+        success &= self.save # return false if save parameter is false
 
-        self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale, 'success':success})
+        self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale}, success)
         super().closeEvent(event)
 
     def keyPressEvent(self, event):

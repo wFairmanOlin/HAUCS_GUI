@@ -3,8 +3,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDoubleValidator, QIntValidator
 
 class BigSpinBox(QWidget):
-    def __init__(self, val=50, min_val=0, max_val=100, step=1, sig_digits=0, parent=None):
-        super().__init__(parent)
+    def __init__(self, val=50, min_val=0, max_val=100, step=1, sig_digits=0):
+        super().__init__()
         self.min_val = min_val
         self.max_val = max_val
         self.step = step
@@ -66,7 +66,7 @@ class BigSpinBox(QWidget):
         layout.addLayout(btn_layout)
 
         self.setLayout(layout)
-        self.setFixedSize(250, 110)  # ควบคุมขนาด widget โดยรวม
+        # self.showFullScreen()
 
     def increment(self):
         new_val = round(self.value + self.step, self.sig_digits)
