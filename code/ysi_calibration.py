@@ -158,7 +158,7 @@ class YsiCalibrationWindow(QWidget):
         success = True
         try:
             zero = float(self.zero_val.text())
-            full_scale = float(self.zero_val.text())
+            full_scale = float(self.max_val.text())
         except:
             zero = 0
             full_scale = 0
