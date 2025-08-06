@@ -7,10 +7,10 @@ from bigspin_widget import BigSpinBox
 class SettingDialog(QDialog):
     def __init__(self, min_do, good_do, autoclose_sec, parent=None):
         super().__init__(parent)
-        self.setFocusPolicy(Qt.ClickFocus)
         self.setWindowTitle("Setting")
         self.setStyleSheet("background-color: #666666; color: white;")
         self.setModal(True)
+        self.setFocusPolicy(Qt.ClickFocus)
 
         self.min_do_box = BigSpinBox(min_do, min_val=0.5, max_val=15, step=0.1, digits=1)
         self.good_do_box = BigSpinBox(good_do, min_val=0.5, max_val=15, step=0.1, digits=1)

@@ -487,7 +487,7 @@ class DOApp(QWidget):
 
     def open_settings_dialog(self):
         dialog = SettingDialog(min_do=self.min_do, good_do=self.good_do, autoclose_sec=int(self.settings['autoclose_sec']))
-        if dialog.exec_():
+        if dialog.exec_() == QDialog.Accepted:
             new_values = dialog.get_values()
             self.min_do = new_values["min_do"]
             self.good_do = new_values["good_do"]
@@ -496,6 +496,8 @@ class DOApp(QWidget):
             self.settings['good_do'] = self.good_do
             self.save_local_csv(self.settings, "settings.csv")
             logger.info('user updated settings')
+        else:
+            logger.info('no settings saved')
 
     def save_local_csv(self, data_dict, filename):
         try:
