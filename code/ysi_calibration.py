@@ -46,7 +46,7 @@ class YsiCalibrationWindow(QWidget):
     def __init__(self, ysi_raw_data=None):
         super().__init__()
         self.save = False #sets whether or not calibration is saved on close()
-        self.setFocusPolicy(Qt.ClickFocus)
+        # self.setFocusPolicy(Qt.ClickFocus)
         if ysi_raw_data:
             ysi_raw_data.connect(self.on_raw_data)
         self.setWindowTitle("YSI Calibration Routine")
@@ -189,8 +189,8 @@ class YsiCalibrationWindow(QWidget):
         if event.key() == Qt.Key_Escape:
             self.close()
 
-    def focusOutEvent(self, event):
-        self.close()
+    # def focusOutEvent(self, event):
+    #     self.close()
 
 
 if __name__ == "__main__":

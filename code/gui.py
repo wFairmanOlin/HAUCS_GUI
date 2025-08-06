@@ -191,6 +191,7 @@ class DOApp(QWidget):
         self.timer_val = QLabel('-')
         self.status   = QLabel('')
         self.status.setWordWrap(True) #allow multiple lines
+        self.status.setfixedWidth(460)
 
         self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
@@ -391,7 +392,6 @@ class DOApp(QWidget):
                 self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
                 self.status.setText(txt)
                 self.status_timer.start()
-                print(f"status width {self.status.width()}")
         # display nothing
         else:
             self.status.setText("")

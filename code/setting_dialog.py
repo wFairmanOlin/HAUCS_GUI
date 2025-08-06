@@ -12,7 +12,7 @@ class SettingDialog(QWidget):
         super().__init__()
         self.setWindowTitle("Setting")
         self.setStyleSheet("background-color: black; color: white;")
-        self.setFocusPolicy(Qt.ClickFocus)
+        # self.setFocusPolicy(Qt.ClickFocus)
 
         self.min_do = BigSpinBox(settings['min_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
         self.good_do = BigSpinBox(settings['good_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
@@ -89,8 +89,8 @@ class SettingDialog(QWidget):
                                     }, self.save)
         super().closeEvent(event)
 
-    def focusOutEvent(self, event):
-        self.close()
+    # def focusOutEvent(self, event):
+    #     self.close()
 
 if __name__ == "__main__":
     settings = {'min_do':0, 'good_do':1, 'autoclose_sec':3, 'depth_threshold':4}
