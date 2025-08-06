@@ -12,7 +12,7 @@ from result_window import ResultWindow
 import os
 import time
 import csv
-from truck_sensor import TruckSensor
+from truck_sensor import TruckSensor, Mode
 from datetime import datetime
 from battery_widget import BatteryWidget
 from led_indicator import LEDStatusWidget
@@ -21,6 +21,7 @@ from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
 from custom_yesno_dialog import CustomYesNoDialog
+from ysi_calibration import YsiCalibrationWindow
 import pickle
 import logging
 import queue
@@ -463,16 +464,21 @@ class DOApp(QWidget):
             pass
         
     def on_calibrate_ysi_click(self):
-        dialog = CustomYesNoDialog(
-            "this page is in development\nstay tuned...",
-            self
-        )
-        if dialog.exec_() == QDialog.Accepted:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
-            # user clicked yes
+
+        self.thread.set_ysi_sample_rate(5)
+        self.thread.mode = Mode.ysi_cal
+        self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
+        self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
+
+    def ysi_calibration_complete(self, data):
+        print(f"{data}")
+        if data['success']:
+            self.calibration['ysi_zero_scale'] = data['zero']
+            self.calibration['ysi_full_scale'] = data['full_scale']
+            self.save_local_csv(self.calibration, "calibration.csv")
+            logger.info(f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}")
         else:
-            # user clicked no
-            pass
+            logger.warning("ysi calibration failed")
 
     def on_history_log_click(self):
         window = HistoryLogWindow(self.unit, self.min_do, self.good_do, parent=self)

@@ -79,12 +79,22 @@ To enable the GUI to start automatically on boot:
    ```
 
 ## `gui_start.sh` — Program Launcher Script
-`gui.sh` is a shell script that launches the HAUCS-GUI software.
+`gui_start.sh` is a shell script that launches the HAUCS-GUI software.
 
 Make sure to set execute permission:
 ```bash
 chmod +x /home/haucs/Desktop/HAUCS_CODE/gui_start.sh
 ```
+
+### Reboot Flag
+
+Calling the launch script with the reboot flag, `gui_start.sh -r`, will force a reboot after the script finishes running (30 seconds after the gui closes). To stop this process after gui startup, run the following commands within 30 seconds after closing the program:
+
+```
+ps -aux | grep gui_start
+kill <value>
+```
+Removing the `-r` flag from the `.desktop` file will stop prevent the script from rebooting in the future. 
 
 ## Sixfab Cellular Base Hat Setup
 

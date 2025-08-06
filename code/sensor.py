@@ -18,7 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class I2CReader(QThread):
-    ysi_publisher = pyqtSignal(float)
+    ysi_publisher = pyqtSignal(float, float)
     gps_publisher = pyqtSignal(dict)
 
     #TODO the following values should NOT be hardcoded
@@ -90,9 +90,34 @@ class I2CReader(QThread):
         # set to zero if less than zero
         do_mgl = 0 if do_mgl < 0 else do_mgl
 
-        # publish YSI data
-        self.ysi_publisher.emit(do_mgl)
-        return do_mgl
+        return do_mgl, val
+
+    def measure_ysi_raw_adc(self):
+        try:
+            val = self.ysi_adc.readADC_Differential_0_1()
+        except:
+            logger.info('failed to read raw ADC value')
+            val = 0
+        self.ysi_publisher.emit(val)
+        return val
+        
+    def set_schedule(self, name, callback, period, underwaterFlag):
+        """
+        Add message callback to sensor message scheduler
+        name: name of message (needs to be called to remove schedule)
+        underwaterFlag: runs when sensor is underwater (True/False)
+        """
+        if not period.isnumeric():
+            logger.error(f"sensor set schedule failed {name}")
+        else:
+            msg = {'callback':callback, 'period':period, 'timer':0, 'underwater':underwaterFlag}
+            self.scheduled_msgs[name] = msg
+
+    def remove_schedule(self, name):
+        if name in self.scheduled_msgs:
+            del self.scheduled_msgs[name]
+        else:
+            logger.warning(f"could not find {name} in message schedule")
 
     def set_ysi_sample_rate(self, sample_hz):
         self.ysi_sampling_period = int(1/sample_hz)

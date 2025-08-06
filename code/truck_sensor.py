@@ -11,11 +11,16 @@ import concurrent.futures
 from sensor import I2CReader
 from converter import *
 import numpy as np
+from enum import Enum
 
 from firebase_worker import FirebaseWorker
 
 import logging
 logger = logging.getLogger(__name__)
+
+class Mode(Enum):
+    normal = 0
+    ysi_cal = 1
 
 class TruckSensor(QThread):
     update_data = pyqtSignal(dict) 
@@ -31,7 +36,7 @@ class TruckSensor(QThread):
     cred = None
 
     messaging_active = True #semaphore for scheduled messages
-
+    mode = Mode.normal #handles special operating modes
     underwater = False
 
     # environment variables
@@ -62,18 +67,23 @@ class TruckSensor(QThread):
         self.sensors.gps_publisher.connect(self.on_gps_update)
         self.sensors.ysi_publisher.connect(self.on_ysi_update)
 
-
-    def on_ysi_update(self, do_mgl):
+    # YSI COMMANDS
+    def on_ysi_update(self, do_mgl, raw_adc):
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
         else:
             do_ps = -1
-        
         # only emit data when underwater
         if self.underwater:
             self.ysi_do_mgl_arr.append(do_mgl)
             self.ysi_data.emit(do_ps, do_mgl)
+        # emit when in calibration mode
+        elif self.mode == Mode.ysi_cal:
+            self.ysi_Data.emit(raw_adc, raw_adc)
 
+    def set_ysi_sample_rate(self, sample_hz):
+            self.sensors.set_ysi_sample_rate(sample_hz)
+        
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
         self.firebase_worker.start()
