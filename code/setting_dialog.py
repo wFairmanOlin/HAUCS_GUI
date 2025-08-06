@@ -57,7 +57,7 @@ class SettingDialog(QWidget):
                 }
             """)
 
-        ok_btn.clicked.connect(self.close)
+        ok_btn.clicked.connect(self.on_save)
         cancel_btn.clicked.connect(self.close)
 
         bottom_buttons = QHBoxLayout()
