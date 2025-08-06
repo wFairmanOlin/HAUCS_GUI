@@ -48,10 +48,8 @@ class TruckSensor(QThread):
     database_folder = "database_truck"
 
 
-    def __init__(self, parent=None):
+    def __init__(self, calibration, parent=None):
         super().__init__(parent)
-        
-    def initialize(self, calibration):
         # initialize firebase
         self.init_firebase()
         self.calibration = calibration
@@ -61,7 +59,6 @@ class TruckSensor(QThread):
 
         #internally accessed variables
         self.ysi_do_mgl_arr = []
-
         # initialzie PyQt Signals
         self.sensor_underwater.connect(self.underwater_status_change)
         self.sensors.gps_publisher.connect(self.on_gps_update)

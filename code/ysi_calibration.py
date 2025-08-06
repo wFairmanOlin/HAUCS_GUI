@@ -171,6 +171,10 @@ class YsiCalibrationWindow(QWidget):
         self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale, 'success':success})
         super().closeEvent(event)
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = YsiCalibrationWindow()

@@ -264,16 +264,13 @@ class DOApp(QWidget):
         self.setLayout(main_layout)
 
     def setup_thread(self):
-        self.thread = TruckSensor()
+        self.thread = TruckSensor(self.calibration)
         self.thread.unit = self.unit
-
-        self.thread.initialize()
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
         self.thread.sensor_underwater.connect(self.on_underwater_signal)
         self.thread.ysi_data.connect(self.on_ysi_update)
         self.thread.start()
-        self.ble_running = True
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
