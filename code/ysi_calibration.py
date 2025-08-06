@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 # Global Parameters
 alpha = 0.1
+save = False
 
 class YsiCalibrationWindow(QWidget):
     ysi_calibration_complete = pyqtSignal(dict)
@@ -78,10 +79,13 @@ class YsiCalibrationWindow(QWidget):
         # descriptions
         zero_txt = QLabel(zero_msg)
         max_txt  = QLabel(max_msg)
-        zero_txt.setStyleSheet(f"font-size: {self.font}px;")
-        max_txt.setStyleSheet(f"font-size: {self.font}px;") 
+        zero_txt.setStyleSheet(f"font-size: {self.font}px; padding-left: 5px; padding-right: 5px;")
+        max_txt.setStyleSheet(f"font-size: {self.font}px; padding-left: 5px; padding-right: 5px;") 
+        zero_txt.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        max_txt.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         zero_txt.setWordWrap(True)
         max_txt.setWordWrap(True)
+        
 
         # calibration values
         self.zero_val = QLabel("0")
@@ -104,22 +108,33 @@ class YsiCalibrationWindow(QWidget):
         self.max_btn.clicked.connect(self.on_max_btn_press)
 
         info_grid = QGridLayout()
-        info_grid.addWidget(zero_txt, 0, 0, Qt.AlignCenter)
-        info_grid.addWidget(max_txt,  0, 1, Qt.AlignCenter)
+        info_grid.addWidget(zero_txt, 0, 0)
+        info_grid.addWidget(max_txt,  0, 1)
         info_grid.addWidget(self.zero_val, 1, 0, Qt.AlignCenter)
         info_grid.addWidget(self.max_val,  1, 1, Qt.AlignCenter)
         info_grid.addWidget(self.zero_btn, 2, 0, Qt.AlignCenter)
         info_grid.addWidget(self.max_btn,  2, 1, Qt.AlignCenter)        
         layout_main.addLayout(info_grid)
         
+
+        
+        # save button
+        save_button = QPushButton("save")
+        save_button.setStyleSheet(btn_style)
+        save_button.setFixedSize(180, 60)
+        save_button.clicked.connect(self.on_save_press)
+        
         # close button
         close_button = QPushButton("close")
         close_button.setStyleSheet(btn_style)
         close_button.setFixedSize(180, 60)
         close_button.clicked.connect(self.close)
+
         button_layout = QHBoxLayout()
+        button_layout.addWidget(save_button)
         button_layout.addStretch()
         button_layout.addWidget(close_button)
+
         layout_main.addLayout(button_layout)
         
         self.setLayout(layout_main)
@@ -141,7 +156,10 @@ class YsiCalibrationWindow(QWidget):
         elif max_btn:
             self.max_val.setText(f"{data:.0f}")
 
-    
+    def on_save_press(self):
+        save = True
+        self.close()
+
     def on_zero_btn_press(self):
         if self.max_btn.isChecked():
             self.max_btn.setChecked(False)
@@ -163,9 +181,10 @@ class YsiCalibrationWindow(QWidget):
             zero = 0
             full_scale = 0
             success = False
-        
-        if zero >= full_scale:
-            success = False
+
+        success &= (zero >= full_scale) # return false if zero is less than full scale
+        success &= save # return false if save parameter is false
+
         print({'zero':zero, 'full_scale':full_scale, 'success':success})
         self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale, 'success':success})
         super().closeEvent(event)
