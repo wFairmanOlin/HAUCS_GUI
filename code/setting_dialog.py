@@ -17,7 +17,7 @@ class SettingDialog(QWidget):
         self.min_do = BigSpinBox(settings['min_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
         self.good_do = BigSpinBox(settings['good_do'], min_val=0.5, max_val=15, step=0.5, sig_digits=1)
         self.auto_close = BigSpinBox(settings['autoclose_sec'], min_val=5, max_val=100, step=1, sig_digits=0)
-        self.p_threshold = BigSpinBox(settings['pressure_threshold'], min_val=1, max_val=50, step=0.5, sig_digits=1)
+        self.p_threshold = BigSpinBox(settings['depth_threshold'], min_val=1, max_val=50, step=0.5, sig_digits=1)
 
         font_style = "font-size: 32px;"
         label1 = QLabel("low DO level (mg/l)")
@@ -85,7 +85,7 @@ class SettingDialog(QWidget):
         self.setting_complete.emit({'min_do':self.min_do.get_value(),
                                     'good_do':self.good_do.get_value(),
                                     'autoclose_sec':self.auto_close.get_value(),
-                                    'pressure_threshold':self.p_threshold.get_value(),
+                                    'depth_threshold':self.p_threshold.get_value(),
                                     }, self.save)
         super().closeEvent(event)
 
@@ -93,7 +93,7 @@ class SettingDialog(QWidget):
         self.close()
 
 if __name__ == "__main__":
-    settings = {'min_do':0, 'good_do':1, 'autoclose_sec':3, 'pressure_threshold':4}
+    settings = {'min_do':0, 'good_do':1, 'autoclose_sec':3, 'depth_threshold':4}
     app = QApplication(sys.argv)
     window = SettingDialog(settings)
     sys.exit(app.exec_())
