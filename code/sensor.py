@@ -64,9 +64,9 @@ class I2CReader(QThread):
 
         # initialize message schedule
         self.scheduled_msgs = {}
-        self.scheduled_msgs['gps_signal']    = {'callback':self.publish_gps, 'period':10, 'timer':0, 'priority':False}
-        self.scheduled_msgs['gps_update']    = {'callback':self.gps.update, 'period':5, 'timer':0, 'priority':False}
-        self.scheduled_msgs['ysi']    = {'callback':self.measure_ysi_adc, 'period':self.ysi_sampling_period, 'timer':0, 'priority':True}
+        self.scheduled_msgs['gps_signal']    = {'callback':self.publish_gps, 'period':10, 'timer':0, 'priority':Priority.low}
+        self.scheduled_msgs['gps_update']    = {'callback':self.gps.update, 'period':5, 'timer':0, 'priority':Priority.low}
+        self.scheduled_msgs['ysi']    = {'callback':self.measure_ysi_adc, 'period':self.ysi_sampling_period, 'timer':0, 'priority':Priority.high}
         
 
     def send_scheduled_messages(self):
