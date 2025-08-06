@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=TRUCKGUI
+Exec=/home/haucs/Desktop/HAUCS_GUI/gui_start.sh -r

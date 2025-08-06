@@ -69,12 +69,9 @@ To enable the GUI to start automatically on boot:
    ```bash
    mkdir -p ~/.config/autostart
    ```
-2. Create a file named `gui.desktop` with the following content:
-   ```bash
-   [Desktop Entry]
-   Type=Application
-   Name=TRUCKGUI
-   Exec=/home/haucs/Desktop/HAUCS_GUI/gui_start.sh
+2. Copy the file `gui.desktop` to the directory `~/.config/autostart/`
+   ```
+   cp gui.desktop ~/.config/autostart
    ```
 3. Save the `gui.desktop` file in:
    ```bash

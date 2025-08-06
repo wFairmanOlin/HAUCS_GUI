@@ -60,7 +60,7 @@ class BluetoothReader(QObject):
                         logger.debug(f"successfully connected to {adv}")
                         return True   
                 except:
-                    logger.error('failed to connect to {adv}')
+                    logger.error(f'failed to connect to {adv}')
 
         self.ble.stop_scan()
         self.sdata['connection'] = False
