@@ -43,11 +43,13 @@ save = False
 
 class YsiCalibrationWindow(QWidget):
     ysi_calibration_complete = pyqtSignal(dict)
-    image_path=None
+    
+
 
  
     def __init__(self, ysi_raw_data=None):
         super().__init__()
+        self.setFocusPolicy(Qt.ClickFocus)
         if ysi_raw_data:
             ysi_raw_data.connect(self.on_raw_data)
         self.setWindowTitle("YSI Calibration Routine")

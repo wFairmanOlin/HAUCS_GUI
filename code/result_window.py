@@ -31,6 +31,7 @@ class ResultWindow(QWidget):
  
     def __init__(self, data, unit, min_do, good_do, auto_close_sec=10):
         super().__init__()
+        self.setFocusPolicy(Qt.ClickFocus)
         self.remaining_time = auto_close_sec
         self.timer_active = True
 
@@ -411,5 +412,6 @@ class ResultWindow(QWidget):
             self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 
-
+    def focusOutEvent(self, event):
+        self.close()
 

@@ -6,6 +6,7 @@ class ShutdownDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Confirm Exit Action")
         self.setModal(True)
+        self.setFocusPolicy(Qt.ClickFocus)
         self.setFixedSize(1200, 400)
 
         self.setStyleSheet("""
@@ -97,3 +98,6 @@ class ShutdownDialog(QDialog):
     def restart(self):
         self.result = "restart"
         self.accept()
+        
+    def focusOutEvent(self, event):
+        self.close()
