@@ -74,3 +74,6 @@ class CustomYesNoDialog(QDialog):
             screen.center().x() - self.width() // 2,
             screen.center().y() - self.height() // 2
         )
+
+    def focusOutEvent(self, event):
+        self.close()
