@@ -13,9 +13,13 @@ from gps_sensor import GPSSensor
 import board
 import adafruit_bno055
 import logging
-
+from enum import Enum
 #init logger
 logger = logging.getLogger(__name__)
+
+class Priority(Enum):
+    low = 0
+    high = 1
 
 class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float, float)
@@ -27,6 +31,7 @@ class I2CReader(QThread):
 
     # accessed externally
     underwater          = False # True if underwater, set by truck_sensor.py
+    message_priority    = Priority.low # Indicates the minimum level needed to run a message
 
 
     # accessed internally
@@ -59,9 +64,9 @@ class I2CReader(QThread):
 
         # initialize message schedule
         self.scheduled_msgs = {}
-        self.scheduled_msgs['gps_signal']    = {'callback':self.publish_gps, 'period':10, 'timer':0, 'underwater':False}
-        self.scheduled_msgs['gps_update']    = {'callback':self.gps.update, 'period':5, 'timer':0, 'underwater':False}
-        self.scheduled_msgs['ysi']    = {'callback':self.measure_ysi_adc, 'period':self.ysi_sampling_period, 'timer':0, 'underwater':True}
+        self.scheduled_msgs['gps_signal']    = {'callback':self.publish_gps, 'period':10, 'timer':0, 'priority':False}
+        self.scheduled_msgs['gps_update']    = {'callback':self.gps.update, 'period':5, 'timer':0, 'priority':False}
+        self.scheduled_msgs['ysi']    = {'callback':self.measure_ysi_adc, 'period':self.ysi_sampling_period, 'timer':0, 'priority':True}
         
 
     def send_scheduled_messages(self):
@@ -69,7 +74,7 @@ class I2CReader(QThread):
             if time.time() - message['timer'] > message['period']:
                 message['timer'] = time.time()
                 # only trigger callback if above water or message has underwater priority
-                if (not self.underwater) or message['underwater']:
+                if message['priority'] >= self.message_priority:
                     message['callback']()
 
     def init_ysi_adc(self):

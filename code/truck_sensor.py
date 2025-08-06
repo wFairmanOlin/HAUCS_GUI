@@ -12,6 +12,7 @@ from sensor import I2CReader
 from converter import *
 import numpy as np
 from enum import Enum
+import sensor
 
 from firebase_worker import FirebaseWorker
 
@@ -66,7 +67,6 @@ class TruckSensor(QThread):
 
     # YSI COMMANDS
     def on_ysi_update(self, do_mgl, raw_adc):
-        print(f"ysi_update called {self.mode}")
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
         else:
@@ -80,8 +80,15 @@ class TruckSensor(QThread):
             self.ysi_data.emit(do_ps, do_mgl)
         
 
-    def set_ysi_sample_rate(self, sample_hz):
+    def start_ysi_calibration(self, sample_hz):
         self.sensors.set_ysi_sample_rate(sample_hz)
+        self.sensors.message_priority = sensor.Priority.high
+        self.mode = Mode.ysi_cal
+    
+    def stop_ysi_calibration(self):
+        self.sensors.set_ysi_sample_rate(self.sdata['sample_hz'])
+        self.sensors.message_priority = sensor.Priority.low
+        self.mode = Mode.normal
     
     def set_ysi_calibration(self, zero, full_scale):
         self.sensors.set_calibration(zero, full_scale)
@@ -97,10 +104,10 @@ class TruckSensor(QThread):
     def underwater_status_change(self, value):
         if value == "True":
             self.underwater = True
-            self.sensors.underwater = True
+            self.sensors.message_priority = sensor.Priority.high # only process high priority messages 
         else:
             self.underwater = False
-            self.sensors.underwater = False
+            self.sensors.message_priority = sensor.Priority.low 
 
 
     def init_ble(self):

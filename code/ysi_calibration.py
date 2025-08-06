@@ -167,7 +167,7 @@ class YsiCalibrationWindow(QWidget):
         
         if zero >= full_scale:
             success = False
-
+        print({'zero':zero, 'full_scale':full_scale, 'success':success})
         self.ysi_calibration_complete.emit({'zero':zero, 'full_scale':full_scale, 'success':success})
         super().closeEvent(event)
 

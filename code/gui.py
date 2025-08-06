@@ -26,6 +26,7 @@ import pickle
 import logging
 import queue
 import argparse
+import sensor
 
 logger = logging.getLogger(__name__)
 
@@ -457,15 +458,13 @@ class DOApp(QWidget):
             pass
         
     def on_calibrate_ysi_click(self):
-        print("increasing sample rate")
-        self.thread.set_ysi_sample_rate(5)
-        self.thread.mode = Mode.ysi_cal
+        logger.debug('starting ysi calibration')
+        self.thread.start_ysi_calibration(5)
         self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
         self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
     def ysi_calibration_complete(self, data):
-        self.thread.mode = Mode.normal
-        self.thread.set_ysi_sample_rate(self.thread.sdata['sample_hz'])
+        self.thread.stop_ysi_calibration()
         if data['success']:
             self.calibration['ysi_zero_scale'] = data['zero']
             self.calibration['ysi_full_scale'] = data['full_scale']
