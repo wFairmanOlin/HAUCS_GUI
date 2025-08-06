@@ -613,7 +613,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     ENABLE_DEBUG = args.debug
 
-    app = QApplication()
+    app = QApplication(sys.argv)
     window = DOApp()
     sys.exit(app.exec_())
 
