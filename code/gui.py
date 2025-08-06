@@ -265,10 +265,6 @@ class DOApp(QWidget):
 
     def setup_thread(self):
         self.thread = TruckSensor()
-
-        self.thread.max_fail = int(self.settings['upload_firebase_max_counter'])
-        self.thread.do_vals_log = self.settings['do_vals']
-        self.thread.log_folder = self.settings['log_folder']
         self.thread.unit = self.unit
 
         self.thread.initialize()
@@ -471,11 +467,13 @@ class DOApp(QWidget):
         self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
     def ysi_calibration_complete(self, data):
-        print(f"{data}")
+        self.thread.mode = Mode.normal
+        self.thread.set_ysi_sample_rate(self.thread.sdata['sample_hz'])
         if data['success']:
             self.calibration['ysi_zero_scale'] = data['zero']
             self.calibration['ysi_full_scale'] = data['full_scale']
             self.save_local_csv(self.calibration, "calibration.csv")
+            self.thread.set_ysi_calibration(data['zero'], data['full_scale'])
             logger.info(f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}")
         else:
             logger.warning("ysi calibration failed")

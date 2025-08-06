@@ -21,9 +21,8 @@ class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float, float)
     gps_publisher = pyqtSignal(dict)
 
-    #TODO the following values should NOT be hardcoded
-    FULL_SCALE = 10500
-    ZERO_SCALE = 0
+    full_scale = 10500
+    zero_scale = 0
     FULL_MGL = 15
 
     # accessed externally
@@ -37,10 +36,12 @@ class I2CReader(QThread):
     ysi_reconnect_timer = 0     # Stores the last time a reconnect attempt was made
     ysi_sampling_period = 1     # Modified to match BLE sensor 
 
-    def __init__(self):
+    def __init__(self, calibration):
         super().__init__()
         self._abort = False
 
+        # store calibration dict
+        self.set_calibration(calibration)
         # I2C Bus
         i2c = board.I2C()
         
@@ -86,7 +87,7 @@ class I2CReader(QThread):
             self.ysi_connected = False
         
         # perform voltage to mgl conversion
-        do_mgl = self.FULL_MGL * (val - self.ZERO_SCALE) / (self.FULL_SCALE - self.ZERO_SCALE)
+        do_mgl = self.FULL_MGL * (val - self.zero_scale) / (self.full_scale - self.zero_scale)
         # set to zero if less than zero
         do_mgl = 0 if do_mgl < 0 else do_mgl
         self.ysi_publisher.emit(do_mgl, val)
@@ -112,9 +113,13 @@ class I2CReader(QThread):
             logger.warning(f"could not find {name} in message schedule")
 
     def set_ysi_sample_rate(self, sample_hz):
-        self.ysi_sampling_period = int(1/sample_hz)
+        self.ysi_sampling_period = float(1/sample_hz)
         self.scheduled_msgs['ysi']['period'] = self.ysi_sampling_period
     
+    def set_calibration(self, zero, full_scale):
+        self.zero_scale = zero
+        self.full_scale = full_scale
+
     def get_gps_data(self):
         '''
         Returns the following signal

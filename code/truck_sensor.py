@@ -51,12 +51,12 @@ class TruckSensor(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-    def initialize(self):
+    def initialize(self, calibration):
         # initialize firebase
         self.init_firebase()
-
+        self.calibration = calibration
         # initialize I2C sensor bus
-        self.sensors = I2CReader()
+        self.sensors = I2CReader(calibration)
         self.sensors.start()
 
         #internally accessed variables
@@ -76,7 +76,7 @@ class TruckSensor(QThread):
             do_ps = -1
         # emit when in calibration mode
         if self.mode == Mode.ysi_cal:
-            self.ysi_Data.emit(raw_adc, raw_adc)
+            self.ysi_data.emit(raw_adc, raw_adc)
         # only emit data when underwater
         elif self.underwater:
             self.ysi_do_mgl_arr.append(do_mgl)
@@ -84,8 +84,11 @@ class TruckSensor(QThread):
         
 
     def set_ysi_sample_rate(self, sample_hz):
-            self.sensors.set_ysi_sample_rate(sample_hz)
-        
+        self.sensors.set_ysi_sample_rate(sample_hz)
+    
+    def set_ysi_calibration(self, zero, full_scale):
+        self.sensors.set_calibration(zero, full_scale)
+
     def init_firebase(self):
         self.firebase_worker = FirebaseWorker()
         self.firebase_worker.start()

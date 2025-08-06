@@ -124,21 +124,20 @@ class YsiCalibrationWindow(QWidget):
         self.setLayout(layout_main)
 
     def on_raw_data(self, val, *args):
-        print(f"raw data received: {val}")
+        
         old_data = 0
         if self.state == State.zero:
             if self.zero_val.text().isnumeric():
-                old_data = float(self.zero_val.text())
+                old_data = int(self.zero_val.text())
         elif self.state == State.full_scale:
             if self.max_val.text().isnumeric():
-                old_data = float(self.max_val.text())
-        
+                old_data = int(self.max_val.text())
         data = alpha * val + (1 - alpha) * old_data
-
+        print(f"raw data received {val} old {old_data} new {data}")
         if self.state == State.zero:
-            self.zero_val.setText(f"{data:.1f}")
+            self.zero_val.setText(f"{data:.0f}")
         elif self.state == State.full_scale:
-            self.max_val.setText(f"{data:.1f}")
+            self.max_val.setText(f"{data:.0f}")
 
     
     def on_zero_btn_press(self):
