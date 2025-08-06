@@ -41,7 +41,7 @@ class I2CReader(QThread):
         self._abort = False
 
         # store calibration dict
-        self.set_calibration(calibration)
+        self.set_calibration(calibration['ysi_zero_scale'], calibration['ysi_full_scale'])
         # I2C Bus
         i2c = board.I2C()
         
