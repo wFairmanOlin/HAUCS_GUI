@@ -26,6 +26,7 @@ from setting_dialog import SettingDialog
 from ysi_calibration import YsiCalibrationWindow
 import pickle
 import logging
+from logging.handlers import RotatingFileHandler
 import queue
 import argparse
 import sensor
@@ -59,8 +60,9 @@ class DOApp(QWidget):
         for handler in logging.root.handlers:
             handler.addFilter(localFilter)
         logPrinter.log_message.connect(self.send_status)
+        # rotating file handler
         fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
-        fileHandler = logging.RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
+        fileHandler = RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
                                  backupCount=3, encoding=None, delay=False)
         fileHandler.setFormatter(fileFormatter)
         fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))

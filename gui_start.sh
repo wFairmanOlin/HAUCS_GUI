@@ -27,7 +27,7 @@ fi
 cd code
 
 echo "running script"
-/home/haucs/truck/bin/python3 gui.py $2 >> bash_log.txt
+/home/haucs/truck/bin/python3 gui.py $2 >> bash_log.txt 2>&1
 echo "finished script"
 
 if [[ "$1" == "-r" ]]
