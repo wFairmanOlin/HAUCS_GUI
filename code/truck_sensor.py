@@ -126,7 +126,7 @@ class TruckSensor(QThread):
         self.ble.get_init_pressure()
         self.ble.get_battery()
         self.ble.get_sampling_rate()
-        self.ble.set_threshold(self.settings['depth_threshold']) #TODO: ADD TO SETTING PAGE
+        self.ble.set_threshold(self.settings['depth_threshold'])
 
         self.sync_ble_sdata()
 
