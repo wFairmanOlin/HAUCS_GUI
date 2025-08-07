@@ -10,7 +10,7 @@ class BatteryWidget(QWidget):
         super().__init__(parent)
         self.percent = 0
         self.charging = False
-        self.setFixedSize(110, 40)
+        self.setFixedSize(115, 50)
 
     def set_battery_status(self, percent, charging=False):
         self.percent = max(0, min(100, percent))
@@ -30,7 +30,7 @@ class BatteryWidget(QWidget):
         else:
             color = QColor("red")
 
-        body_rect = self.rect().adjusted(0, 5, -30, -5)
+        body_rect = self.rect().adjusted(5, 5, -35, -5)
         painter.setPen(QPen(color_pen, 2))
         painter.drawRect(body_rect)
 
@@ -38,13 +38,9 @@ class BatteryWidget(QWidget):
         painter.setBrush(color_pen)
         painter.drawRect(head_rect)
 
-        # fill_width = int(body_rect.width() - 2)
-        # fill_rect = body_rect.adjusted(2, 2, -body_rect.width()+fill_width, -2)
-        # painter.setBrush(Qt.white)
-        # painter.setPen(Qt.NoPen)
-        # painter.drawRect(fill_rect)
-
         fill_width = int((body_rect.width()-2) * self.percent / 100)
+        if fill_width < 10:
+            fill_width = 10
         fill_rect = body_rect.adjusted(2, 2, -body_rect.width()+fill_width, -2)
         painter.setBrush(color)
         painter.setPen(Qt.NoPen)
@@ -55,11 +51,11 @@ class BatteryWidget(QWidget):
             center_y = body_rect.center().y()
 
             lightning_points = QPolygonF([
-                QPointF(center_x + 1, center_y - 15),
-                QPointF(center_x - 8, center_y + 3),
+                QPointF(center_x + 1, center_y - 20),
+                QPointF(center_x - 10, center_y + 3),
                 QPointF(center_x + 0, center_y + 3),
-                QPointF(center_x - 1, center_y + 15),
-                QPointF(center_x + 8, center_y - 3),
+                QPointF(center_x - 1, center_y + 20),
+                QPointF(center_x + 10, center_y - 3),
                 QPointF(center_x + 0, center_y - 3),
             ])
 
@@ -73,7 +69,7 @@ class BatteryWidget(QWidget):
             painter.drawPath(path)
 
         painter.setPen(color_pen)
-        font = QFont("Arial", 30)
+        font = QFont("Arial", 35)
         font.setBold(True)
         painter.setFont(font)
         painter.drawText(body_rect, Qt.AlignCenter, f"{self.percent}")
