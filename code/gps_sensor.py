@@ -25,13 +25,11 @@ class GPSSensor:
     # accessed internally
     default_pond_id = 'unk'
 
-    def __init__(self, i2c, timeout=2):
+    def __init__(self, i2c, timeout=0.1):
         self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=timeout)
         self.gps.send_command(b'PMTK314,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         #TODO: Make update rate variable
-        self.gps.send_command(b"PMTK220,5000")
-        # clear stale data
-        self.parse_nmea(timeout=5)
+        self.gps.send_command(b"PMTK220,2000")
         self.df = pd.read_csv('sampling_points.csv')
         self.pond_ids = self.df.pop('pond')
         self.pond_gps = self.df.to_numpy()
@@ -43,14 +41,14 @@ class GPSSensor:
         self.parse_nmea()
         self.get_pond_id()
 
-    def parse_nmea(self, timeout=2):
+    def parse_nmea(self, timeout=0.5):
         try:
             start_time = time.time()
             counter = 0
-            while time.time() - start_time < timeout:
-                while self.gps.update():
-                    time.sleep(0.01)
-                    counter += 1
+            while self.gps.update():
+                if time.time() - start_time > timeout:
+                    break
+                counter += 1
             # update values that are not None
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
@@ -95,8 +93,11 @@ class GPSSensor:
         return self.pond_id
     
 if __name__ == "__main__":
-    gps = GPSSensor(board.I2C(), timeout=2)
+    gps = GPSSensor(board.I2C(), timeout=0.1)
+    long_delay = 1
     while True:
+        if long_delay % 10 == 0:
+            time.sleep(30)
         start = time.time()
         gps.update()
         print(f"time to complete: {(time.time() - start):.2f}")
@@ -107,8 +108,13 @@ if __name__ == "__main__":
                 'nsat':gps.numsat,
                 'speed_kmh':gps.speed_kmh,
                 }
+        data2 = {'lat':gps.gps.latitude,
+                'lng':gps.gps.longitude,
+                'hdg':gps.gps.track_angle_deg,
+                'pid':gps.pond_id,
+                'nsat':gps.gps.satellites,
+                'speed_kmh':gps.gps.speed_kmh,
+                }
         print(data)
-        time.sleep(10)
-
-
-
+        print(data2)
+        time.sleep(2)
