@@ -149,7 +149,7 @@ class I2CReader(QThread):
                 'pid':self.gps.pond_id,
                 'nsat':self.gps.numsat,
                 }
-
+        logger.debug(f"gps data {data}")
         return data
 
     def publish_gps(self):

@@ -157,7 +157,7 @@ class DOApp(QWidget):
             QPushButton {{
                 background-color: #e74c3c;
                 color: white;
-                font-size: {int(self.base_font_size * 2)}px;
+                font-size: {int(self.base_font_size * 1.5)}px;
                 font-style: bold;
                 border: none;
                 border-radius: 25px;
@@ -195,7 +195,7 @@ class DOApp(QWidget):
         hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
         timer_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;") 
 
-        self.pid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
+        self.pid_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-right: 10px;")
         self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
@@ -205,11 +205,17 @@ class DOApp(QWidget):
         self.ysi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
         self.timer_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
 
-        # GPS WIDGET
+        # HEADING/GPS WIDGETS
         self.hdg_crd = QLabel("-")
-        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
+        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
         self.hdg_deg = QLabel("")
         self.hdg_deg.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
+        hdg_layout = QVBoxLayout()
+        hdg_layout.addWidget(self.hdg_crd)
+        hdg_layout.addWidget(self.hdg_deg)
+        hdg_widget = QWidget()
+        hdg_widget.setLayout(hdg_layout)
+
         nsat_label = QLabel("NSAT")
         nsat_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight;")
         self.nsat_val = QLabel("0")
@@ -224,19 +230,14 @@ class DOApp(QWidget):
         self.lng_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
 
         gps_layout = QGridLayout()
-        gps_layout.addWidget(self.hdg_crd, 0, 0, Qt.AlignCenter)
-        gps_layout.addWidget(self.hdg_deg, 1, 0, Qt.AlignCenter)
-        gps_layout.addWidget(nsat_label,   0, 1, Qt.AlignCenter)
-        gps_layout.addWidget(self.nsat_val,1, 1, Qt.AlignCenter)
-        gps_layout.addWidget(lat_label,    0, 2, Qt.AlignLeft)
-        gps_layout.addWidget(lng_label,    1, 2, Qt.AlignLeft)
-        gps_layout.addWidget(self.lat_val, 0, 3, Qt.AlignRight)
-        gps_layout.addWidget(self.lng_val, 1, 3, Qt.AlignRight)
+        gps_layout.addWidget(nsat_label,   0, 0, Qt.AlignHCenter)
+        gps_layout.addWidget(self.nsat_val,1, 0, Qt.AlignHCenter)
+        gps_layout.addWidget(lat_label,    0, 1, Qt.AlignLeft)
+        gps_layout.addWidget(lng_label,    1, 1, Qt.AlignLeft)
+        gps_layout.addWidget(self.lat_val, 0, 2, Qt.AlignRight)
+        gps_layout.addWidget(self.lng_val, 1, 2, Qt.AlignRight)
         gps_widget = QWidget()
         gps_widget.setLayout(gps_layout)
-
-
-        
 
         info_grid.addWidget(hboi_label,     0, 0, Qt.AlignLeft)
         info_grid.addWidget(self.hboi_val,  0, 1, Qt.AlignRight)
@@ -246,7 +247,8 @@ class DOApp(QWidget):
         info_grid.addWidget(ysi_label,      1, 0, Qt.AlignLeft)
         info_grid.addWidget(self.ysi_val,   1, 1, Qt.AlignRight)
         info_grid.addWidget(self.ysi_unit , 1, 2, Qt.AlignLeft)
-        info_grid.addWidget(gps_widget,     1, 3, 2, 1, Qt.AlignLeft)
+        info_grid.addWidget(hdg_widget,     1, 3, Qt.AlignLeft)
+        info_grid.addWidget(gps_widget,     1, 4, Qt.AlignLeft)
         info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
         info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
         info_grid.addWidget(self.timer_unit,2, 2, Qt.AlignLeft)
