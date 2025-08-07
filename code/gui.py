@@ -232,6 +232,8 @@ class DOApp(QWidget):
         gps_layout.addWidget(lng_label,    1, 2, Qt.AlignLeft)
         gps_layout.addWidget(self.lat_val, 0, 3, Qt.AlignRight)
         gps_layout.addWidget(self.lng_val, 1, 3, Qt.AlignRight)
+        gps_widget = QWidget()
+        gps_widget.setLayout(gps_layout)
 
 
         
@@ -244,8 +246,7 @@ class DOApp(QWidget):
         info_grid.addWidget(ysi_label,      1, 0, Qt.AlignLeft)
         info_grid.addWidget(self.ysi_val,   1, 1, Qt.AlignRight)
         info_grid.addWidget(self.ysi_unit , 1, 2, Qt.AlignLeft)
-        info_grid.addWidget(gps_label,      1, 3, Qt.AlignLeft)
-        info_grid.addWidget(self.sid_val,   1, 4, Qt.AlignRight)
+        info_grid.addWidget(gps_widget,     1, 3, 2, 1, Qt.AlignLeft)
         info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
         info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
         info_grid.addWidget(self.timer_unit,2, 2, Qt.AlignLeft)
