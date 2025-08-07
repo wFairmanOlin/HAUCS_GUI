@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPixmap, QPainter, QColor, QPen, QBrush, QIcon
 from PyQt5.QtCore import Qt, QPointF, QSize
 import math
 
-def draw_square_teeth_gear_icon(size=50, teeth=8, tooth_width=10, tooth_height=8) -> QPixmap:
+def draw_square_teeth_gear_icon(size=50, teeth=8, tooth_width=10, tooth_height=9) -> QPixmap:
     pixmap = QPixmap(size + 10, size + 10)
     pixmap.fill(Qt.transparent)
 

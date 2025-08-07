@@ -121,13 +121,14 @@ class DOApp(QWidget):
         top_bar.addWidget(self.unit_toggle)
         top_bar.addSpacing(5)
         top_bar.addWidget(self.lbl_percent)
-
-        top_bar.addStretch()
-
-        self.led_status = LEDStatusWidget(status="disconnected", font_size=int(self.base_font_size * 1.2))
+        top_bar.addSpacing(5)
+        self.led_status = LEDStatusWidget(status="disconnected")
         top_bar.addWidget(self.led_status)
-        top_bar.addSpacing(30)
-
+        top_bar.addSpacing(5)
+        self.sid_val   = QLabel('-')
+        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
+        top_bar.addWidget(self.sid_val)
+        top_bar.addStretch()
         settings_btn = QPushButton()
         settings_btn.setIcon(QIcon(draw_square_teeth_gear_icon(size=50)))
         # settings_btn.setIcon(QIcon("settings.png"))
@@ -146,16 +147,17 @@ class DOApp(QWidget):
 
         self.battery_widget = BatteryWidget()
         top_bar.addWidget(self.battery_widget)
-        top_bar.addSpacing(30)
+        top_bar.addSpacing(10)
 
         # Exit Button (red X)
         exit_btn = QPushButton("X")
-        exit_btn.setFixedSize(40, 40)
+        exit_btn.setFixedSize(50, 50)
         exit_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: #e74c3c;
                 color: white;
-                font-size: {int(self.base_font_size * 0.9)}px;
+                font-size: {int(self.base_font_size)}px;
+                font-style: bold;
                 border: none;
                 border-radius: 20px;
             }}
@@ -182,7 +184,6 @@ class DOApp(QWidget):
         
 
         self.pid_val   = QLabel('-')
-        self.sid_val   = QLabel('-')
         self.ysi_val   = QLabel('-')
         self.hboi_val  = QLabel('-')
         self.timer_val = QLabel('-')

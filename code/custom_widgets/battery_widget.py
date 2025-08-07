@@ -69,7 +69,7 @@ class BatteryWidget(QWidget):
             painter.drawPath(path)
 
         painter.setPen(color_pen)
-        font = QFont("Arial", 35)
+        font = QFont("Arial", 30)
         font.setBold(True)
         painter.setFont(font)
         painter.drawText(body_rect, Qt.AlignCenter, f"{self.percent}")
