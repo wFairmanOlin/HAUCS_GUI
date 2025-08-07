@@ -70,6 +70,7 @@ class DOApp(QWidget):
         fileHandler.setFormatter(fileFormatter)
         fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger().addHandler(fileHandler)
+        logging.getLogger().setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         
         logger.info('\nSTARTING APPLICATION')
 
