@@ -122,7 +122,7 @@ class DOApp(QWidget):
         top_bar.addWidget(self.unit_toggle)
         top_bar.addSpacing(5)
         top_bar.addWidget(self.lbl_percent)
-        top_bar.addSpacing(5)
+        top_bar.addSpacing(30)
         self.led_status = LEDStatusWidget(status="disconnected")
         top_bar.addWidget(self.led_status)
         top_bar.addSpacing(5)
@@ -151,7 +151,7 @@ class DOApp(QWidget):
         top_bar.addSpacing(10)
 
         # Exit Button (red X)
-        exit_btn = QPushButton("x")
+        exit_btn = QPushButton("X")
         exit_btn.setFixedSize(50, 50)
         exit_btn.setStyleSheet(f"""
             QPushButton {{
