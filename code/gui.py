@@ -544,7 +544,11 @@ class DOApp(QWidget):
                 writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
                 writer.writeheader()
                 for key, value in data_dict.items():
-                    writer.writerow({"param": key, "value": str(value)})
+                    if isinstance(value, list):
+                        output = "$".join([str(i) for i in value])
+                    else:
+                        output = str(value)
+                    writer.writerow({"param": key, "value": output})
             logger.info(f"saved to {filename}")
         except Exception as e:
             logger.warning(f"Failed to save: {e}")
@@ -563,7 +567,24 @@ class DOApp(QWidget):
                 reader = csv.DictReader(csvfile)
                 for row in reader:
                     key = row['param']
-                    # convert to float if possible
+                    # split into mutliple values
+                    value = row['value']
+                    value = value.split('$')
+                    # process single values
+                    if len(value) == 1:
+                        try:
+                            value = float(value[0])
+                        except:
+                            data_dict[key] = value[0]
+                    # process multiple values
+                    elif len(value) > 1:
+                        value_arr = []
+                        for val in value:
+                            try:
+                                value_arr.append(float(val))
+                            except:
+                                value_arr.append(val)
+                        data_dict[key] = value_arr
                     try:
                         value = float(row['value'])
                     except:

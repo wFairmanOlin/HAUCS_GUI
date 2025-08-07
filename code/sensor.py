@@ -182,6 +182,9 @@ if __name__ == "__main__":
         print(f"Quaternion: {sensor.quaternion}")
         print(f"Linear acceleration (m/s^2): {sensor.linear_acceleration}")
         print(f"Gravity (m/s^2): {sensor.gravity}")
+        print(f"  Offsets_Magnetometer:  {sensor.offsets_magnetometer}")
+        print(f"  Offsets_Gyroscope:     {sensor.offsets_gyroscope}")
+        print(f"  Offsets_Accelerometer: {sensor.offsets_accelerometer}")
         print()
 
         time.sleep(1)
