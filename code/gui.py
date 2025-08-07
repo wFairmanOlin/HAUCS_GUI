@@ -640,7 +640,7 @@ class customLogHandler(logging.Handler, QObject):
     def emit(self, record):
         # print logs
         if ENABLE_DEBUG:
-            print(f"{record.relativeCreated/100:.2f}: {record.levelname} {record.message}")
+            print(f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}")
         # if from truck sensor code or level greater than info
         if record.name == "truck_sensor" or record.levelno > 20:
             
