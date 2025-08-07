@@ -74,11 +74,16 @@ class GPSSensor:
     def reset_gps_data(self):
         self.last_valid_signal = time.time()
         self.pond_id = self.default_pond_id
-        self.numsat = 0
+        self.gps.satellites = 0
+        self.gps.latitude = 0
+        self.gps.longitude = 0
+        self.gps.track_angle_deg = 0
+        self.gps.speed_kmh = 0
         self.latitude = 0
         self.longitude = 0
         self.heading = 0
         self.speed_kmh = 0
+        self.numsat = 0
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
