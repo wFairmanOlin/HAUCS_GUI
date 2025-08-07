@@ -214,8 +214,8 @@ class DOApp(QWidget):
         hdg_deg_layout.addWidget(self.hdg_deg)
         hdg_deg_layout.addStretch()
         hdg_deg_widget = QWidget()
-        hdg_deg_widget.setLayout(hdg_deg_widget)
-        hdg_layout.addWidget(self.hdg_deg_widget)
+        hdg_deg_widget.setLayout(hdg_deg_layout)
+        hdg_layout.addWidget(hdg_deg_widget)
         hdg_widget = QWidget()
         hdg_widget.setLayout(hdg_layout)
 
@@ -338,7 +338,7 @@ class DOApp(QWidget):
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
         if 'hdg' in data_dict:
-            self.hdg_deg.setText(f"{data_dict['hdg']:03.0f}")
+            self.hdg_deg.setText(f"{data_dict['hdg']:03.0f}\N{DEGREE SIGN}")
             self.hdg_crd.setText(degToCompass(data_dict['hdg']))
             self.nsat_val.setText(f"{data_dict['nsat']:02d}")
             self.lat_val.setText(f"{data_dict['lat']:.5f}")

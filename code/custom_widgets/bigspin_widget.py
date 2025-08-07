@@ -34,8 +34,8 @@ class BigSpinBox(QWidget):
         btn_layout = QVBoxLayout()
         btn_layout.setSpacing(8)
 
-        self.up_btn = QPushButton("▲")
-        self.down_btn = QPushButton("▼")
+        self.up_btn = QPushButton(f'\N{BLACK UP-POINTING TRIANGLE}')
+        self.down_btn = QPushButton(f'\N{BLACK DOWN-POINTING TRIANGLE}')
 
         for btn in [self.up_btn, self.down_btn]:
             btn.setFixedSize(45, 45)

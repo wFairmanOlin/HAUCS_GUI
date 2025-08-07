@@ -95,7 +95,7 @@ class ResultWindow(QWidget):
         depth_label = QLabel('Depth')
 
         dur_unit   = QLabel('s')
-        temp_unit  = QLabel('℉')
+        temp_unit  = QLabel(f'\N{DEGREE FAHRENHEIT}')
         depth_unit = QLabel('in')
 
         self.pid_val = QLabel(self.data['pid']) #modifiable
