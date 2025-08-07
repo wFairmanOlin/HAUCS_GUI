@@ -171,7 +171,7 @@ class DOApp(QWidget):
         # ==== Info Grid ====
         info_grid = QGridLayout()
 
-        pid_label   = QLabel('Pond ID')
+        pid_label   = QLabel('Pond')
         ysi_label   = QLabel('YSI DO')
         hboi_label  = QLabel('HBOI DO')
         timer_label = QLabel('TIMER')
@@ -207,7 +207,7 @@ class DOApp(QWidget):
 
         # HEADING/GPS WIDGETS
         self.hdg_crd = QLabel("-")
-        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_size}px; font-weight: bold;")
+        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
         self.hdg_deg = QLabel("")
         self.hdg_deg.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
         hdg_layout = QVBoxLayout()
@@ -230,12 +230,12 @@ class DOApp(QWidget):
         self.lng_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
 
         gps_layout = QGridLayout()
-        gps_layout.addWidget(nsat_label,   0, 0, Qt.AlignHCenter)
-        gps_layout.addWidget(self.nsat_val,1, 0, Qt.AlignHCenter)
-        gps_layout.addWidget(lat_label,    0, 1, Qt.AlignLeft)
-        gps_layout.addWidget(lng_label,    1, 1, Qt.AlignLeft)
-        gps_layout.addWidget(self.lat_val, 0, 2, Qt.AlignRight)
-        gps_layout.addWidget(self.lng_val, 1, 2, Qt.AlignRight)
+        gps_layout.addWidget(nsat_label,   0, 0, Qt.AlignLeft | Qt.AlignBottom)
+        gps_layout.addWidget(self.nsat_val,1, 0, Qt.AlignLeft | Qt.AlignTop)
+        gps_layout.addWidget(lat_label,    0, 1, Qt.AlignLeft | Qt.AlignBottom)
+        gps_layout.addWidget(lng_label,    1, 1, Qt.AlignLeft | Qt.AlignBottom)
+        gps_layout.addWidget(self.lat_val, 0, 2, Qt.AlignRight | Qt.AlignTop)
+        gps_layout.addWidget(self.lng_val, 1, 2, Qt.AlignRight | Qt.AlignTop)
         gps_widget = QWidget()
         gps_widget.setLayout(gps_layout)
 
@@ -335,7 +335,7 @@ class DOApp(QWidget):
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
         if 'hdg' in data_dict:
-            self.hdg_deg.setText(str(data_dict['hdg']))
+            self.hdg_deg.setText(f"{data_dict['hdg']:.0f}")
             self.hdg_crd.setText(degToCompass(data_dict['hdg']))
             self.nsat_val.setText(str(data_dict['nsat']))
             self.lat_val.setText(f"{data_dict['lat']:.5f}")
