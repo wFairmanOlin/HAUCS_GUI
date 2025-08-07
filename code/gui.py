@@ -67,7 +67,7 @@ class DOApp(QWidget):
         self.setStyleSheet("background-color: black; color: white;")
 
         screen_size = QApplication.primaryScreen().size()
-        self.base_font_size = int(screen_size.height() * 0.03)
+        self.base_font_size = int(screen_size.height() * 0.04)
         self.label_font_size = int(screen_size.height() * 0.06)
         self.label_font_large = int(screen_size.height() * 0.1)
         self.label_font_xlarge = int(screen_size.height() * 0.14)
@@ -107,12 +107,12 @@ class DOApp(QWidget):
         
         if self.unit == "percent":
             self.unit_toggle = ToggleSwitch(checked=True)
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px; font-weight: bold;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
         else:
             self.unit_toggle = ToggleSwitch(checked=False)
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px; font-weight: bold;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.4)}px;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px;")
         self.unit_toggle.toggled.connect(self.on_toggle_click)
             
         top_bar.addSpacing(5)
@@ -126,7 +126,7 @@ class DOApp(QWidget):
         top_bar.addWidget(self.led_status)
         top_bar.addSpacing(5)
         self.sid_val   = QLabel('-')
-        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
+        self.sid_val.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold; padding-right: 10px;")
         top_bar.addWidget(self.sid_val)
         top_bar.addStretch()
         settings_btn = QPushButton()
@@ -159,13 +159,7 @@ class DOApp(QWidget):
                 font-size: {int(self.base_font_size)}px;
                 font-style: bold;
                 border: none;
-                border-radius: 20px;
-            }}
-            QPushButton:hover {{
-                background-color: #ff6f61;
-            }}
-            QPushButton:pressed {{
-                background-color: #c0392b;
+                border-radius: 25px;
             }}
         """)
         exit_btn.clicked.connect(self.close)
