@@ -157,7 +157,7 @@ class DOApp(QWidget):
             QPushButton {{
                 background-color: #e74c3c;
                 color: white;
-                font-size: {int(self.base_font_size * 1.5)}px;
+                font-size: {int(self.base_font_size * 1.3)}px;
                 font-style: bold;
                 border: none;
                 border-radius: 25px;
@@ -211,8 +211,8 @@ class DOApp(QWidget):
         self.hdg_deg = QLabel("")
         self.hdg_deg.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
         hdg_layout = QVBoxLayout()
-        hdg_layout.addWidget(self.hdg_crd)
-        hdg_layout.addWidget(self.hdg_deg)
+        hdg_layout.addWidget(self.hdg_crd, Qt.AlignCenter)
+        hdg_layout.addWidget(self.hdg_deg, Qt.AlignCenter)
         hdg_widget = QWidget()
         hdg_widget.setLayout(hdg_layout)
 
