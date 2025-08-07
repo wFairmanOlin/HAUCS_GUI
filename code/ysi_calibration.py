@@ -14,6 +14,7 @@ from converter import *
 import logging
 import sys
 from enum import Enum
+import custom_widgets.gear
 
 zero_msg = """Turn the main knob to ZERO. Adjust the smaller ZERO knob until the gauge aligns with 0 mg/l. Press ZERO button, wait for the value to reach steady-state, press ZERO button again.""" 
 

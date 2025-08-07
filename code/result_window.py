@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt, QTimer, QSize
 import os
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QInputDialog
-from numpad_dialog import NumpadDialog
+from custom_widgets.numpad_dialog import NumpadDialog
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np

@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout, QApplication
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from bigspin_widget import BigSpinBox
+from custom_widgets.bigspin_widget import BigSpinBox
 import sys
 
 class SettingDialog(QWidget):

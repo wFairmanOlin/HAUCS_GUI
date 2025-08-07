@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon
-from toggle_switch import ToggleSwitch
+from custom_widgets.toggle_switch import ToggleSwitch
 import sys
 from result_window import ResultWindow
 import os
@@ -14,13 +14,15 @@ import time
 import csv
 from truck_sensor import TruckSensor, Mode
 from datetime import datetime
-from battery_widget import BatteryWidget
-from led_indicator import LEDStatusWidget
+from custom_widgets.battery_widget import BatteryWidget
+from custom_widgets.led_indicator import LEDStatusWidget
+from custom_widgets.custom_yesno_dialog import CustomYesNoDialog
+from custom_widgets.gear import *
 from converter import *
 from shutdown_dialog import ShutdownDialog
 from history_window import HistoryLogWindow
 from setting_dialog import SettingDialog
-from custom_yesno_dialog import CustomYesNoDialog
+
 from ysi_calibration import YsiCalibrationWindow
 import pickle
 import logging
@@ -127,19 +129,14 @@ class DOApp(QWidget):
         top_bar.addSpacing(30)
 
         settings_btn = QPushButton()
-        settings_btn.setIcon(QIcon("settings.png"))
-        settings_btn.setIconSize(QSize(40, 40)) 
-        settings_btn.setFixedSize(44, 44)
+        settings_btn.setIcon(QIcon(draw_square_teeth_gear_icon(size=50)))
+        # settings_btn.setIcon(QIcon("settings.png"))
+        settings_btn.setIconSize(QSize(50, 50)) 
+        settings_btn.setFixedSize(60, 60)
         settings_btn.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
                 border: none;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 40);
-            }
-            QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 80);
             }
         """)
         settings_btn.clicked.connect(self.open_settings_dialog)

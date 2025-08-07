@@ -1,8 +1,8 @@
 from PyQt5.QtGui import QPainter, QColor, QRadialGradient, QBrush, QPen
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QApplication
 from PyQt5.QtCore import QSize
-
+import sys
 
 class LEDIndicatorWidget(QWidget):
     def __init__(self, parent=None, status="disconnected"):
@@ -18,7 +18,6 @@ class LEDIndicatorWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # สีตามสถานะ
         if self.status == "disconnected":
             color = QColor(255, 0, 0)
         elif self.status == "connected_not_ready":
@@ -29,15 +28,12 @@ class LEDIndicatorWidget(QWidget):
             color = QColor(128, 128, 128)
 
         gradient = QRadialGradient(self.width() / 2, self.height() / 2, self.width() / 2)
-        gradient.setColorAt(0, QColor(255, 255, 255, 200))
+        # gradient.setColorAt(0, QColor(255, 255, 255, 200))
         gradient.setColorAt(0.3, color.lighter(150))
         gradient.setColorAt(1, color.darker(180))
 
         brush = QBrush(gradient)
         painter.setBrush(brush)
-        pen = QPen(Qt.black)
-        pen.setWidth(2)
-        painter.setPen(pen)
         diameter = min(self.width(), self.height()) - 4
         painter.drawEllipse(2, 2, diameter, diameter)
 
@@ -55,6 +51,7 @@ class LEDStatusWidget(QWidget):
         self.led = LEDIndicatorWidget(status=status)
         self.label = QLabel()
         self.label.setStyleSheet(f"font-size: {self.font_size}px; padding-left: 6px; color: white; font-weight: bold;")
+        self.label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
 
         layout.addWidget(self.led)
@@ -78,3 +75,10 @@ class LEDStatusWidget(QWidget):
 
     def sizeHint(self):
         return QSize(140, 40)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = LEDStatusWidget()
+    window.show()
+    window.set_status('connected_ready')
+    sys.exit(app.exec_())
