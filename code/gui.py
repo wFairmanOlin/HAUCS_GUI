@@ -53,27 +53,29 @@ class DOApp(QWidget):
         self.status_timer.setInterval(5000)
         
         #### LOGGING ####
-        # custom logger to display status
+        # formatter for all handlers
         fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
-        logPrinter = customLogHandler()
-        logPrinter.setFormatter(fileFormatter)
-        localFilter = localOnlyFilter()
-        logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
-        logging.getLogger().addHandler(logPrinter)
-        for handler in logging.root.handlers:
-            handler.addFilter(localFilter)
-        logPrinter.log_message.connect(self.send_status)
-        # rotating file handler
-        
+        # rotating log file
         fileHandler = RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
                                  backupCount=3, encoding=None, delay=False)
         fileHandler.setFormatter(fileFormatter)
         fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        # custom logger to print messages to terminal/status widget
+        logPrinter = customLogHandler()
+        logPrinter.setFormatter(fileFormatter)
+        logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        # connect logPrinter Handler to status widget
+        logPrinter.log_message.connect(self.send_status)
+        # local filter to ignore low level library DEBUG messages
+        localFilter = localOnlyFilter()
         logging.getLogger().addHandler(fileHandler)
+        logging.getLogger().addHandler(logPrinter)
+        for handler in logging.root.handlers:
+            handler.addFilter(localFilter)
+        # set log level for overall logger
         logging.getLogger().setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         
         logger.info('\nSTARTING APPLICATION')
-
         self.current_time = datetime.now()
 
         self.setWindowTitle("DO Monitor")
