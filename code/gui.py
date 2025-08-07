@@ -32,8 +32,10 @@ import sensor
 import truck_sensor
 from gps_sensor import degToCompass
 
-logger = logging.getLogger(__name__)
+import faulthandler
+faulthandler.enable()
 
+logger = logging.getLogger(__name__)
 # if os.environ.get('DISPLAY','') == '':
 #     print('no display found. Using :0.0')
 #     os.environ.__setitem__('DISPLAY', ':0.0')
@@ -48,11 +50,7 @@ class DOApp(QWidget):
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.on_status_timer)
         self.status_timer.setInterval(5000)
-
-        ##### LOGGING #####
-        logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
-                            level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO),)
-        logger.info('\nSTARTING APPLICATION')
+        
         # custom logger to display status
         logPrinter = customLogHandler()
         localFilter = localOnlyFilter()
@@ -61,6 +59,14 @@ class DOApp(QWidget):
         for handler in logging.root.handlers:
             handler.addFilter(localFilter)
         logPrinter.log_message.connect(self.send_status)
+        fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+        fileHandler = logging.RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
+                                 backupCount=3, encoding=None, delay=False)
+        fileHandler.setFormatter(fileFormatter)
+        fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        logging.getLogger().addHandler(fileHandler)
+        
+        logger.info('\nSTARTING APPLICATION')
 
         self.current_time = datetime.now()
 
@@ -641,8 +647,8 @@ class customLogHandler(logging.Handler, QObject):
         # print logs
         if ENABLE_DEBUG:
             print(f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}")
-        # if from truck sensor code or level greater than info
-        if record.name == "truck_sensor" or record.levelno > 20:
+        # if from truck sensor code .INFO or level greater than info
+        if (record.name == "truck_sensor" and record.levelno > 10) or record.levelno > 20:
             
             if record.levelno > 30:
                 color = "red"
@@ -651,8 +657,6 @@ class customLogHandler(logging.Handler, QObject):
             else:
                 color = "white"
             self.log_message.emit(record.msg, color)
-        
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="gui")

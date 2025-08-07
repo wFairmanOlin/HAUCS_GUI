@@ -7,6 +7,7 @@ code/database_truck/*.csv
 code/DO_data/*.csv
 code/YSI_data/*.csv
 *.pickle
+*.txt
 
 #sensor files
 code/sensor.json
