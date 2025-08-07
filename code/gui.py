@@ -56,7 +56,7 @@ class DOApp(QWidget):
         # custom logger to display status
         fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
         logPrinter = customLogHandler()
-        logPrinter.addFormatter(fileFormatter)
+        logPrinter.setFormatter(fileFormatter)
         localFilter = localOnlyFilter()
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger().addHandler(logPrinter)
@@ -650,6 +650,7 @@ class customLogHandler(logging.Handler, QObject):
 
     def emit(self, record):
         # print logs
+        self.format(record)
         if ENABLE_DEBUG:
             print(f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}")
         # if from truck sensor code .INFO or level greater than info
