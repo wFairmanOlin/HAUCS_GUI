@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import numpy as np
 import logging
+import board
 logger = logging.getLogger(__name__)
 
 
@@ -26,9 +27,9 @@ class GPSSensor:
 
     def __init__(self, i2c, timeout=2):
         self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=timeout)
-        self.gps.send_command(b'PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
+        self.gps.send_command(b'PMTK314,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0')
         #TODO: Make update rate variable
-        self.gps.send_command(b"PMTK220,8000")
+        self.gps.send_command(b"PMTK220,5000")
         # clear stale data
         self.parse_nmea(timeout=5)
         self.df = pd.read_csv('sampling_points.csv')
@@ -45,9 +46,11 @@ class GPSSensor:
     def parse_nmea(self, timeout=2):
         try:
             start_time = time.time()
+            counter = 0
             while time.time() - start_time < timeout:
                 while self.gps.update():
                     time.sleep(0.01)
+                    counter += 1
             # update values that are not None
             if self.gps.satellites is not None:
                 self.numsat = self.gps.satellites
@@ -61,6 +64,7 @@ class GPSSensor:
                 self.speed_kmh = self.gps.speed_kmh
         except:
             logger.info('gps update failed')
+        print(f"counter: {counter}")
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
@@ -91,7 +95,7 @@ class GPSSensor:
         return self.pond_id
     
 if __name__ == "__main__":
-    gps = GPSSensor(timeout=2)
+    gps = GPSSensor(board.I2C(), timeout=2)
     while True:
         start = time.time()
         gps.update()
@@ -103,6 +107,7 @@ if __name__ == "__main__":
                 'nsat':gps.numsat,
                 'speed_kmh':gps.speed_kmh,
                 }
+        print(data)
         time.sleep(10)
 
 
