@@ -68,7 +68,7 @@ class GPSSensor:
                 self.speed_kmh = self.gps.speed_kmh
         except:
             logger.info('gps update failed')
-        if msgs_received >= 3:
+        if msgs_received >= 2: # considered valid if 2/3 messages are beign transmitted
             self.last_valid_signal = time.time()
             
     def reset_gps_data(self):

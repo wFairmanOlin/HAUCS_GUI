@@ -71,8 +71,7 @@ class I2CReader(QThread):
 
         # initialize message schedule
         self.scheduled_msgs = {}
-        self.scheduled_msgs['gps_signal']    = {'callback':self.publish_gps, 'period':10, 'timer':0, 'priority':Priority.low}
-        self.scheduled_msgs['gps_update']    = {'callback':self.gps.update, 'period':5, 'timer':0, 'priority':Priority.low}
+        self.scheduled_msgs['gps']    = {'callback':self.publish_gps, 'period':2, 'timer':0, 'priority':Priority.low}
         self.scheduled_msgs['ysi']    = {'callback':self.measure_ysi_adc, 'period':self.ysi_sampling_period, 'timer':0, 'priority':Priority.high}
         
 
@@ -133,9 +132,9 @@ class I2CReader(QThread):
         self.zero_scale = zero
         self.full_scale = full_scale
 
-    def get_gps_data(self):
+    def publish_gps(self):
         '''
-        Returns the following signal
+        Publishes and returns the following signal
         lat: latitude
         lng: longitude
         hdg: gps heading (not compass)
@@ -150,14 +149,8 @@ class I2CReader(QThread):
                 'nsat':self.gps.numsat,
                 }
         logger.debug(f"gps data {data}")
-        return data
-
-    def publish_gps(self):
-        '''
-        updates pyqt signal for gps. rate set in message scheduler
-        '''
         self.gps_publisher.emit(self.get_gps_data())
-
+        return data
 
     def run(self):
         self._abort = False
