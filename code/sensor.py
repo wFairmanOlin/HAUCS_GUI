@@ -147,9 +147,10 @@ class I2CReader(QThread):
                 'hdg':self.gps.heading,
                 'pid':self.gps.pond_id,
                 'nsat':self.gps.numsat,
+                'spd_kmh':self.gps.speed_kmh,
                 }
         logger.debug(f"gps data {data}")
-        self.gps_publisher.emit(self.get_gps_data())
+        self.gps_publisher.emit(data)
         return data
 
     def run(self):
