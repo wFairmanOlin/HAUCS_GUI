@@ -69,7 +69,7 @@ class TruckSensor(QThread):
 
     # YSI COMMANDS
     def on_ysi_update(self, do_mgl, raw_adc):
-        logger.debug("ysi update mode {self.Mode} underwater {self.underwater} do_mgl {do_mgl}")
+        logger.debug(f"ysi update mode {self.mode} underwater {self.underwater} do_mgl {do_mgl}")
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
         else:
@@ -158,7 +158,7 @@ class TruckSensor(QThread):
         for key, val in data.items():
             self.sdata[key] = val
 
-        self.sync_ble_sdata()
+        self.update_data.emit(data)
         if self.sdata["prev_pid"] != self.sdata["pid"]:
             logger.debug(f"moved to pid: {self.sdata['pid']}")
         
@@ -274,11 +274,13 @@ class TruckSensor(QThread):
         '''
         transfer all ble data to truck's sdata dict
         '''
-        for key in self.ble.sdata:
-            self.sdata[key] = self.ble.sdata[key]
-        
-        self.update_data.emit(self.sdata)
-
+        if not self.underwater:
+            for key in self.ble.sdata:
+                self.sdata[key] = self.ble.sdata[key]
+            
+            self.update_data.emit(self.sdata)
+        else:
+            logger.debug("did not sync ble sdata while underwater")
 
     def abort(self):
         self._abort = True
@@ -331,7 +333,9 @@ class TruckSensor(QThread):
 
     def toggle_unit(self, unit):
         self.unit = unit
-        self.sync_ble_sdata()
+        # prevent extra data syncs while unit is underwater
+        if not self.underwater:
+            self.sync_ble_sdata()
 
     def update_database(self, data_dict):
         '''
