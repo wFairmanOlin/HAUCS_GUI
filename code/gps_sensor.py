@@ -19,6 +19,7 @@ class GPSSensor:
     latitude = 0
     longitude = 0
     heading = 0
+    speed_kmh = 0
 
     # accessed internally
     default_pond_id = 'unk'
@@ -56,6 +57,8 @@ class GPSSensor:
                 self.longitude = self.gps.longitude
             if self.gps.track_angle_deg:
                 self.heading = self.gps.track_angle_deg
+            if self.gps.speed_kmh:
+                self.speed_kmh = self.gps.speed_kmh
         except:
             logger.info('gps update failed')
 
@@ -86,3 +89,21 @@ class GPSSensor:
             self.pond_id = self.default_pond_id
         
         return self.pond_id
+    
+if __name__ == "__main__":
+    gps = GPSSensor(timeout=2)
+    while True:
+        start = time.time()
+        gps.update()
+        print(f"time to complete: {(time.time() - start):.2f}")
+        data = {'lat':gps.latitude,
+                'lng':gps.longitude,
+                'hdg':gps.heading,
+                'pid':gps.pond_id,
+                'nsat':gps.numsat,
+                'speed_kmh':gps.speed_kmh,
+                }
+        time.sleep(10)
+
+
+
