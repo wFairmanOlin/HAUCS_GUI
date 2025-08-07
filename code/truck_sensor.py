@@ -69,6 +69,7 @@ class TruckSensor(QThread):
 
     # YSI COMMANDS
     def on_ysi_update(self, do_mgl, raw_adc):
+        logger.debug("ysi update mode {self.Mode} underwater {self.underwater} do_mgl {do_mgl}")
         if self.water_temp and self.air_pressure:
             do_ps = convert_mgl_to_raw(do_mgl, self.water_temp, self.air_pressure)
         else:
@@ -159,7 +160,7 @@ class TruckSensor(QThread):
 
         self.sync_ble_sdata()
         if self.sdata["prev_pid"] != self.sdata["pid"]:
-            logger.info(f"moved to pid: {self.sdata['pid']}")
+            logger.debug(f"moved to pid: {self.sdata['pid']}")
         
     def calibrate_DO(self):
         status = self.ble.set_calibration_do()
@@ -231,7 +232,7 @@ class TruckSensor(QThread):
             if self.ble.current_sample_size <= 0:
                 # sensor reconncected with no data available
                 if self.underwater:
-                    logger.info('sensor reconnected with no data, try again')
+                    logger.warning('sensor reconnected with no data, try again')
                     self.sensor_underwater.emit("False")
                 self.ysi_do_mgl_arr = []
                 continue # continue sampling
