@@ -139,10 +139,13 @@ class BluetoothReader(QObject):
     def set_threshold(self, hpa):
         command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
         msg = self.send_receive_command(command)
+        # failed if no response
+        if len(msg) < 2:
+            return False
         try:
             received_p = float(msg[1])
         except:
-            received_p = 0
+            return False
         if msg[0] == command['rx'] and received_p == int(hpa):
             return True
         return False
