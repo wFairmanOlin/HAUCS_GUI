@@ -13,17 +13,20 @@ def degToCompass(num):
     return arr[(val % 16)]
 
 class GPSSensor:
+    # accessed internally
+    default_pond_id = 'unk'
 
     # accessed externally
-    pond_id = 0
+    pond_id = default_pond_id
     numsat = 0
     latitude = 0
     longitude = 0
     heading = 0
     speed_kmh = 0
+    last_valid_signal = time.time()
+    valid_signal_timeout = 20 # seconds
 
-    # accessed internally
-    default_pond_id = 'unk'
+
 
     def __init__(self, i2c, timeout=0.1):
         self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=timeout)
@@ -39,18 +42,21 @@ class GPSSensor:
         This is called externally to update GPS object attributes
         '''
         self.parse_nmea()
+        if time.time() - self.last_valid_signal > self.valid_signal_timeout:
+            logger.warning("lost gps connection")
+            self.reset_gps_data()
         self.get_pond_id()
 
     def parse_nmea(self, timeout=0.5):
         try:
             start_time = time.time()
-            counter = 0
+            msgs_received = 0
             while self.gps.update():
                 if time.time() - start_time > timeout:
                     break
-                counter += 1
+                msgs_received += 1
             # update values that are not None
-            if self.gps.satellites is not None:
+            if self.gps.satellites:
                 self.numsat = self.gps.satellites
             if self.gps.latitude:
                 self.latitude = self.gps.latitude
@@ -62,7 +68,17 @@ class GPSSensor:
                 self.speed_kmh = self.gps.speed_kmh
         except:
             logger.info('gps update failed')
-        print(f"counter: {counter}")
+        if msgs_received >= 3:
+            self.last_valid_signal = time.time()
+            
+    def reset_gps_data(self):
+        self.last_valid_signal = time.time()
+        self.pond_id = self.default_pond_id
+        self.numsat = 0
+        self.latitude = 0
+        self.longitude = 0
+        self.heading = 0
+        self.speed_kmh = 0
 
     def get_pond_id(self, lat= None, lng= None):
         if lat is None:
