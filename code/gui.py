@@ -477,10 +477,11 @@ class DOApp(QWidget):
         dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
+            self.thread.mode = Mode.ble_paused
             self.thread.messaging_active = False
             success = self.thread.calibrate_DO()
             QApplication.restoreOverrideCursor()
-            self.thread.messaging_active = True
+            self.thread.mode = Mode.normal
             if success:
                 now = datetime.now()
                 formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
@@ -528,7 +529,9 @@ class DOApp(QWidget):
                 self.settings[i] = data[i]
             self.save_local_csv(self.settings, "settings.csv")
             self.thread.settings = self.settings
+            self.thread.mode = Mode.ble_paused
             self.thread.set_pressure_threshold(data['depth_threshold'])
+            self.thread.mode = Mode.normal
             logger.info(f"settings successfully saved {data}")
             self.send_status('settings saved', 'limegreen')
         else:

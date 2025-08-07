@@ -43,7 +43,7 @@ class GPSSensor:
         '''
         self.parse_nmea()
         if time.time() - self.last_valid_signal > self.valid_signal_timeout:
-            logger.warning("lost gps connection")
+            logger.warning("no gps signal")
             self.reset_gps_data()
         self.get_pond_id()
 

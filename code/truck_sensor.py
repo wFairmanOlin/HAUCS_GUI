@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 class Mode(Enum):
     normal = 0
     ysi_cal = 1
+    ble_paused = 2
 
 class TruckSensor(QThread):
     update_data = pyqtSignal(dict) 
@@ -105,10 +106,10 @@ class TruckSensor(QThread):
     def underwater_status_change(self, value):
         if value == "True":
             self.underwater = True
-            self.sensors.message_priority = sensor.Priority.high # only process high priority messages 
+            # self.sensors.message_priority = sensor.Priority.high # only process high priority messages 
         else:
             self.underwater = False
-            self.sensors.message_priority = sensor.Priority.low 
+            # self.sensors.message_priority = sensor.Priority.low 
 
 
     def init_ble(self):
@@ -143,7 +144,7 @@ class TruckSensor(QThread):
         self.scheduled_msgs['sync']   = {'callback':self.sync_ble_sdata, 'period':15, 'timer':0}
 
     def send_scheduled_messages(self):
-        if self.messaging_active:
+        if self.mode == (Mode.normal or Mode.ysi_cal):
             for message in self.scheduled_msgs.values():
                 if time.time() - message['timer'] > message['period']:
                     message['timer'] = time.time()
