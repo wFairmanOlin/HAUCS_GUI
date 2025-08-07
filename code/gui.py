@@ -30,6 +30,7 @@ import queue
 import argparse
 import sensor
 import truck_sensor
+from gps_sensor import degToCompass
 
 logger = logging.getLogger(__name__)
 
@@ -150,13 +151,13 @@ class DOApp(QWidget):
         top_bar.addSpacing(10)
 
         # Exit Button (red X)
-        exit_btn = QPushButton("X")
+        exit_btn = QPushButton("x")
         exit_btn.setFixedSize(50, 50)
         exit_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: #e74c3c;
                 color: white;
-                font-size: {int(self.base_font_size)}px;
+                font-size: {int(self.base_font_size * 2)}px;
                 font-style: bold;
                 border: none;
                 border-radius: 25px;
@@ -171,7 +172,6 @@ class DOApp(QWidget):
         info_grid = QGridLayout()
 
         pid_label   = QLabel('Pond ID')
-        sid_label   = QLabel('HBOI ID')
         ysi_label   = QLabel('YSI DO')
         hboi_label  = QLabel('HBOI DO')
         timer_label = QLabel('TIMER')
@@ -191,14 +191,11 @@ class DOApp(QWidget):
         
 
         pid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
-        sid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
         ysi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
         hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
         timer_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;") 
-        
 
         self.pid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
-        self.sid_val.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold; padding-right: 10px;")
         self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
         self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
@@ -207,6 +204,36 @@ class DOApp(QWidget):
         self.hboi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
         self.ysi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
         self.timer_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+
+        # GPS WIDGET
+        self.hdg_crd = QLabel("-")
+        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
+        self.hdg_deg = QLabel("")
+        self.hdg_deg.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
+        nsat_label = QLabel("NSAT")
+        nsat_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight;")
+        self.nsat_val = QLabel("0")
+        self.nsat_val.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
+        lat_label = QLabel("LAT")
+        lat_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight;")
+        lng_label = QLabel("LNG")
+        lng_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight;")
+        self.lat_val = QLabel("0.0")
+        self.lng_val = QLabel("0.0")
+        self.lat_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
+        self.lng_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
+
+        gps_layout = QGridLayout()
+        gps_layout.addWidget(self.hdg_crd, 0, 0, Qt.AlignCenter)
+        gps_layout.addWidget(self.hdg_deg, 1, 0, Qt.AlignCenter)
+        gps_layout.addWidget(nsat_label,   0, 1, Qt.AlignCenter)
+        gps_layout.addWidget(self.nsat_val,1, 1, Qt.AlignCenter)
+        gps_layout.addWidget(lat_label,    0, 2, Qt.AlignLeft)
+        gps_layout.addWidget(lng_label,    1, 2, Qt.AlignLeft)
+        gps_layout.addWidget(self.lat_val, 0, 3, Qt.AlignRight)
+        gps_layout.addWidget(self.lng_val, 1, 3, Qt.AlignRight)
+
+
         
 
         info_grid.addWidget(hboi_label,     0, 0, Qt.AlignLeft)
@@ -217,7 +244,7 @@ class DOApp(QWidget):
         info_grid.addWidget(ysi_label,      1, 0, Qt.AlignLeft)
         info_grid.addWidget(self.ysi_val,   1, 1, Qt.AlignRight)
         info_grid.addWidget(self.ysi_unit , 1, 2, Qt.AlignLeft)
-        info_grid.addWidget(sid_label,      1, 3, Qt.AlignLeft)
+        info_grid.addWidget(gps_label,      1, 3, Qt.AlignLeft)
         info_grid.addWidget(self.sid_val,   1, 4, Qt.AlignRight)
         info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
         info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
@@ -304,11 +331,13 @@ class DOApp(QWidget):
                 self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
-        if 'mouse' in data_dict:
-            if data_dict['mouse'] == 'normal':
-                QApplication.restoreOverrideCursor()
-            else:
-                QApplication.setOverrideCursor(Qt.WaitCursor)
+        if 'hdg' in data_dict:
+            self.hdg_deg.setText(str(data_dict['hdg']))
+            self.hdg_crd.setText(degToCompass(data_dict['hdg']))
+            self.nsat_val.setText(str(data_dict['nsat']))
+            self.lat_val.setText(f"{data_dict['lat']:.5f}")
+            self.lng_val.setText(f"{data_dict['lng']:.5f}")
+
 
     def on_underwater_signal(self, value):
         # true if underwater, otherwise false
@@ -424,12 +453,12 @@ class DOApp(QWidget):
 
     def on_toggle_click(self):
         if self.unit_toggle.isChecked() and self.unit != "percent":
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: normal;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: normal;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
             self.unit = "percent"
         elif self.unit == "percent":
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: bold;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size * 1.2)}px; font-weight: normal;")
+            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
+            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: normal;")
             self.unit = "mgl"
         # save unit permanently
         self.settings['unit'] = self.unit

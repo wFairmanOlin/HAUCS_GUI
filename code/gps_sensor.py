@@ -5,6 +5,12 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
+
+def degToCompass(num):
+    val=int((num/22.5)+.5)
+    arr=["N","NNE","NE","ENE","E","ESE", "SE", "SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"]
+    return arr[(val % 16)]
+
 class GPSSensor:
 
     # accessed externally
@@ -15,7 +21,7 @@ class GPSSensor:
     heading = 0
 
     # accessed internally
-    default_pond_id = 'unk25'
+    default_pond_id = 'unk'
 
     def __init__(self, i2c, timeout=2):
         self.gps = adafruit_gps.GPS_GtopI2C(i2c, timeout=timeout)
