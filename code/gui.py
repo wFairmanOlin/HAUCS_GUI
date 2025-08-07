@@ -52,8 +52,11 @@ class DOApp(QWidget):
         self.status_timer.timeout.connect(self.on_status_timer)
         self.status_timer.setInterval(5000)
         
+        #### LOGGING ####
         # custom logger to display status
+        fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
         logPrinter = customLogHandler()
+        logPrinter.addFormatter(fileFormatter)
         localFilter = localOnlyFilter()
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         logging.getLogger().addHandler(logPrinter)
@@ -61,7 +64,7 @@ class DOApp(QWidget):
             handler.addFilter(localFilter)
         logPrinter.log_message.connect(self.send_status)
         # rotating file handler
-        fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+        
         fileHandler = RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
                                  backupCount=3, encoding=None, delay=False)
         fileHandler.setFormatter(fileFormatter)
