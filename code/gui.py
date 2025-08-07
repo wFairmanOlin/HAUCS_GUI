@@ -136,6 +136,7 @@ class DOApp(QWidget):
         """)
         settings_btn.clicked.connect(self.open_settings_dialog)
         top_bar.addWidget(settings_btn)
+        top_bar.addSpacing(5)
         self.led_status = LEDStatusWidget(status="disconnected")
         top_bar.addWidget(self.led_status)
         top_bar.addSpacing(5)
