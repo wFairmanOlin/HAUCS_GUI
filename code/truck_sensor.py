@@ -31,7 +31,8 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
 
     _abort = False
-    sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0}
+    sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0, 'sample_hz':1}
+    #TODO: sample hz should be pulled from settings
 
     ble = None
     app = None

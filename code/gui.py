@@ -26,14 +26,17 @@ from setting_dialog import SettingDialog
 from ysi_calibration import YsiCalibrationWindow
 import pickle
 import logging
+from logging.handlers import RotatingFileHandler
 import queue
 import argparse
 import sensor
 import truck_sensor
 from gps_sensor import degToCompass
 
-logger = logging.getLogger(__name__)
+import faulthandler
+faulthandler.enable()
 
+logger = logging.getLogger(__name__)
 # if os.environ.get('DISPLAY','') == '':
 #     print('no display found. Using :0.0')
 #     os.environ.__setitem__('DISPLAY', ':0.0')
@@ -48,20 +51,31 @@ class DOApp(QWidget):
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.on_status_timer)
         self.status_timer.setInterval(5000)
-
-        ##### LOGGING #####
-        logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s', filename='log.log', encoding='utf-8',
-                            level=(logging.DEBUG if ENABLE_DEBUG else logging.INFO),)
-        logger.info('\nSTARTING APPLICATION')
-        # custom logger to display status
+        
+        #### LOGGING ####
+        # formatter for all handlers
+        fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+        # rotating log file
+        fileHandler = RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
+                                 backupCount=3, encoding=None, delay=False)
+        fileHandler.setFormatter(fileFormatter)
+        fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        # custom logger to print messages to terminal/status widget
         logPrinter = customLogHandler()
-        localFilter = localOnlyFilter()
+        logPrinter.setFormatter(fileFormatter)
         logPrinter.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        # connect logPrinter Handler to status widget
+        logPrinter.log_message.connect(self.send_status)
+        # local filter to ignore low level library DEBUG messages
+        localFilter = localOnlyFilter()
+        logging.getLogger().addHandler(fileHandler)
         logging.getLogger().addHandler(logPrinter)
         for handler in logging.root.handlers:
             handler.addFilter(localFilter)
-        logPrinter.log_message.connect(self.send_status)
-
+        # set log level for overall logger
+        logging.getLogger().setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
+        
+        logger.info('\nSTARTING APPLICATION')
         self.current_time = datetime.now()
 
         self.setWindowTitle("DO Monitor")
@@ -662,8 +676,8 @@ class customLogHandler(logging.Handler, QObject):
         self.format(record)
         if ENABLE_DEBUG:
             print(f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}")
-        # if from truck sensor code or level greater than info
-        if record.name == "truck_sensor" or record.levelno > 20:
+        # if from truck sensor code .INFO or level greater than info
+        if (record.name == "truck_sensor" and record.levelno > 10) or record.levelno > 20:
             
             if record.levelno > 30:
                 color = "red"
@@ -672,8 +686,6 @@ class customLogHandler(logging.Handler, QObject):
             else:
                 color = "white"
             self.log_message.emit(record.msg, color)
-        
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="gui")
