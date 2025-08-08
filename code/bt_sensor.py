@@ -43,6 +43,7 @@ class BluetoothReader(QObject):
 
     def __init__(self, *args):
         super().__init__()
+        self.transmission_timeouts = 0
         self.ble = BLERadio()
         self._abort = False
 
