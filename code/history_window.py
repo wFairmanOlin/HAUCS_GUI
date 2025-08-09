@@ -1,12 +1,22 @@
 from PyQt5.QtCore import Qt, QMutex, QMutexLocker
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton,
-    QCheckBox, QGridLayout, QSizePolicy, QDialog, QTableWidgetItem, QTableWidget
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QCheckBox,
+    QGridLayout,
+    QSizePolicy,
+    QDialog,
+    QTableWidgetItem,
+    QTableWidget,
 )
 import os, csv, re
 from datetime import datetime, timedelta
 from converter import *
+
 
 class HistoryLogWindow(QWidget):
 
@@ -18,30 +28,40 @@ class HistoryLogWindow(QWidget):
         self.unit = unit
         self.min_do = min_do
         self.good_do = good_do
-        self.foldername = 'database_truck'
+        self.foldername = "database_truck"
 
         self.table = QTableWidget()
         self.table.setColumnCount(7)
-        self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temp ℉", "Depth in"])
+        self.table.setHorizontalHeaderLabels(
+            ["Date", "Time", "Pond ID", "HBOI DO", "YSI DO", "Temp ℉", "Depth in"]
+        )
         self.table.verticalHeader().setVisible(False)
         self.setStyleSheet("background-color: black; color: white;")
-        self.table.setStyleSheet("""
+        self.table.setStyleSheet(
+            """
             QTableWidget {
                 font-size: 36px;
                 background-color: black;
                 color: white;
             }
+        """
+        )
+        self.table.horizontalHeader().setStyleSheet(
+            """
+                            
             QHeaderView::section {
                 font-size: 36px;
                 color: white;
                 background-color: black;
-            }
-        """)
+            }"""
+        )
+
         layout = QVBoxLayout()
         layout.addWidget(self.table)
 
         close_button = QPushButton("Close")
-        close_button.setStyleSheet("""
+        close_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #bbbbbb;
                 color: black;
@@ -52,7 +72,8 @@ class HistoryLogWindow(QWidget):
             QPushButton:hover {
                 background-color: #777777;
             }
-        """)
+        """
+        )
         close_button.setFixedSize(180, 60)
         close_button.clicked.connect(self.close)
 
@@ -98,19 +119,19 @@ class HistoryLogWindow(QWidget):
             date_str = basename.split("_")[-1].split(".")[0]
             # lock access to database folder
             with QMutexLocker(self.database_mutex):
-                with open(fpath, newline='') as csvfile:
+                with open(fpath, newline="") as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
                         try:
                             time_str = row["time"]
-                            pond_id =  row["pond_id"]
-                            hboi =     round(100 * float(row["hboi_do"]))
-                            hboi_mgl = float(row['hboi_do_mgl'])
-                            ysi =      round(100 * float(row["ysi_do"]))
-                            ysi_mgl =  float(row["ysi_do_mgl"])
-                            temp_c =   float(row["temperature"])
-                            temp_f =   round(to_fahrenheit(temp_c))
-                            depth =    row['depth']
+                            pond_id = row["pond_id"]
+                            hboi = round(100 * float(row["hboi_do"]))
+                            hboi_mgl = float(row["hboi_do_mgl"])
+                            ysi = round(100 * float(row["ysi_do"]))
+                            ysi_mgl = float(row["ysi_do_mgl"])
+                            temp_c = float(row["temperature"])
+                            temp_f = round(to_fahrenheit(temp_c))
+                            depth = row["depth"]
 
                             if self.unit == "percent":
                                 hboi_display = hboi
@@ -119,14 +140,28 @@ class HistoryLogWindow(QWidget):
                                 hboi_display = hboi_mgl
                                 ysi_display = ysi_mgl
 
-                            rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, depth))
+                            rows.append(
+                                (
+                                    date_str,
+                                    time_str,
+                                    pond_id,
+                                    hboi_display,
+                                    ysi_display,
+                                    hboi_mgl,
+                                    ysi_mgl,
+                                    temp_f,
+                                    depth,
+                                )
+                            )
                         except:
                             logger.warning("couldn't append history rows")
 
         rows.sort(key=lambda x: (x[0], x[1]), reverse=True)
         self.table.setRowCount(len(rows))
 
-        for r, (date, time, pond_id, do1, do2, mgl1, mgl2, temp_f, depth) in enumerate(rows):
+        for r, (date, time, pond_id, do1, do2, mgl1, mgl2, temp_f, depth) in enumerate(
+            rows
+        ):
             row_color = QColor("#444444") if r % 2 == 0 else QColor("#222222")
             for c, val in enumerate([date, time, pond_id, do1, do2, temp_f, depth]):
                 item = QTableWidgetItem(str(val))
