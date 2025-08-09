@@ -1,16 +1,19 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem, QLabel, QPushButton, QHBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QMutex, QMutexLocker
 from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import (
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton,
+    QCheckBox, QGridLayout, QSizePolicy, QDialog, QTableWidgetItem, QTableWidget
+)
 import os, csv, re
 from datetime import datetime, timedelta
 from converter import *
 
-class HistoryLogWindow(QDialog):
+class HistoryLogWindow(QWidget):
 
-    def __init__(self, unit, min_do, good_do, parent=None):
-        super().__init__(parent)
+    def __init__(self, unit, min_do, good_do, database_mutex):
+        super().__init__()
         self.setWindowTitle("History Log")
-        self.setWindowState(Qt.WindowMaximized)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
         self.unit = unit
         self.min_do = min_do
@@ -58,12 +61,13 @@ class HistoryLogWindow(QDialog):
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
-        self.load_data(self.foldername)
+        self._load_data(self.foldername)
         self.table.resizeColumnsToContents()
         for col in range(self.table.columnCount()):
             current_width = self.table.columnWidth(col)
             self.table.setColumnWidth(col, current_width + 30)
         self.table.verticalHeader().setDefaultSectionSize(60)
+        self.showFullScreen()
 
     def get_target_files(self, foldername):
         today = datetime.now().date()
@@ -84,36 +88,38 @@ class HistoryLogWindow(QDialog):
                     filenames.append(os.path.join(foldername, fname))
         return filenames
 
-    def load_data(self, foldername):
+    def _load_data(self, foldername):
         rows = []
-
+        print(f"files: \n{self.get_target_files(foldername)}")
         for fpath in self.get_target_files(foldername):
             basename = os.path.basename(fpath)
             date_str = basename.split("_")[-1].split(".")[0]
-            with open(fpath, newline='') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    try:
-                        time_str = row["time"]
-                        pond_id =  row["pond_id"]
-                        hboi =     round(100 * float(row["hboi_do"]))
-                        hboi_mgl = float(row['hboi_do_mgl'])
-                        ysi =      round(100 * float(row["ysi_do"]))
-                        ysi_mgl =  float(row["ysi_do_mgl"])
-                        temp_c =   float(row["temperature"])
-                        temp_f =   round(to_fahrenheit(temp_c))
-                        depth =    row['depth']
+            # lock access to database folder
+            with QMutexLocker(self.database_mutex):
+                with open(fpath, newline='') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for row in reader:
+                        try:
+                            time_str = row["time"]
+                            pond_id =  row["pond_id"]
+                            hboi =     round(100 * float(row["hboi_do"]))
+                            hboi_mgl = float(row['hboi_do_mgl'])
+                            ysi =      round(100 * float(row["ysi_do"]))
+                            ysi_mgl =  float(row["ysi_do_mgl"])
+                            temp_c =   float(row["temperature"])
+                            temp_f =   round(to_fahrenheit(temp_c))
+                            depth =    row['depth']
 
-                        if self.unit == "percent":
-                            hboi_display = hboi
-                            ysi_display = ysi
-                        else:
-                            hboi_display = hboi_mgl
-                            ysi_display = ysi_mgl
+                            if self.unit == "percent":
+                                hboi_display = hboi
+                                ysi_display = ysi
+                            else:
+                                hboi_display = hboi_mgl
+                                ysi_display = ysi_mgl
 
-                        rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, depth))
-                    except:
-                        logger.warning("couldn't append history rows")
+                            rows.append((date_str, time_str, pond_id, hboi_display, ysi_display, hboi_mgl, ysi_mgl, temp_f, depth))
+                        except:
+                            logger.warning("couldn't append history rows")
 
         rows.sort(key=lambda x: (x[0], x[1]), reverse=True)
         self.table.setRowCount(len(rows))

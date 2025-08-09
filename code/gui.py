@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
-from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex
 from PyQt5.QtGui import QIcon
 from custom_widgets.toggle_switch import ToggleSwitch
 import sys
@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 class DOApp(QWidget):
     def __init__(self):
         super().__init__()
+        # global mutexes
+        self.database_mutex  = QMutex()
 
         #status message queue
         self.status_q = queue.Queue()
@@ -469,8 +471,9 @@ class DOApp(QWidget):
 
     def on_result_window_closed(self, result_data):
         # print("Result window closed. Data received:", result_data)
-        self.thread.update_database(result_data)
         self.result_window = None
+        self.thread.update_database(result_data)
+        
 
     def on_toggle_click(self):
         if self.unit_toggle.isChecked() and self.unit != "percent":
@@ -507,8 +510,7 @@ class DOApp(QWidget):
             pass
     
     def on_history_log_click(self):
-        window = HistoryLogWindow(self.unit, self.min_do, self.good_do, parent=self)
-        window.exec_() 
+        HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
 
     def on_calibrate_ysi_click(self):
         logger.debug('starting ysi calibration')
@@ -518,6 +520,7 @@ class DOApp(QWidget):
 
     def ysi_calibration_complete(self, data, save):
         logger.debug(f"setting page closed save? {save} \n{data}")
+        self.ysi_window = None
         self.thread.stop_ysi_calibration()
         if save:
             self.calibration['ysi_zero_scale'] = data['zero']

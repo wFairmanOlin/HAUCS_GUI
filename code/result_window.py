@@ -24,8 +24,6 @@ logger = logging.getLogger(__name__)
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
     image_path=None
-
-    database_truck = "database_truck"
     measure_datetime = None
     pond_id = "unk"
  
