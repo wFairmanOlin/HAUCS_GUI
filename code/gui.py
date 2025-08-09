@@ -510,7 +510,7 @@ class DOApp(QWidget):
             pass
     
     def on_history_log_click(self):
-        HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
+        self.history_window = HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
 
     def on_calibrate_ysi_click(self):
         logger.debug('starting ysi calibration')
