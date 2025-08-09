@@ -108,10 +108,10 @@ class TruckSensor(QThread):
     def underwater_status_change(self, value):
         if value == "True":
             self.underwater = True
-            # self.sensors.message_priority = sensor.Priority.high # only process high priority messages 
+            self.sensors.message_priority = sensor.Priority.high # only process high priority messages 
         else:
             self.underwater = False
-            # self.sensors.message_priority = sensor.Priority.low 
+            self.sensors.message_priority = sensor.Priority.low 
 
 
     def init_ble(self):
@@ -334,9 +334,13 @@ class TruckSensor(QThread):
 
     def toggle_unit(self, unit):
         self.unit = unit
-        # prevent extra data syncs while unit is underwater
+        data_dict = {'do':self.sdata['do'], 'do_mgl':self.sdata['do_mgl']}
+        # prevent uploading stale YSI data if underwater
         if not self.underwater:
-            self.sync_ble_sdata()
+           data_dict['ysi_do'] = self.sdata['ysi_do']
+           data_dict['ysi_do_mgl'] = self.sdata['ysi_do_mgl']
+
+        self.update_data.emit(data_dict)
 
     def update_database(self, data_dict):
         '''
