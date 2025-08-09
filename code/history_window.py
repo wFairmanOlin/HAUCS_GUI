@@ -24,17 +24,19 @@ class HistoryLogWindow(QWidget):
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels(["Date", "Time", "Pond ID", "HBOI DO", "YSI DO","Temp ℉", "Depth in"])
         self.table.verticalHeader().setVisible(False)
+        self.setStyleSheet("background-color: black; color: white;")
         self.table.setStyleSheet("""
             QTableWidget {
                 font-size: 36px;
+                background-color: black;
+                color: white;
             }
             QHeaderView::section {
                 font-size: 36px;
-                color: black;
-                background-color: #dddddd;
+                color: white;
+                background-color: black;
             }
         """)
-
         layout = QVBoxLayout()
         layout.addWidget(self.table)
 
