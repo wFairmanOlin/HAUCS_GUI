@@ -309,7 +309,7 @@ class DOApp(QWidget):
         self.setLayout(main_layout)
 
     def setup_thread(self):
-        self.thread = TruckSensor(self.calibration, self.settings)
+        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex)
         self.thread.unit = self.unit
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)

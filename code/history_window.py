@@ -14,7 +14,7 @@ class HistoryLogWindow(QWidget):
         super().__init__()
         self.setWindowTitle("History Log")
         self.setAttribute(Qt.WA_DeleteOnClose)
-
+        self.database_mutex = database_mutex
         self.unit = unit
         self.min_do = min_do
         self.good_do = good_do
