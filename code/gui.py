@@ -599,7 +599,6 @@ class DOApp(QWidget):
             if dialog.result == "close":
                 logger.info("user closed program")
                 self.thread.abort()
-                self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
@@ -609,7 +608,6 @@ class DOApp(QWidget):
             elif dialog.result == "shutdown":
                 logger.info("user triggered shutdown")
                 self.thread.abort()
-                self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
@@ -620,7 +618,6 @@ class DOApp(QWidget):
             elif dialog.result == "restart":
                 logger.info("user triggered restart")
                 self.thread.abort()
-                self.thread.stop_firebase()
                 if hasattr(self, 'result_window') and self.result_window is not None:
                     if self.result_window.isVisible():
                         self.result_window.close()
