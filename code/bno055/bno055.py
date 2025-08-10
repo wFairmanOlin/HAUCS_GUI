@@ -110,13 +110,15 @@ class Compass:
                     gps_hdg + 180 - self.raw_heading
                 ) % 360 - 180  # mininum angle +/-
                 # append data
-                self.offset_history = [
-                    time.time(),
-                    speed_kmh,
-                    gps_hdg,
-                    self.raw_heading,
-                    new_offset,
-                ]
+                self.offset_history.append(
+                    [
+                        time.time(),
+                        speed_kmh,
+                        gps_hdg,
+                        self.raw_heading,
+                        new_offset,
+                    ]
+                )
                 if len(self.offset_history) > MAX_HISTORY:
                     self.offset_history.pop(0)
                 # save offset data
@@ -169,6 +171,8 @@ if __name__ == "__main__":
     while True:
         start = time.monotonic()
         compass.update()
-        print(f"{time.monotonic() - start:.5f} hdg: {compass.raw_heading} offset hdg: {compass.offset_heading}")
+        print(
+            f"{time.monotonic() - start:.5f} hdg: {compass.raw_heading} offset hdg: {compass.offset_heading}"
+        )
         compass.check_and_calibrate_heading(10, 10)
         time.sleep(1)
