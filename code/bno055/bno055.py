@@ -169,5 +169,6 @@ if __name__ == "__main__":
     while True:
         start = time.monotonic()
         compass.update()
-        print(f"{time.monotonic() - start:.5f} hdg: {compass.raw_heading}")
+        print(f"{time.monotonic() - start:.5f} hdg: {compass.raw_heading} offset hdg: {compass.offset_heading}")
+        compass.check_and_calibrate_heading(10, 10)
         time.sleep(1)
