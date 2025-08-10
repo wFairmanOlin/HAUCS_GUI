@@ -3,7 +3,7 @@ import os
 import firebase_admin
 from firebase_admin import credentials, db
 import concurrent.futures
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QMutex, QMutexLocker
 import pandas as pd
 from datetime import datetime
 import numpy as np
@@ -37,10 +37,11 @@ class FirebaseWorker(QThread):
     completed_folder = "completed"
     sdatas = []
 
-    def __init__(self):
+    def __init__(self, database_mutex):
         super().__init__()
         self._abort = False
         logger.info("starting firebase worker")
+        self.database_mutex = database_mutex
         self.init_firebase() #TODO unecessary function
 
     def init_firebase(self):
@@ -69,19 +70,22 @@ class FirebaseWorker(QThread):
 
 
     def add_sdata(self, sdata, row):
-
         today_str = datetime.now().strftime("%Y-%m-%d")
         folder = self.database_folder
         os.makedirs(folder, exist_ok=True)
         file_path = os.path.join(folder, f"iamtruck_{today_str}.csv")
-
-        # random csv stuff
-        if os.path.exists(file_path):
-            df = pd.read_csv(file_path)
-            df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-        else:
-            df = pd.DataFrame([row]) 
-        df.to_csv(file_path, index=False)
+        # lock access to database folder
+        with QMutexLocker(self.database_mutex):
+            try:
+                # random csv stuff
+                if os.path.exists(file_path):
+                    df = pd.read_csv(file_path)
+                    df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+                else:
+                    df = pd.DataFrame([row]) 
+                df.to_csv(file_path, index=False)
+            except Exception as e:
+                logger.info("could not append to local database file %s", e)
 
         self.save_data_pickle(sdata)
 
@@ -148,24 +152,24 @@ class FirebaseWorker(QThread):
                 logger.info('data upload to firebase complete')
                 del self.sdatas[i]
 
-                # UPDATE LOCAL CSV FILE
-                #TODO: Move this to a function
-                try:
-                    msg_time_str = sdata['message_time']
-                    msg_date = datetime.strptime(msg_time_str.split("_")[0], "%Y%m%d").strftime("%Y-%m-%d")
+                # lock access to database folder
+                with QMutexLocker(self.database_mutex):
+                    try:
+                        msg_time_str = sdata['message_time']
+                        msg_date = datetime.strptime(msg_time_str.split("_")[0], "%Y%m%d").strftime("%Y-%m-%d")
+                        file_path = os.path.join(self.database_folder, f"iamtruck_{msg_date}.csv")
+                        if os.path.exists(file_path):
+                            df = pd.read_csv(file_path)
 
-                    file_path = os.path.join(self.database_folder, f"iamtruck_{msg_date}.csv")
-                    if os.path.exists(file_path):
-                        df = pd.read_csv(file_path)
+                            match_index = df[df["message_time"] == msg_time_str].index
 
-                        match_index = df[df["message_time"] == msg_time_str].index
-
-                        if not match_index.empty:
-                            df.loc[match_index, "upload status"] = True
-                            df.to_csv(file_path, index=False)
-                    
-                except Exception as e:
-                    logger.warning('failed to update csv')
+                            if not match_index.empty:
+                                df.loc[match_index, "upload status"] = True
+                                df.to_csv(file_path, index=False)
+                        self.database_mutex.unlock()
+                        
+                    except Exception as e:
+                        logger.warning('failed to update csv')
 
     def update_firebase(self, sdata):
         

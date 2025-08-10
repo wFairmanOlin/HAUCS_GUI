@@ -48,13 +48,13 @@ class TruckSensor(QThread):
     unit = "mgl"      # mgl or percent
 
     fb_key="fb_key.json"
-    database_folder = "database_truck"
 
 
-    def __init__(self, calibration, settings, parent=None):
+    def __init__(self, calibration, settings, database_mutex, parent=None):
         super().__init__(parent)
         # initialize firebase
-        self.init_firebase()
+        self.firebase_worker = FirebaseWorker(database_mutex)
+        self.firebase_worker.start()
         self.calibration = calibration
         self.settings = settings
         # initialize I2C sensor bus
@@ -96,14 +96,6 @@ class TruckSensor(QThread):
     
     def set_ysi_calibration(self, zero, full_scale):
         self.sensors.set_calibration(zero, full_scale)
-
-    def init_firebase(self):
-        self.firebase_worker = FirebaseWorker()
-        self.firebase_worker.start()
-
-    def stop_firebase(self):
-        self.firebase_worker.abort()
-        self.firebase_worker.wait()
 
     def underwater_status_change(self, value):
         if value == "True":
