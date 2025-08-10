@@ -92,20 +92,20 @@ class I2CReader(QThread):
         self.scheduled_msgs["hdg_offset"] = {
             "callback": self.update_heading_offset,
             "period": 10,
-            "timer": 0,
+            "timer": time.monotonic(),
             "priority": Priority.low
         }
         self.scheduled_msgs["cal_save"] = {
             "callback": self.save_imu_calibration,
             "period": 10, #TODO: 2 minutes
-            "timer": 0,
+            "timer": time.monotonic(),
             "priority": Priority.low
         }
 
     def send_scheduled_messages(self):
         for message in self.scheduled_msgs.values():
-            if time.time() - message["timer"] > message["period"]:
-                message["timer"] = time.time()
+            if time.monotonic() - message["timer"] > message["period"]:
+                message["timer"] = time.monotonic()
                 # only trigger callback if above water or message has underwater priority
                 if message["priority"] >= self.message_priority:
                     message["callback"]()
@@ -207,6 +207,7 @@ class I2CReader(QThread):
 
     def save_imu_calibration(self):
         data = self.compass.get_calibration()
+        self.calibration_publisher.emit(data)
 
     def run(self):
         self._abort = False
@@ -215,8 +216,8 @@ class I2CReader(QThread):
             self.msleep(50)
             # reconnect ysi sensor
             if not self.ysi_connected:
-                if time.time() - self.ysi_reconnect_timer > self.reconnect_period:
-                    self.ysi_reconnect_timer = time.time()
+                if time.monotonic() - self.ysi_reconnect_timer > self.reconnect_period:
+                    self.ysi_reconnect_timer = time.monotonic()
                     self.init_ysi_adc()
 
             # perform sensor updates

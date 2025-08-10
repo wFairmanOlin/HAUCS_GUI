@@ -44,6 +44,7 @@ class Compass:
         ]
         if all([key in self.calibration for key in calibration_keys]):
             try:
+                print(f"calibrating {self.calibration}")
                 self.bno055.offssets_magnetometer = tuple(
                     self.calibration["bno055_magnetometer"]
                 )
