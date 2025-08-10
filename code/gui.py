@@ -586,34 +586,37 @@ class DOApp(QWidget):
         calibration.csv:  calibration information  
         '''
         data_dict = {}
-        with QMutexLocker(self.csv_mutex):
-            with open(filename, newline='') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    key = row['param']
-                    # split into mutliple values
-                    value = row['value']
-                    value = value.split('$')
-                    # process single values
-                    if len(value) == 1:
-                        try:
-                            value = float(value[0])
-                        except:
-                            data_dict[key] = value[0]
-                    # process multiple values
-                    elif len(value) > 1:
-                        value_arr = []
-                        for val in value:
-                            try:
-                                value_arr.append(float(val))
-                            except:
-                                value_arr.append(val)
-                        data_dict[key] = value_arr
-                    try:
-                        value = float(row['value'])
-                    except:
+        if os.path.exists(filename):
+            with QMutexLocker(self.csv_mutex):
+                with open(filename, newline='') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    for row in reader:
+                        key = row['param']
+                        # split into mutliple values
                         value = row['value']
-                    data_dict[key] = value
+                        value = value.split('$')
+                        # process single values
+                        if len(value) == 1:
+                            try:
+                                value = float(value[0])
+                            except:
+                                data_dict[key] = value[0]
+                        # process multiple values
+                        elif len(value) > 1:
+                            value_arr = []
+                            for val in value:
+                                try:
+                                    value_arr.append(float(val))
+                                except:
+                                    value_arr.append(val)
+                            data_dict[key] = value_arr
+                        try:
+                            value = float(row['value'])
+                        except:
+                            value = row['value']
+                        data_dict[key] = value
+        else:
+            logger.warning("could not load %s", filename)
 
         return data_dict
 
