@@ -492,7 +492,7 @@ class DOApp(QWidget):
 
     def on_result_window_closed(self, result_data):
         # print("Result window closed. Data received:", result_data)
-        self.result_window = None
+        # self.result_window = None
         self.thread.update_database(result_data)
         
 

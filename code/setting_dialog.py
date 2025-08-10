@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout, QApplication
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQT5.QtGui import QCursor
+from PyQt5.QtGui import QCursor
 from custom_widgets.bigspin_widget import BigSpinBox
 import sys
 
@@ -31,8 +31,8 @@ class SettingDialog(QWidget):
         label4.setStyleSheet(font_style)
 
         grid = QGridLayout()
-        grid.setHorizontalSpacing(40)
-        grid.setVerticalSpacing(25)
+        # grid.setHorizontalSpacing(40)
+        # grid.setVerticalSpacing(25)
         grid.setContentsMargins(10,0,0,0)
 
         grid.addWidget(label1, 0, 0, alignment=Qt.AlignLeft)
