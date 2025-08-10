@@ -44,7 +44,6 @@ class Compass:
         ]
         if all([key in self.calibration for key in calibration_keys]):
             try:
-                print(f"calibrating {self.calibration}")
                 self.bno055.offssets_magnetometer = tuple(
                     self.calibration["bno055_magnetometer"]
                 )
@@ -86,7 +85,6 @@ class Compass:
                     heading = self.bno055.euler[0]
                     time.sleep(0.01)
                     counter += 1
-                print(f"counter {counter}")
                 self.raw_heading = heading
             except Exception as error:
                 logger.error("failed to update bno055: %s", error)

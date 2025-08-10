@@ -111,7 +111,6 @@ class HistoryLogWindow(QWidget):
 
     def _load_data(self, foldername):
         rows = []
-        print(f"files: \n{self.get_target_files(foldername)}")
         for fpath in self.get_target_files(foldername):
             basename = os.path.basename(fpath)
             date_str = basename.split("_")[-1].split(".")[0]
