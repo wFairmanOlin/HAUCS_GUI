@@ -15,7 +15,7 @@ import adafruit_bno055
 import logging
 from enum import Enum
 from functools import total_ordering
-from code.bno055.bno055 import Compass
+from bno055.bno055 import Compass
 
 # init logger
 logger = logging.getLogger(__name__)
@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 @total_ordering
 class Priority(Enum):
     low = 0
-    high = 1
+    medium = 1
+    high = 2
 
     def __lt__(self, other):
         if self.__class__ is other.__class__:
@@ -35,6 +36,7 @@ class Priority(Enum):
 class I2CReader(QThread):
     ysi_publisher = pyqtSignal(float, float)
     gps_publisher = pyqtSignal(dict)
+    calibration_publisher = pyqtSignal(dict)
 
     full_scale = 10500
     zero_scale = 0
@@ -90,6 +92,12 @@ class I2CReader(QThread):
         self.scheduled_msgs["hdg_offset"] = {
             "callback": self.update_heading_offset,
             "period": 10,
+            "timer": 0,
+            "priority": Priority.low
+        }
+        self.scheduled_msgs["cal_save"] = {
+            "callback": self.save_imu_calibration,
+            "period": 10, #TODO: 2 minutes
             "timer": 0,
             "priority": Priority.low
         }
@@ -196,6 +204,9 @@ class I2CReader(QThread):
     def update_heading_offset(self):
         self.gps.update()
         self.compass.check_and_calibrate_heading(self.gps.speed_kmh, self.gps.heading)
+
+    def save_imu_calibration(self):
+        data = self.compass.get_calibration()
 
     def run(self):
         self._abort = False

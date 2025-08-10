@@ -29,6 +29,7 @@ class TruckSensor(QThread):
     sensor_underwater = pyqtSignal(str)
     update_pond_data = pyqtSignal(dict)
     ysi_data = pyqtSignal(float, float)
+    calibration_data = pyqtSignal(dict)
 
     _abort = False
     sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0, 'sample_hz':1}
@@ -67,6 +68,11 @@ class TruckSensor(QThread):
         self.sensor_underwater.connect(self.underwater_status_change)
         self.sensors.gps_publisher.connect(self.on_gps_update)
         self.sensors.ysi_publisher.connect(self.on_ysi_update)
+        self.sensors.calibration_publisher.connect(self.on_calibration_available)
+    
+    # Calibration Updates
+    def on_calibration_available(self, data):
+        self.calibration_data.emit(data)
 
     # YSI COMMANDS
     def on_ysi_update(self, do_mgl, raw_adc):

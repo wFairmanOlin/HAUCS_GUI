@@ -112,6 +112,16 @@ class DOApp(QWidget):
         self.timer.timeout.connect(self.update_counter)
         # self.timer.start()
 
+    def setup_thread(self):
+        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex)
+        self.thread.unit = self.unit
+        self.thread.update_data.connect(self.on_data_update)
+        self.thread.update_pond_data.connect(self.on_update_pond_data)
+        self.thread.sensor_underwater.connect(self.on_underwater_signal)
+        self.thread.ysi_data.connect(self.on_ysi_update)
+        self.thread.calibration_data.connect(self.on_calibration_available)
+        self.thread.start()
+
     def setup_ui(self):
         os.popen('sudo hciconfig hci0 reset')
         main_layout = QVBoxLayout()
@@ -308,18 +318,14 @@ class DOApp(QWidget):
         main_layout.addLayout(btn_layout)
         self.setLayout(main_layout)
 
-    def setup_thread(self):
-        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex)
-        self.thread.unit = self.unit
-        self.thread.update_data.connect(self.on_data_update)
-        self.thread.update_pond_data.connect(self.on_update_pond_data)
-        self.thread.sensor_underwater.connect(self.on_underwater_signal)
-        self.thread.ysi_data.connect(self.on_ysi_update)
-        self.thread.start()
-
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
+
+    def on_calibration_available(self, data):
+        for key in data:
+            self.calibration[key] = data[key]
+        self.save_local_csv(self.calibration, "calibration.csv")
 
     def on_data_update(self, data_dict):
         if 'battv' in data_dict:
