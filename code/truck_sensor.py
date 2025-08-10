@@ -38,7 +38,6 @@ class TruckSensor(QThread):
     app = None
     cred = None
 
-    messaging_active = True #semaphore for scheduled messages
     mode = Mode.normal #handles special operating modes
     underwater = False
 

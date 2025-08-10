@@ -554,9 +554,7 @@ class DOApp(QWidget):
                 self.settings[i] = data[i]
             self.save_local_csv(self.settings, "settings.csv")
             self.thread.settings = self.settings
-            self.thread.mode = Mode.ble_paused
             self.thread.set_pressure_threshold(data['depth_threshold'])
-            self.thread.mode = Mode.normal
             logger.info(f"settings successfully saved {data}")
             self.send_status('settings saved', 'limegreen')
         else:
