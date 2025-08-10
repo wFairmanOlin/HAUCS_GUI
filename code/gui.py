@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
 from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex, QMutexLocker
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCursor
 from custom_widgets.toggle_switch import ToggleSwitch
 import sys
 from result_window import ResultWindow
@@ -169,7 +169,7 @@ class DOApp(QWidget):
         self.led_status = LEDStatusWidget(status="disconnected")
         top_bar.addWidget(self.led_status)
         top_bar.addSpacing(5)
-        self.sid_val   = QLabel('-')
+        self.sid_val   = QLabel('')
         self.sid_val.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold; padding-right: 10px;")
         top_bar.addWidget(self.sid_val)
         top_bar.addSpacing(5)
@@ -200,17 +200,17 @@ class DOApp(QWidget):
 
         pid_label   = QLabel('Pond')
         ysi_label   = QLabel('YSI DO')
-        hboi_label  = QLabel('HBOI DO')
+        hboi_label  = QLabel('BLE DO')
         timer_label = QLabel('TIMER')
         
 
         self.pid_val   = QLabel('-')
-        self.ysi_val   = QLabel('-')
-        self.hboi_val  = QLabel('-')
-        self.timer_val = QLabel('-')
+        self.ysi_val   = QLabel('0')
+        self.hboi_val  = QLabel('0')
+        self.timer_val = QLabel('0')
         self.status   = QLabel('')
         self.status.setWordWrap(True) #allow multiple lines
-        self.status.setFixedWidth(460)
+        self.status.setFixedWidth(500)
 
         self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
@@ -292,7 +292,7 @@ class DOApp(QWidget):
         # ==== Bottom Buttons ====
         btn_layout = QHBoxLayout()
         buttons = [
-            ("Calibrate HBOI", self.on_calibrate_do_click),
+            ("Calibrate BLE", self.on_calibrate_do_click),
             ("Calibrate YSI", self.on_calibrate_ysi_click),
             ("History Log", self.on_history_log_click),
         ]
@@ -320,6 +320,7 @@ class DOApp(QWidget):
 
         main_layout.addLayout(btn_layout)
         self.setLayout(main_layout)
+        self.setCursor(QCursor(Qt.BlankCursor))
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -423,6 +424,10 @@ class DOApp(QWidget):
     def on_status_timer(self):
         msg = ""
         if self.status_q.qsize() > 0:
+            if self.status_q.qize() > 1:
+                self.status_timer.setInterval(1000)
+            else:
+                self.status_timer.setInterval(5000)
             try:
                 msg = self.status_q.get_nowait()
             except:

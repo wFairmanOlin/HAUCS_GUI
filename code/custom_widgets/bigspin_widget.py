@@ -38,11 +38,11 @@ class BigSpinBox(QWidget):
         self.down_btn = QPushButton(f'\N{BLACK DOWN-POINTING TRIANGLE}')
 
         for btn in [self.up_btn, self.down_btn]:
-            btn.setFixedSize(45, 45)
+            btn.setFixedSize(60, 60)
             btn.setStyleSheet("""
                 QPushButton {
                     background-color: #cccccc;
-                    font-size: 28px;
+                    font-size: 32px;
                     border-radius: 6px;
                     color: #33ff33
                 }

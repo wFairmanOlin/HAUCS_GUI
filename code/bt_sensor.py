@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class BluetoothReader(QObject):
     data_updated = pyqtSignal(dict)
     uart_connection = None
-    sdata = {'connection':False, 'name':'generic', 'sample_hz':1}
+    sdata = {'connection':False, 'name':'', 'sample_hz':1}
     current_sample_size = 0
     prev_sample_size = 0
 

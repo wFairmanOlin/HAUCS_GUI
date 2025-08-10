@@ -85,7 +85,7 @@ class ResultWindow(QWidget):
         info_grid = QGridLayout()
 
         pid_label   = QLabel('Pond')
-        hboi_label  = QLabel('HBOI DO')
+        hboi_label  = QLabel('BLE DO')
         ysi_label   = QLabel('YSI DO')
         dur_label   = QLabel('Length')
         temp_label  = QLabel('WT')
@@ -390,7 +390,7 @@ class ResultWindow(QWidget):
             ax.set_xlabel("Seconds", color=accent_color, fontsize=16)
             ax.set_ylabel("% Saturation" if self.unit == 'percent' else "mg/l", color=accent_color, fontsize=16)
             
-            ax.scatter(time_hboi, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='HBOI')
+            ax.scatter(time_hboi, y_scatter, s=150, color='tab:cyan', alpha=0.7, label='BLE')
             ax.scatter(time_ysi, y_scatter_ysi, s=150, color='tab:orange', alpha=0.7, label='YSI')
             ax.plot(x_plot, y_fit, color='tab:cyan', linewidth=5, alpha=1)
             ax.plot(x_plot, y_fit_ysi, color='tab:orange', linewidth=5, alpha=1)
