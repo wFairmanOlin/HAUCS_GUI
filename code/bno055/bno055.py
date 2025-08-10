@@ -20,6 +20,8 @@ class Compass:
         self.calibration = calibration
         self.offset_history = []
         self.offset = 0
+        self.offset_heading = None
+        self.heading = None
         self.i2c = i2c
         self.init_bno055()
         if self.initialized:
@@ -73,7 +75,7 @@ class Compass:
         else:
             try:
                 start = time.monotonic()
-                while heading != None:
+                while heading == None:
                     if time.monotonic() - start > timeout:
                         self.raw_heading = None
                         self.offset_heading = None
