@@ -7,7 +7,7 @@ class NumpadDialog(QDialog):
     def __init__(self, title="Enter Pond ID", init_value="", parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.setModal(True)
+        # self.setModal(True)
         self.setStyleSheet("background-color: #333; color: white; font-size: 24px;")
         self.value = init_value
         self.first_input = True

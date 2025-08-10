@@ -430,12 +430,15 @@ class DOApp(QWidget):
 
     def on_status_timer(self):
         msg = ""
+        print(f"\n\nall widgets: {len(QApplication.allWidgets())}")
         # code to test gc garbage
+        for w in QApplication.allWidgets():
+            print(type(w), w.objectName(), w)
         """Return the number of live QPixmap objects."""
         count = 0
         for obj in gc.get_objects():
             try:
-                if isinstance(obj, QPixmap):
+                if isinstance(obj, QWidget):
                     count += 1
             except ReferenceError:
                 pass
@@ -522,10 +525,7 @@ class DOApp(QWidget):
         msg = "1) Ensure sensor is not underwater\n2) Press Yes to start calibration\n\nAre you sure you want to\nCALIBRATE?"
         dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
             success = self.thread.calibrate_DO()
-            QApplication.restoreOverrideCursor()
-            self.thread.mode = Mode.normal
             if success:
                 now = datetime.now()
                 formatted_time = now.strftime("%m/%d/%y %I:%M %p") 

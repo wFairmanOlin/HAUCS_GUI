@@ -4,9 +4,8 @@ from PyQt5.QtCore import Qt
 class CustomYesNoDialog(QDialog):
     def __init__(self, message, calibration, parent=None):
         super().__init__(parent)
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Confirm Action")
-        self.setModal(True)
         self.setStyleSheet("background-color: #444444; color: white;")
 
         # ----- Label -----
