@@ -635,30 +635,15 @@ class DOApp(QWidget):
         if dialog.exec_() == QDialog.Accepted:
             if dialog.result == "close":
                 logger.info("user closed program")
-                self.thread.abort()
-                if hasattr(self, 'result_window') and self.result_window is not None:
-                    if self.result_window.isVisible():
-                        self.result_window.close()
-                    self.result_window = None
                 super().closeEvent(event)
 
             elif dialog.result == "shutdown":
                 logger.info("user triggered shutdown")
-                self.thread.abort()
-                if hasattr(self, 'result_window') and self.result_window is not None:
-                    if self.result_window.isVisible():
-                        self.result_window.close()
-                    self.result_window = None
                 os.system("sudo shutdown now")
                 event.ignore()
 
             elif dialog.result == "restart":
                 logger.info("user triggered restart")
-                self.thread.abort()
-                if hasattr(self, 'result_window') and self.result_window is not None:
-                    if self.result_window.isVisible():
-                        self.result_window.close()
-                    self.result_window = None
                 os.system("sudo reboot")
                 event.ignore()
 
