@@ -14,7 +14,7 @@ import serial
 from subprocess import call
 from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, QMutex, QMutexLocker
 
 #init logger
 logger = logging.getLogger(__name__)
@@ -41,31 +41,37 @@ class BluetoothReader(QObject):
         's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
     }
 
-    def __init__(self, *args):
+    def __init__(self, ble_mutex):
         super().__init__()
         self.transmission_timeouts = 0
+        self.ble_mutex = ble_mutex
         self.ble = BLERadio()
         self._abort = False
 
     def connect(self):
         logger.debug('starting ble scan')
-        for adv in self.ble.start_scan(ProvideServicesAdvertisement):
-            if UARTService in adv.services:
-                logger.debug(f"found sensor with UART service {adv.complete_name}")
-                try:
+        connection_success = False
+        try:
+            for adv in self.ble.start_scan(ProvideServicesAdvertisement):
+                if UARTService in adv.services:
+                    logger.debug(f"found sensor with UART service {adv.complete_name}")
                     self.uart_connection = self.ble.connect(adv)
                     if self.uart_connection.connected:
                         self.sensor_name = adv.complete_name
                         self.sdata['name'] = adv.complete_name[9:]
                         self.sdata['connection'] = True
                         logger.debug(f"successfully connected to {adv}")
-                        return True   
-                except:
-                    logger.error(f'failed to connect to {adv}')
-
-        self.ble.stop_scan()
-        self.sdata['connection'] = False
-        return False
+                        connection_success = True  
+        except Exception as e:
+            logger.error('failed BLE scan %s', e)
+            connection_success = False
+        finally:
+            self.sdata['connection'] = connection_success
+            try:
+                self.ble.stop_scan()
+            except Exception as e:
+                logger.error('failed to stop BLE scan %s', e)
+            return connection_success
 
     def check_connection_status(self):
         connected = False
@@ -212,7 +218,7 @@ class BluetoothReader(QObject):
         '''
         Returns imediately if not connected
         '''
-        start_time = time.time()
+        
         if not self.uart_connection:
             return ""
         if not self.uart_connection.connected:
@@ -221,37 +227,38 @@ class BluetoothReader(QObject):
         #handle commands with multiple responses expected
         multiple_outputs = "end" in command
         receiving_array = False
-
-        uart_service = self.uart_connection[UARTService]
-        msg = "" # return nothing if tx only
-        uart_service.write((command['tx'] + "\n").encode())
-        while len(command['rx']) > 0:
-            # check timeout
-            if (time.time() - start_time > timeout):
-                logger.debug('timeout triggered')
-                self.transmission_timeouts += 1
-                return ""
-            # wait till buffer has something
-            if not uart_service.in_waiting:
-                continue
-            msg = uart_service.readline().decode()
-            msg = msg.replace("\n","")
-            msg = msg.lower()
-            msg = msg.split(",")
-            if len(msg) >= 1:
-                # handle first response
-                if msg[0] == command['rx']:
-                    receiving_array = True
-                    self.extract_message(msg)
-                    # break if only one output
-                    if not multiple_outputs:
-                        break
-                # handle other responses
-                elif receiving_array:
-                    self.extract_message(msg)
-                    if msg[0] == command.get("end"):
-                        break
-        # reset transmission timeouts on successfull transmission 
-        self.transmission_timeouts = 0
-        logger.debug(f"sent {command}, received {msg}")
-        return msg
+        with QMutexLocker(self.ble_mutex):
+            uart_service = self.uart_connection[UARTService]
+            msg = "" # return nothing if tx only
+            uart_service.write((command['tx'] + "\n").encode())
+            start_time = time.time()
+            while len(command['rx']) > 0:
+                # check timeout
+                if (time.time() - start_time > timeout):
+                    logger.debug('timeout triggered')
+                    self.transmission_timeouts += 1
+                    return ""
+                # wait till buffer has something
+                if not uart_service.in_waiting:
+                    continue
+                msg = uart_service.readline().decode()
+                msg = msg.replace("\n","")
+                msg = msg.lower()
+                msg = msg.split(",")
+                if len(msg) >= 1:
+                    # handle first response
+                    if msg[0] == command['rx']:
+                        receiving_array = True
+                        self.extract_message(msg)
+                        # break if only one output
+                        if not multiple_outputs:
+                            break
+                    # handle other responses
+                    elif receiving_array:
+                        self.extract_message(msg)
+                        if msg[0] == command.get("end"):
+                            break
+            # reset transmission timeouts on successfull transmission 
+            self.transmission_timeouts = 0
+            logger.debug(f"sent {command}, received {msg}")
+            return msg

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QMutexLocker
 from bt_sensor import BluetoothReader
 import json, logging
 from datetime import datetime
@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 class Mode(Enum):
     normal = 0
     ysi_cal = 1
-    ble_paused = 2
 
 class TruckSensor(QThread):
     update_data = pyqtSignal(dict) 
@@ -51,8 +50,10 @@ class TruckSensor(QThread):
     fb_key="fb_key.json"
 
 
-    def __init__(self, calibration, settings, database_mutex, parent=None):
+    def __init__(self, calibration, settings, database_mutex, ble_mutex, parent=None):
         super().__init__(parent)
+        # initialize mutexes
+        self.ble_mutex = ble_mutex
         # initialize firebase
         self.firebase_worker = FirebaseWorker(database_mutex)
         self.firebase_worker.start()
@@ -113,7 +114,7 @@ class TruckSensor(QThread):
 
 
     def init_ble(self):
-        self.ble = BluetoothReader()
+        self.ble = BluetoothReader(self.ble_mutex)
         if self.ble.connect():
             self.sync_ble_sdata()
             self.ble.set_lights('navigation')

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
-from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex, QMutexLocker
 from PyQt5.QtGui import QIcon
 from custom_widgets.toggle_switch import ToggleSwitch
 import sys
@@ -45,7 +45,9 @@ class DOApp(QWidget):
     def __init__(self):
         super().__init__()
         # global mutexes
-        self.database_mutex  = QMutex()
+        self.database_mutex  = QMutex() # control access to datbase folder
+        self.csv_mutex = QMutex() # control access to setting/calibration.csv 
+        self.ble_mutex = QMutex()
 
         #status message queue
         self.status_q = queue.Queue()
@@ -113,7 +115,7 @@ class DOApp(QWidget):
         # self.timer.start()
 
     def setup_thread(self):
-        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex)
+        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex, self.ble_mutex)
         self.thread.unit = self.unit
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
@@ -500,8 +502,6 @@ class DOApp(QWidget):
         dialog = CustomYesNoDialog(msg, self.last_calibration, self)
         if dialog.exec_() == QDialog.Accepted:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            self.thread.mode = Mode.ble_paused
-            self.thread.messaging_active = False
             success = self.thread.calibrate_DO()
             QApplication.restoreOverrideCursor()
             self.thread.mode = Mode.normal
@@ -562,19 +562,20 @@ class DOApp(QWidget):
             self.send_status('settings not saved')
 
     def save_local_csv(self, data_dict, filename):
-        try:
-            with open(filename, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
-                writer.writeheader()
-                for key, value in data_dict.items():
-                    if isinstance(value, list):
-                        output = "$".join([str(i) for i in value])
-                    else:
-                        output = str(value)
-                    writer.writerow({"param": key, "value": output})
-            logger.info(f"saved to {filename}")
-        except Exception as e:
-            logger.warning(f"Failed to save: {e}")
+        with QMutexLocker(self.csv_mutex):
+            try:
+                with open(filename, 'w', newline='') as csvfile:
+                    writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
+                    writer.writeheader()
+                    for key, value in data_dict.items():
+                        if isinstance(value, list):
+                            output = "$".join([str(i) for i in value])
+                        else:
+                            output = str(value)
+                        writer.writerow({"param": key, "value": output})
+                logger.info(f"saved to {filename}")
+            except Exception as e:
+                logger.warning(f"Failed to save: {e}")
 
     def load_local_csv(self, filename):
         '''
@@ -585,7 +586,7 @@ class DOApp(QWidget):
         calibration.csv:  calibration information  
         '''
         data_dict = {}
-        if os.path.exists(filename):
+        with QMutexLocker(self.csv_mutex):
             with open(filename, newline='') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
@@ -613,11 +614,7 @@ class DOApp(QWidget):
                     except:
                         value = row['value']
                     data_dict[key] = value
-        else:
-            logger.info(f"created file for {filename}")
-            with open(filename, 'a', newline='') as csvfile:
-                pass
-        
+
         return data_dict
 
     def closeEvent(self, event):
