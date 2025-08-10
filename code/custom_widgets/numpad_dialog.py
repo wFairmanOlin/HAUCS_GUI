@@ -6,8 +6,8 @@ from PyQt5.QtCore import Qt
 class NumpadDialog(QDialog):
     def __init__(self, title="Enter Pond ID", init_value="", parent=None):
         super().__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle(title)
-        # self.setModal(True)
         self.setStyleSheet("background-color: #333; color: white; font-size: 24px;")
         self.value = init_value
         self.first_input = True

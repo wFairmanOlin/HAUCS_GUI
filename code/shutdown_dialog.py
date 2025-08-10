@@ -4,9 +4,10 @@ from PyQt5.QtCore import Qt
 class ShutdownDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Confirm Exit Action")
-        self.setModal(True)
-        self.setFocusPolicy(Qt.ClickFocus)
+        # self.setModal(True)
+        # self.setFocusPolicy(Qt.ClickFocus)
         self.setFixedSize(1200, 400)
 
         self.setStyleSheet("""

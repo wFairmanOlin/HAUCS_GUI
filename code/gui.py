@@ -50,6 +50,13 @@ class DOApp(QWidget):
         self.csv_mutex = QMutex() # control access to setting/calibration.csv 
         self.ble_mutex = QMutex()
 
+        # DEBUGGER
+        if ENABLE_DEBUG:
+            self.debug_count = 0
+            self.debug_timer = QTimer()
+            self.debug_timer.connect(self.on_debug_timer)
+            self.debug_timer.setInterval(10000)
+    
         #status message queue
         self.status_q = queue.Queue()
         #status message timer
@@ -430,20 +437,6 @@ class DOApp(QWidget):
 
     def on_status_timer(self):
         msg = ""
-        print(f"\n\nall widgets: {len(QApplication.allWidgets())}")
-        # code to test gc garbage
-        for w in QApplication.allWidgets():
-            print(type(w), w.objectName(), w)
-        """Return the number of live QPixmap objects."""
-        count = 0
-        for obj in gc.get_objects():
-            try:
-                if isinstance(obj, QWidget):
-                    count += 1
-            except ReferenceError:
-                pass
-        print(f"garbage collector of QPixmap {count}")
-
         if self.status_q.qsize() > 0:
             if self.status_q.qsize() > 1:
                 self.status_timer.setInterval(1000)
@@ -668,7 +661,24 @@ class DOApp(QWidget):
         else:
             # User pressed Cancel or closed dialog
             event.ignore()
-
+    
+    def on_debug_timer(self):
+        self.debug_count += 1
+        logger.debug("number of active QObjects: %s", len(QApplication.allWidgets()))
+        """Return the number of live QPixmap objects."""
+        count = 0
+        for obj in gc.get_objects():
+            try:
+                if isinstance(obj, QObject):
+                    count += 1
+            except ReferenceError:
+                pass
+        logger.debug("number of QObjects in garbage ")
+        #print all active widgets every 5 minutes
+        if self.debug_count % 30 == 0:
+            for w in QApplication.allWidgets():
+                logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w)
+            
 class localOnlyFilter(logging.Filter):
     names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
     def filter(self, record):
