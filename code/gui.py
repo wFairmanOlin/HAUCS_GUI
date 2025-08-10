@@ -424,7 +424,7 @@ class DOApp(QWidget):
     def on_status_timer(self):
         msg = ""
         if self.status_q.qsize() > 0:
-            if self.status_q.qize() > 1:
+            if self.status_q.qsize() > 1:
                 self.status_timer.setInterval(1000)
             else:
                 self.status_timer.setInterval(5000)

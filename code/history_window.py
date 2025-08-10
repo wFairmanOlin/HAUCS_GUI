@@ -48,7 +48,7 @@ class HistoryLogWindow(QWidget):
                 background-color: #dddddd;
             }
             QSrcollBar::vertical {
-                width: 20px;
+                width: 40px;
             }
         """
         )

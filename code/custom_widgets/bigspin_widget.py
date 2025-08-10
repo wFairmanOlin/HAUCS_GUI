@@ -42,17 +42,13 @@ class BigSpinBox(QWidget):
             btn.setStyleSheet("""
                 QPushButton {
                     background-color: #cccccc;
-                    font-size: 32px;
+                    font-size: 40px;
                     border-radius: 6px;
-                    color: #33ff33
-                }
-                QPushButton:hover {
-                    background-color: #99e699;
-                    color: #33ff33
+                    color: black;
                 }
                 QPushButton:pressed {
                     background-color: #55cc55;
-                    color: #33ff33
+                    color: black;
                 }
             """)
 
