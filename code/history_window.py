@@ -37,24 +37,16 @@ class HistoryLogWindow(QWidget):
         )
         self.table.verticalHeader().setVisible(False)
         self.setStyleSheet("background-color: black; color: white;")
-        self.table.setStyleSheet(
-            """
+        self.table.setStyleSheet("""
             QTableWidget {
                 font-size: 36px;
-                background-color: black;
-                color: white;
             }
-        """
-        )
-        self.table.horizontalHeader().setStyleSheet(
-            """
-                            
             QHeaderView::section {
                 font-size: 36px;
-                color: white;
-                background-color: black;
-            }"""
-        )
+                color: black;
+                background-color: #dddddd;
+            }
+        """)
 
         layout = QVBoxLayout()
         layout.addWidget(self.table)
