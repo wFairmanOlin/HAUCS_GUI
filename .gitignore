@@ -14,6 +14,7 @@ code/sensor.json
 
 #setting files
 calibration.csv
+code/bno055/offset_data.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
