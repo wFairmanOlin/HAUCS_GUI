@@ -54,8 +54,9 @@ class DOApp(QWidget):
         if ENABLE_DEBUG:
             self.debug_count = 0
             self.debug_timer = QTimer()
-            self.debug_timer.connect(self.on_debug_timer)
+            self.debug_timer.timeout.connect(self.on_debug_timer)
             self.debug_timer.setInterval(10000)
+            self.debug_timer.start()
     
         #status message queue
         self.status_q = queue.Queue()
@@ -678,6 +679,7 @@ class DOApp(QWidget):
         if self.debug_count % 30 == 0:
             for w in QApplication.allWidgets():
                 logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w)
+        self.debug_timer.start()
             
 class localOnlyFilter(logging.Filter):
     names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
