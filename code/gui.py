@@ -32,6 +32,7 @@ import argparse
 import sensor
 import truck_sensor
 from gps_sensor import degToCompass
+import gc
 
 import faulthandler
 faulthandler.enable()
@@ -429,6 +430,17 @@ class DOApp(QWidget):
 
     def on_status_timer(self):
         msg = ""
+        # code to test gc garbage
+        """Return the number of live QPixmap objects."""
+        count = 0
+        for obj in gc.get_objects():
+            try:
+                if isinstance(obj, QPixmap):
+                    count += 1
+            except ReferenceError:
+                pass
+        print(f"garbage collector of QPixmap {count}")
+
         if self.status_q.qsize() > 0:
             if self.status_q.qsize() > 1:
                 self.status_timer.setInterval(1000)
@@ -438,7 +450,7 @@ class DOApp(QWidget):
                 msg = self.status_q.get_nowait()
             except:
                 pass
-        
+                
             if isinstance(msg, dict):
                 txt = msg.get('text', 'status error')
                 txt = txt[:100] # limit to first 100 characters
