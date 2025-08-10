@@ -428,7 +428,6 @@ class DOApp(QWidget):
             self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
 
     def on_status_timer(self):
-        print(vars(self))
         msg = ""
         if self.status_q.qsize() > 0:
             if self.status_q.qsize() > 1:
@@ -490,8 +489,6 @@ class DOApp(QWidget):
         self.result_window.set_do_temp_pressure(sample_stop_time=30)
 
     def on_result_window_closed(self, result_data):
-        # print("Result window closed. Data received:", result_data)
-        # self.result_window = None
         self.thread.update_database(result_data)
         
 
@@ -538,7 +535,6 @@ class DOApp(QWidget):
 
     def ysi_calibration_complete(self, data, save):
         logger.debug(f"setting page closed save? {save} \n{data}")
-        self.ysi_window = None
         self.thread.stop_ysi_calibration()
         if save:
             self.calibration['ysi_zero_scale'] = data['zero']
