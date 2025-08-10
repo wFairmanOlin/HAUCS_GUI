@@ -674,7 +674,7 @@ class DOApp(QWidget):
                     count += 1
             except ReferenceError:
                 pass
-        logger.debug("number of QObjects in garbage ")
+        logger.debug("number of QObjects in garbage %s", count)
         #print all active widgets every 5 minutes
         if self.debug_count % 30 == 0:
             for w in QApplication.allWidgets():
