@@ -112,7 +112,7 @@ class DOApp(QWidget):
         self.counter_time = 0
         self.timer = QTimer()
         self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.update_counter)
+        self.timer.timeout.connect(self.on_counter)
         # self.timer.start()
 
     def setup_thread(self):
@@ -428,6 +428,7 @@ class DOApp(QWidget):
             self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
 
     def on_status_timer(self):
+        print(vars(self))
         msg = ""
         if self.status_q.qsize() > 0:
             if self.status_q.qsize() > 1:
@@ -472,13 +473,12 @@ class DOApp(QWidget):
             self.on_status_timer()
  
 
-    def update_counter(self):
+    def on_counter(self):
         self.counter_time += 1
         # close result if open
         if hasattr(self, 'result_window') and self.result_window is not None:
             if self.result_window.isVisible():
                 self.result_window.close()
-            self.result_window = None
         
         if self.counter_time == 30: # TODO: this should be exposed in settings.csv
             self.send_status('ready to pick up')

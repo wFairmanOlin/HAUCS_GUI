@@ -46,6 +46,7 @@ class YsiCalibrationWindow(QWidget):
     
     def __init__(self, ysi_raw_data=None):
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.save = False #sets whether or not calibration is saved on close()
         # self.setFocusPolicy(Qt.ClickFocus)
         if ysi_raw_data:
