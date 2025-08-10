@@ -55,6 +55,7 @@ class DOApp(QWidget):
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.on_status_timer)
         self.status_timer.setInterval(5000)
+        self.status = None # create status in case send_status called too soon
         
         #### LOGGING ####
         # formatter for all handlers
@@ -441,8 +442,9 @@ class DOApp(QWidget):
                 else:
                     font = self.status_font
                 txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
-                self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
-                self.status.setText(txt)
+                if self.status:
+                    self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
+                    self.status.setText(txt)
                 self.status_timer.start()
         # display nothing
         else:
