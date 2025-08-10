@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (
     QDialog, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QGridLayout, QApplication
 )
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQT5.QtGui import QCursor
 from custom_widgets.bigspin_widget import BigSpinBox
 import sys
 
@@ -70,6 +71,7 @@ class SettingDialog(QWidget):
         layout.addLayout(bottom_buttons)
 
         self.setLayout(layout)
+        self.setCursor(QCursor(Qt.BlankCursor))
         self.showFullScreen()
 
     def on_save(self):

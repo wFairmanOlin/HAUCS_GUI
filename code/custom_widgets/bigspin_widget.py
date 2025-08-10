@@ -42,7 +42,7 @@ class BigSpinBox(QWidget):
             btn.setStyleSheet("""
                 QPushButton {
                     background-color: #cccccc;
-                    font-size: 40px;
+                    font-size: 20px;
                     border-radius: 6px;
                     color: black;
                     text-align: center;

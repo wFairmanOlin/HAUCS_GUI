@@ -48,7 +48,7 @@ class HistoryLogWindow(QWidget):
                 background-color: #dddddd;
             }
             QScrollBar::vertical {
-                width: 30px;
+                width: 40px;
             }
         """
         )

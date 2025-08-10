@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton,
     QCheckBox, QGridLayout, QSizePolicy, QDialog
 )
-from PyQt5.QtGui import QImage, QPixmap, Qcursor
+from PyQt5.QtGui import QImage, QPixmap, QCursor
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QInputDialog
