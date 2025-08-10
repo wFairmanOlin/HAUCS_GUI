@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton,
     QCheckBox, QGridLayout, QSizePolicy, QDialog
 )
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, Qcursor
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QInputDialog
@@ -138,6 +138,7 @@ class YsiCalibrationWindow(QWidget):
         layout_main.addLayout(button_layout)
         
         self.setLayout(layout_main)
+        self.setCursor(QCursor(Qt.BlankCursor))
 
     def on_raw_data(self, val, *args):
         zero_btn = self.zero_btn.isChecked()

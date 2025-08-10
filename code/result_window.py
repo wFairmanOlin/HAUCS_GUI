@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QCheckBox, QGridLayout, QSizePolicy, QDialog
 )
 
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QCursor
 from PyQt5.QtCore import Qt, QTimer, QSize
 import os
 from PyQt5.QtCore import pyqtSignal
@@ -54,6 +54,7 @@ class ResultWindow(QWidget):
         self.setWindowTitle("Result Summary")
         self.setup_ui(self.image_path)
         self.setup_timer()
+        self.setCursor(QCursor(Qt.BlankCursor))
         self.showFullScreen()
 
 

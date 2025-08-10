@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPainter, QColor, QBrush
+from PyQt5.QtGui import QPainter, QColor, QBrush, QCursor
 from PyQt5.QtCore import pyqtSignal
 
 class ToggleSwitch(QWidget):
@@ -12,6 +12,7 @@ class ToggleSwitch(QWidget):
         self._checked = checked
         self._thumb_pos = 30 if checked else 2
         self.setCursor(Qt.PointingHandCursor)
+        self.setCursor(QCursor(Qt.BlankCursor))
 
     def paintEvent(self, event):
         painter = QPainter(self)

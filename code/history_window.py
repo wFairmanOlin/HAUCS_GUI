@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QMutex, QMutexLocker
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QCursor
 from PyQt5.QtWidgets import (
     QWidget,
     QLabel,
@@ -47,8 +47,8 @@ class HistoryLogWindow(QWidget):
                 color: black;
                 background-color: #dddddd;
             }
-            QSrcollBar::vertical {
-                width: 40px;
+            QScrollBar::vertical {
+                width: 30px;
             }
         """
         )
@@ -87,6 +87,7 @@ class HistoryLogWindow(QWidget):
             current_width = self.table.columnWidth(col)
             self.table.setColumnWidth(col, current_width + 30)
         self.table.verticalHeader().setDefaultSectionSize(60)
+        self.setCursor(QCursor(Qt.BlankCursor))
         self.showFullScreen()
 
     def get_target_files(self, foldername):

@@ -32,7 +32,7 @@ class SettingDialog(QWidget):
         grid = QGridLayout()
         grid.setHorizontalSpacing(40)
         grid.setVerticalSpacing(25)
-        grid.setContentMargins(10,0,0,0)
+        grid.setContentsMargins(10,0,0,0)
 
         grid.addWidget(label1, 0, 0, alignment=Qt.AlignLeft)
         grid.addWidget(label2, 0, 1, alignment=Qt.AlignLeft)

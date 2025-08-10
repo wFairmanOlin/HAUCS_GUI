@@ -45,6 +45,7 @@ class BigSpinBox(QWidget):
                     font-size: 40px;
                     border-radius: 6px;
                     color: black;
+                    text-align: center;
                 }
                 QPushButton:pressed {
                     background-color: #55cc55;
