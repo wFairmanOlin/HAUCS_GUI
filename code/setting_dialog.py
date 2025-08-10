@@ -11,6 +11,7 @@ class SettingDialog(QWidget):
     def __init__(self, settings):
         self.save = False # flag to save settings on self.close
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Setting")
         self.setStyleSheet("background-color: black; color: white;")
         # self.setFocusPolicy(Qt.ClickFocus)

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QCheckBox, QMessageBox, QDialog
 )
-from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex, QMutexLocker, QPointer
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex, QMutexLocker
 from PyQt5.QtGui import QIcon, QCursor
 from custom_widgets.toggle_switch import ToggleSwitch
 import sys
@@ -485,7 +485,7 @@ class DOApp(QWidget):
         self.timer_val.setText(f"{self.counter_time}")
 
     def on_update_pond_data(self, data_dict):
-        self.result_window = QPointer(ResultWindow(data_dict, self.unit, self.min_do, self.good_do, int(self.settings['autoclose_sec'])))
+        self.result_window = ResultWindow(data_dict, self.unit, self.min_do, self.good_do, int(self.settings['autoclose_sec']))
         self.result_window.closed_data.connect(self.on_result_window_closed)
         self.result_window.set_do_temp_pressure(sample_stop_time=30)
 
@@ -528,12 +528,12 @@ class DOApp(QWidget):
             pass
     
     def on_history_log_click(self):
-        self.history_window = QPointer(HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex))
+        self.history_window = HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
 
     def on_calibrate_ysi_click(self):
         logger.debug('starting ysi calibration')
         self.thread.start_ysi_calibration(5)
-        self.ysi_window = QPointer(YsiCalibrationWindow(self.thread.ysi_data))
+        self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
         self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
     def ysi_calibration_complete(self, data, save):
@@ -554,7 +554,7 @@ class DOApp(QWidget):
 
     def open_settings_dialog(self):
         logger.debug('opening settings page')
-        self.settings_window = QPointer(SettingDialog(self.settings))
+        self.settings_window = SettingDialog(self.settings)
         self.settings_window.setting_complete.connect(self.setting_complete)
 
     def setting_complete(self, data, save):
