@@ -166,7 +166,6 @@ class FirebaseWorker(QThread):
                             if not match_index.empty:
                                 df.loc[match_index, "upload status"] = True
                                 df.to_csv(file_path, index=False)
-                        self.database_mutex.unlock()
                         
                     except Exception as e:
                         logger.warning('failed to update csv')

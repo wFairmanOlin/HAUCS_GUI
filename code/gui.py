@@ -691,12 +691,14 @@ class DOApp(QWidget):
             logger.debug("num of  real open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
             current_fds = set(os.listdir(f"/proc/{self.pid}/fd"))
             if len(current_fds) != len(self.debug_prev_fds):
-                new_fds = current_fds - prev_fds
-                closed_fds = prev_fds - current_fds
+                new_fds = current_fds - self.debug_prev_fds
                 if new_fds:
-                    print("New FDs:", [os.readlink(f"/proc/{self.pid}/fd/{fd}") for fd in new_fds])
-                if closed_fds:
-                    print("Closed FDs:", closed_fds)
+                    for fd in new_fds:
+                        try:
+                            fd = os.readlink(f"/proc/{self.pid}/fd/{fd}")
+                            logger.debug("new fd: %s", fd)
+                        except:
+                            pass
                 self.debug_prev_fds = current_fds
 
         self.debug_timer.start()
