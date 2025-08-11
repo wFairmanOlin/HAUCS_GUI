@@ -52,7 +52,7 @@ class TruckSensor(QThread):
     fb_key="fb_key.json"
 
 
-    def __init__(self, calibration, settings, database_mutex, ble_mutex, sample_mutex, parent=None):
+    def __init__(self, calibration, settings, database_mutex, ble_mutex, parent=None):
         super().__init__(parent)
         # initialize mutexes
         self.ble_mutex = ble_mutex
