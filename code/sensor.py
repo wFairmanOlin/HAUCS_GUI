@@ -144,7 +144,7 @@ class I2CReader(QThread):
 
     def init_ysi_adc(self):
         try:
-            self.ysi_adc = ADS.ADS1015(self.i2c, gain=16)
+            self.ysi_adc = ADS.ADS1115(self.i2c, gain=16)
             self.ysi_chan = AnalogIn(self.ysi_adc, ADS.P0, ADS.P1)
             self.ysi_connected = True
         except Exception as e:
