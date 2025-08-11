@@ -53,6 +53,8 @@ class DOApp(QWidget):
 
         # DEBUGGER
         if ENABLE_DEBUG:
+            self.pid = os.getpid()
+            self.debug_prev_fds = set(os.listdir(f"/proc/{self.pid}/fd"))
             self.debug_count = 0
             self.debug_timer = QTimer()
             self.debug_timer.timeout.connect(self.on_debug_timer)
@@ -684,10 +686,18 @@ class DOApp(QWidget):
         
         # print open files
         if self.debug_count % 3:
-            pid = os.getpid()
-            p = psutil.Process(pid)
-            logger.debug("total num of file descriptors %s", len(os.listdir(f"/proc/{pid}/fd")))
+            p = psutil.Process(self.pid)
+            logger.debug("total num of file descriptors %s", len(os.listdir(f"/proc/{self.pid}/fd")))
             logger.debug("num of  real open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
+            current_fds = set(os.listdir(f"/proc/{self.pid}/fd"))
+            if len(current_fds) != len(self.debug_prev_fds):
+                new_fds = current_fds - prev_fds
+                closed_fds = prev_fds - current_fds
+                if new_fds:
+                    print("New FDs:", [os.readlink(f"/proc/{self.pid}/fd/{fd}") for fd in new_fds])
+                if closed_fds:
+                    print("Closed FDs:", closed_fds)
+                self.debug_prev_fds = current_fds
 
         self.debug_timer.start()
             
