@@ -37,6 +37,10 @@ def convert_raw_to_mgl(do, t, p=977, s=0):
 
     DO_mgl = do * DO_corrected
 
+    if (DO_mgl > 100) or (DO_mgl < 0):
+        logger.error("do conversion failed: do %s t %s p %s s %s do_mgl %s", do, t, p, s, DO_mgl)
+        return 0
+    
     return DO_mgl
 
 def convert_mgl_to_raw(do, t, p=977, s=0):
@@ -64,6 +68,10 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
     DO_corrected = DO_baseline * Fs * Fp
 
     DO_percent = do / DO_corrected
+
+    if (DO_mgl > 100) or (DO_mgl < 0):
+        logger.error("do conversion failed: do %s t %s p %s s %s do_percent %s", do, t, p, s, DO_percent)
+        return 0
 
     return DO_percent
 
