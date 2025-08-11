@@ -30,6 +30,9 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
     calibration_data = pyqtSignal(dict)
 
+    # mutex for sample size
+    sample_mutex = QMutex()
+
     _abort = False
     sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0, 'sample_hz':1}
     #TODO: sample hz should be pulled from settings
@@ -49,7 +52,7 @@ class TruckSensor(QThread):
     fb_key="fb_key.json"
 
 
-    def __init__(self, calibration, settings, database_mutex, ble_mutex, parent=None):
+    def __init__(self, calibration, settings, database_mutex, ble_mutex, sample_mutex, parent=None):
         super().__init__(parent)
         # initialize mutexes
         self.ble_mutex = ble_mutex
@@ -191,7 +194,7 @@ class TruckSensor(QThread):
         # Main Loop
         while not self._abort:
 
-            self.msleep(50)
+            self.msleep(100)
 
             # check if still connected
             if connected:
@@ -217,7 +220,7 @@ class TruckSensor(QThread):
                     # continue if still not connected
                     if not connected:
                         connection_count += 1
-                        self.msleep(150)
+                        self.msleep(100)
                         continue
                 # first reconnect
                 else:
@@ -225,10 +228,14 @@ class TruckSensor(QThread):
                     self.sync_ble_sdata()
             
             # RUNS WHEN SENSOR IS CONNECTED 
+            # prevent BLE from updating values until copied
+            with QMutexLocker(self.sample_mutex):
+                current_sample_size = self.ble.current_sample_size
+                prev_sample_size = self.ble.prev_sample_size
 
             self.send_scheduled_messages()
             # sensor is connected with no data
-            if self.ble.current_sample_size <= 0:
+            if current_sample_size <= 0:
                 # sensor reconncected with no data available
                 if self.underwater:
                     logger.warning('sensor reconnected with no data, try again')
@@ -236,9 +243,9 @@ class TruckSensor(QThread):
                 self.ysi_do_mgl_arr = []
                 continue # continue sampling
             # sensor has data
-            elif self.ble.current_sample_size > 0:
+            elif current_sample_size > 0:
                 # sensor is actively collecting data
-                if self.ble.prev_sample_size < self.ble.current_sample_size:
+                if prev_sample_size < current_sample_size:
                     # underwater, trigger any underwater events
                     if not self.underwater:
                         self.sensor_underwater.emit("True")
@@ -246,8 +253,8 @@ class TruckSensor(QThread):
                     continue # continue sampling
 
             # ignore sample sizes less than 4, reset ysi mgl array
-            if self.ble.current_sample_size < 4:
-                logger.warning(f"sensor reconnected with {self.ble.current_sample_size} data points, try again")
+            if current_sample_size < 4:
+                logger.warning(f"sensor reconnected with {current_sample_size} data points, try again")
                 if self.underwater:
                     self.sensor_underwater.emit("False")
                 self.ble.set_sample_reset()

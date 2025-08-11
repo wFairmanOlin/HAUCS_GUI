@@ -41,10 +41,11 @@ class BluetoothReader(QObject):
         's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
     }
 
-    def __init__(self, ble_mutex):
+    def __init__(self, ble_mutex, sample_mutex):
         super().__init__()
         self.transmission_timeouts = 0
         self.ble_mutex = ble_mutex
+        self.sample_mutex = sample_mutex
         self.ble = BLERadio()
         self._abort = False
 
@@ -180,12 +181,16 @@ class BluetoothReader(QObject):
                 self.sdata['sample_hz'] = float(value[0])
 
             elif key == "dsize":
-                self.prev_sample_size = self.current_sample_size
-                self.current_sample_size = int(value[0])         
+                # prevent truck thread from accessing data until both values are updated
+                with QMutexLocker(self.sample_mutex):
+                    self.prev_sample_size = self.current_sample_size
+                    self.current_sample_size = int(value[0])         
 
             elif key == "dstart":
-                self.prev_sample_size = self.current_sample_size
-                self.current_sample_size = int(value[0].strip())
+                # prevent truck thread from accessing data until both values are updated
+                with QMutexLocker(self.sample_mutex):
+                    self.prev_sample_size = self.current_sample_size
+                    self.current_sample_size = int(value[0].strip())
                 self.data_counter = 0
                 self.sdata["do_vals"] = []
                 self.sdata["temp_vals"] = []
