@@ -58,10 +58,16 @@ class Compass:
 
     def get_calibration(self):
         try:
+            mag = list(self.bno055.offsets_magnetometer)
+            mag = [i if i != None else 0 for i in mag]
+            gyr = list(self.bno055.offsets_gyroscope)
+            gyr = [i if i != None else 0 for i in gyr]
+            acc = list(self.bno055.offsets_accelerometer)
+            gcc = [i if i != None else 0 for i in acc]
             return {
-                "bno055_magnetometer": list(self.bno055.offsets_magnetometer),
-                "bno055_gyroscope": list(self.bno055.offsets_gyroscope),
-                "bno055_accelerometer": list(self.bno055.offsets_accelerometer),
+                "bno055_magnetometer": mag,
+                "bno055_gyroscope": gyr,
+                "bno055_accelerometer": acc,
             }
         except Exception as error:
             logger.error("failed to retrieve bno055 calibration: %s", error)
