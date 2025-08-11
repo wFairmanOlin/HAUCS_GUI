@@ -61,17 +61,17 @@ class BluetoothReader(QObject):
                         self.sdata['name'] = adv.complete_name[9:]
                         self.sdata['connection'] = True
                         logger.debug(f"successfully connected to {adv}")
-                        connection_success = True  
+                        connection_success = True
+                        break
         except Exception as e:
             logger.error('failed BLE scan %s', e)
             connection_success = False
-        finally:
-            self.sdata['connection'] = connection_success
-            try:
-                self.ble.stop_scan()
-            except Exception as e:
-                logger.error('failed to stop BLE scan %s', e)
-            return connection_success
+        self.sdata['connection'] = connection_success
+        try:
+            self.ble.stop_scan()
+        except Exception as e:
+            logger.error('failed to stop BLE scan %s', e)
+        return connection_success
 
     def check_connection_status(self):
         connected = False

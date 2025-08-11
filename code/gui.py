@@ -684,8 +684,10 @@ class DOApp(QWidget):
         
         # print open files
         if self.debug_count % 3:
-            p = psutil.Process(os.getpid())
-            logger.debug("num of open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
+            pid = os.getpid()
+            p = psutil.Process(pid)
+            logger.debug("total num of file descriptors %s", len(os.listdir(f"/proc/{pid}/fd")))
+            logger.debug("num of  real open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
 
         self.debug_timer.start()
             
