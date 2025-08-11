@@ -116,7 +116,7 @@ class TruckSensor(QThread):
 
 
     def init_ble(self):
-        self.ble = BluetoothReader(self.ble_mutex)
+        self.ble = BluetoothReader(self.ble_mutex, self.sample_mutex)
         if self.ble.connect():
             self.sync_ble_sdata()
             self.ble.set_lights('navigation')
