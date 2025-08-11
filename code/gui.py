@@ -488,8 +488,10 @@ class DOApp(QWidget):
         self.counter_time += 1
         # close result if open
         if hasattr(self, 'result_window') and self.result_window is not None:
-            self.result_window.close()
-        
+            try:
+                self.result_window.close()
+            except Exception as e:
+                logger.info("result window already closed %s", e)
         if self.counter_time == 30: # TODO: this should be exposed in settings.csv
             self.send_status('ready to pick up')
 

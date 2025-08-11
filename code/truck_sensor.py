@@ -101,7 +101,7 @@ class TruckSensor(QThread):
         self.sensors.message_priority = sensor.Priority.low
     
     def set_ysi_calibration(self, zero, full_scale):
-        self.sensors.set_calibration(zero, full_scale)
+        self.sensors.set_ysi_calibration(zero, full_scale)
 
     def underwater_status_change(self, value):
         if value == "True":

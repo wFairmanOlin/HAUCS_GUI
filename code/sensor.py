@@ -65,16 +65,16 @@ class I2CReader(QThread):
             calibration.get("ysi_full_scale", self.full_scale),
         )
         # I2C Bus
-        i2c = board.I2C()
+        self.i2c = board.I2C()
         # initialize YSI (ADS1x15) Sensor
         self.init_ysi_adc()
         logger.debug(
             f"initializing ysi adc, sensor {'' if self.ysi_connected else 'not'} found"
         )
         # initialize GPS sensor
-        self.gps = GPSSensor(i2c, timeout=2)
+        self.gps = GPSSensor(self.i2c, timeout=2)
         # initialize BNO055
-        self.compass = Compass(i2c, calibration)
+        self.compass = Compass(self.i2c, calibration)
         # initialize message schedule
         self.scheduled_msgs = {}
         self.scheduled_msgs["gps"] = {
@@ -143,7 +143,7 @@ class I2CReader(QThread):
 
     def init_ysi_adc(self):
         try:
-            self.ysi_adc = ADS1x15.ADS1115(1)
+            # self.ysi_adc = ADS1x15.ADS1115(1)
             self.ysi_adc.setGain(16)
             self.ysi_connected = True
         except:
