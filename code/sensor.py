@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import shutil
-import ADS1x15
 from gpiozero.pins.pigpio import PiGPIOFactory
 import csv
 import time
@@ -12,6 +11,8 @@ from converter import *
 from gps_sensor import GPSSensor
 import board
 import adafruit_bno055
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
 import logging
 from enum import Enum
 from functools import total_ordering
@@ -143,15 +144,15 @@ class I2CReader(QThread):
 
     def init_ysi_adc(self):
         try:
-            # self.ysi_adc = ADS1x15.ADS1115(1)
-            self.ysi_adc.setGain(16)
+            self.ysi_adc = ADS.ADS1015(self.i2c, gain=16)
+            self.ysi_chan = AnalogIn(self.ysi_adc, ADS.P0, ADS.P1)
             self.ysi_connected = True
         except:
             self.ysi_connected = False
 
     def measure_ysi_adc(self):
         try:
-            val = self.ysi_adc.readADC_Differential_0_1()
+            val = self.ysi_chan.value
         except:
             val = 0
             self.ysi_connected = False

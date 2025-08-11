@@ -1,13 +1,13 @@
 pandas
 numpy
 atcom
-ADS1x15-ADC
 scipy
 firebase-admin
 adafruit-circuitpython-ble
 pyserial
 adafruit-circuitpython-gps
 adafruit-circuitpython-bno055
+adafruit-circuitpython-ads1x15
 shapely
 gpiozero
 pigpio
