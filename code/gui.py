@@ -575,8 +575,8 @@ class DOApp(QWidget):
 
     def save_local_csv(self, data_dict, filename):
         with QMutexLocker(self.csv_mutex):
-            try:
-                with open(filename, 'w', newline='') as csvfile:
+            with open(filename, 'w', newline='') as csvfile:
+                try:
                     writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
                     writer.writeheader()
                     for key, value in data_dict.items():
@@ -585,9 +585,10 @@ class DOApp(QWidget):
                         else:
                             output = str(value)
                         writer.writerow({"param": key, "value": output})
-                logger.info(f"saved to {filename}")
-            except Exception as e:
-                logger.warning(f"Failed to save: {e}")
+                    logger.info(f"saved to {filename}")
+                except Exception as e:
+                    logger.warning("failed to save: %s", e)
+                    logger.debug("tried to save: %s", data_dict)
 
     def load_local_csv(self, filename):
         '''

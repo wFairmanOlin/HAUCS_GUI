@@ -91,7 +91,7 @@ class Compass:
                 self.initialized = False
 
         if heading != None:
-            self.offset_heading = heading + self.offset
+            self.offset_heading = (heading + self.offset) % 360
 
     def check_and_calibrate_heading(self, speed_kmh, gps_hdg):
         # assume driving over 8 yields
