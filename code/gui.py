@@ -33,6 +33,7 @@ import sensor
 import truck_sensor
 from gps_sensor import degToCompass
 import gc
+import psutil
 
 import faulthandler
 faulthandler.enable()
@@ -676,10 +677,16 @@ class DOApp(QWidget):
             except ReferenceError:
                 pass
         logger.debug("number of QObjects in garbage %s", count)
-        #print all active widgets every 5 minutes
-        if self.debug_count % 30 == 0:
-            for w in QApplication.allWidgets():
-                logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w)
+        # print all active widgets every 5 minutes
+        # if self.debug_count % 30 == 0:
+        #     for w in QApplication.allWidgets():
+        #         logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w) 
+        
+        # print open files
+        if self.debug_count % 3:
+            p = psutil.Process(os.getpid())
+            logger.debug("num of open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
+
         self.debug_timer.start()
             
 class localOnlyFilter(logging.Filter):

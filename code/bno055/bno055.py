@@ -63,7 +63,7 @@ class Compass:
             gyr = list(self.bno055.offsets_gyroscope)
             gyr = [i if i != None else 0 for i in gyr]
             acc = list(self.bno055.offsets_accelerometer)
-            gcc = [i if i != None else 0 for i in acc]
+            acc = [i if i != None else 0 for i in acc]
             return {
                 "bno055_magnetometer": mag,
                 "bno055_gyroscope": gyr,
