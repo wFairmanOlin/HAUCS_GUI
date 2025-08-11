@@ -21,8 +21,10 @@ def convert_raw_to_mgl(do, t, p=977, s=0):
     P = p * 9.869233e-4 #pressure in atm
 
     #Handle Arrays
+    is_array = False
     if isinstance(do, list):
         do = np.array(do)
+        is_array = True
 
 
     DO_baseline = math.exp(-139.34411 + 1.575701e5/T - 6.642308e7/math.pow(T, 2) + 1.2438e10/math.pow(T, 3) - 8.621949e11/math.pow(T, 4))
@@ -37,9 +39,17 @@ def convert_raw_to_mgl(do, t, p=977, s=0):
 
     DO_mgl = do * DO_corrected
 
-    if (DO_mgl > 100) or (DO_mgl < 0):
-        logger.error("do conversion failed: do %s t %s p %s s %s do_mgl %s", do, t, p, s, DO_mgl)
-        return 0
+    # handle check for array
+    if is_array:
+        for i, val in enumerate(DO_mgl):
+            if (val > 100) or (val < 0):
+                logger.error("do conversion failed: do %s t %s p %s s %s do_mgl %s", do[i], t, p, s, val)
+                DO_mgl[i] = 0
+    # handle check for singular value
+    else:
+        if (DO_mgl > 100) or (DO_mgl < 0):
+            logger.error("do conversion failed: do %s t %s p %s s %s do_mgl %s", do, t, p, s, DO_mgl)
+            return 0
     
     return DO_mgl
 
@@ -54,8 +64,10 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
     P = p * 9.869233e-4 #pressure in atm
 
     #Handle Arrays
+    is_array = False
     if isinstance(do, list):
         do = np.array(do)
+        is_array = True
 
     DO_baseline = math.exp(-139.34411 + 1.575701e5/T - 6.642308e7/math.pow(T, 2) + 1.2438e10/math.pow(T, 3) - 8.621949e11/math.pow(T, 4))
     # SALINITY CORRECTION
@@ -69,9 +81,17 @@ def convert_mgl_to_raw(do, t, p=977, s=0):
 
     DO_percent = do / DO_corrected
 
-    if (DO_mgl > 100) or (DO_mgl < 0):
-        logger.error("do conversion failed: do %s t %s p %s s %s do_percent %s", do, t, p, s, DO_percent)
-        return 0
+    # handle check for array
+    if is_array:
+        for i, val in enumerate(DO_percent):
+            if (val > 100) or (val < 0):
+                logger.error("do conversion failed: do %s t %s p %s s %s do_ps %s", do[i], t, p, s, val)
+                DO_percent[i] = 0
+    # handle check for singular value
+    else:
+        if (DO_percent > 100) or (DO_percent < 0):
+            logger.error("do conversion failed: do %s t %s p %s s %s do_ps %s", do, t, p, s, DO_percent)
+            return 0
 
     return DO_percent
 
