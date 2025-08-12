@@ -222,7 +222,7 @@ class DOApp(QWidget):
         self.timer_val = QLabel('0')
         self.status   = QLabel('')
         self.status.setWordWrap(True) #allow multiple lines
-        self.status.setFixedWidth(500)
+        self.status.setFixedWidth(550)
 
         self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
         self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
@@ -478,7 +478,9 @@ class DOApp(QWidget):
                 elif len(txt) > 40:
                     font = int(self.status_font * 0.45)
                 elif len(txt) > 60:
-                    font = int(self.status_font * 0.25)
+                    font = int(self.status_font * 0.2)
+                elif len(txt) > 80:
+                    font = int(self.status_font * 0.15)
                 else:
                     font = self.status_font
                 txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
