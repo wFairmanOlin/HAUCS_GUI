@@ -247,8 +247,8 @@ class TruckSensor(QThread):
                         logger.info('sensor is collecting data while connected')
                     continue # continue sampling
 
-            # ignore sample sizes less than 4, reset ysi mgl array
-            if current_sample_size < 4:
+            # ignore sample sizes less than 10, reset ysi mgl array
+            if current_sample_size < 10:
                 logger.warning(f"sensor reconnected with {current_sample_size} data points, try again")
                 if self.underwater:
                     self.sensor_underwater.emit("False")

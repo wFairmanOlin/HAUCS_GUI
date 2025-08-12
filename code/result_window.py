@@ -195,13 +195,12 @@ class ResultWindow(QWidget):
         # TODO: TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
         self.img_label.clear()
         self.img_label.setStyleSheet("""
-            background-color: #444444;
+            background-color: black;
             color: white;
             font-size: 32px;
             font-weight: bold;
-            border: 1px solid white;
         """)
-        self.img_label.setText("Pond DO Prediction Missing\nIn Development")
+        self.img_label.setText("")
         self.img_label.setAlignment(Qt.AlignCenter)
         # END TODO: END OF TEMPORARY PLACEHOLDER FOR PREDICTION GRAPH
 
@@ -407,8 +406,8 @@ class ResultWindow(QWidget):
             pixmap = QPixmap.fromImage(img)
             scaled = pixmap.scaled(self.img_label2.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.img_label2.setPixmap(scaled)
-        except Exception as error:
-            logger.error(f"curve-fitting plot failed\n{self.data}\n{error}")
+        except Exception as e:
+            logger.error("curve-fitting plot failed %s \n %s", e, self.data)
             self.img_label2.setText("ERROR IN PLOT GENERATION")
             self.img_label2.setAlignment(Qt.AlignCenter)
 

@@ -470,19 +470,16 @@ class DOApp(QWidget):
                 
             if isinstance(msg, dict):
                 txt = msg.get('text', 'status error')
-                txt = txt[:100] # limit to first 100 characters
+                txt = txt[:100] # limit to first 50 characters
                 color = msg.get('color', 'white')
                 #shrink font size as message size scales
-                if len(txt) > 20: 
-                    font = int(self.status_font * 0.75)
+                font = self.status_font
+                if len(txt) > 60:
+                    font = int(font * 0.25)
                 elif len(txt) > 40:
-                    font = int(self.status_font * 0.45)
-                elif len(txt) > 60:
-                    font = int(self.status_font * 0.2)
-                elif len(txt) > 80:
-                    font = int(self.status_font * 0.1)
-                else:
-                    font = self.status_font
+                    font = int(font * 0.5)
+                elif len(txt) > 20:
+                    font = int(font * 0.75)
                 txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
                 if self.status:
                     self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
