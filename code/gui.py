@@ -480,7 +480,7 @@ class DOApp(QWidget):
                 elif len(txt) > 60:
                     font = int(self.status_font * 0.2)
                 elif len(txt) > 80:
-                    font = int(self.status_font * 0.15)
+                    font = int(self.status_font * 0.1)
                 else:
                     font = self.status_font
                 txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
