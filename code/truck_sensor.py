@@ -227,7 +227,7 @@ class TruckSensor(QThread):
             # RUNS WHEN SENSOR IS CONNECTED 
             current_sample_size = self.ble.current_sample_size
             prev_sample_size = self.ble.prev_sample_size
-
+            logger.debug("current %s previous %s", current_sample_size, prev_sample_size)
             self.send_scheduled_messages()
             # sensor is connected with no data
             if current_sample_size <= 0:

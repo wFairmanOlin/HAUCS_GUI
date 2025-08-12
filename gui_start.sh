@@ -33,6 +33,6 @@ echo "finished script"
 if [[ "$1" == "-r" ]]
 then
     echo "restarting"
-    sleep 30
+    sleep 60
     reboot
 fi
