@@ -539,27 +539,29 @@ class DOApp(QWidget):
 
     def on_calibrate_do_click(self):
         msg = "1) Ensure sensor is not underwater\n2) Press Yes to start calibration\n\nAre you sure you want to\nCALIBRATE?"
-        dialog = CustomYesNoDialog(msg, self.last_calibration, self)
-        if dialog.exec_() == QDialog.Accepted:
-            success = self.thread.calibrate_DO()
-            if success:
-                now = datetime.now()
-                formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
-                self.last_calibration = formatted_time
-                self.calibration['last_calibration'] = self.last_calibration
-                self.save_local_csv(self.calibration, "calibration.csv")
-        else:
-            # user clicked no
-            pass
+        if not self.thread.underwater:
+            dialog = CustomYesNoDialog(msg, self.last_calibration, self)
+            if dialog.exec_() == QDialog.Accepted:
+                success = self.thread.calibrate_DO()
+                if success:
+                    now = datetime.now()
+                    formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
+                    self.last_calibration = formatted_time
+                    self.calibration['last_calibration'] = self.last_calibration
+                    self.save_local_csv(self.calibration, "calibration.csv")
+            else:
+                # user clicked no
+                pass
     
     def on_history_log_click(self):
         self.history_window = HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
 
     def on_calibrate_ysi_click(self):
-        logger.debug('starting ysi calibration')
-        self.thread.start_ysi_calibration(5)
-        self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
-        self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
+        if not self.thread.underwater:
+            logger.debug('starting ysi calibration')
+            self.thread.start_ysi_calibration(5)
+            self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
+            self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
 
     def ysi_calibration_complete(self, data, save):
         logger.debug(f"setting page closed save? {save} \n{data}")
@@ -747,7 +749,7 @@ class customLogHandler(logging.Handler, QObject):
                 color = "orange"
             else:
                 color = "white"
-            self.log_message.emit(record.msg, color)
+            self.log_message.emit(record.message, color)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="gui")
