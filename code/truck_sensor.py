@@ -227,7 +227,6 @@ class TruckSensor(QThread):
             # RUNS WHEN SENSOR IS CONNECTED 
             current_sample_size = self.ble.current_sample_size
             prev_sample_size = self.ble.prev_sample_size
-            logger.debug("current %s previous %s", current_sample_size, prev_sample_size)
             self.send_scheduled_messages()
             # sensor is connected with no data
             if current_sample_size <= 0:
@@ -314,6 +313,12 @@ class TruckSensor(QThread):
         do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
         
         # YSI DO
+        # ensure ysi_do_mgl_arr has size greater than 0 (occurred in field)
+        # reference branch "sensor_reconnect_bug"
+        if len(self.ysi_do_mgl_arr) == 0:
+            self.ysi_do_mgl_arr = [0]
+            logger.error("ysi_do_mgl_arr cleared prematurely, ysi data lost")
+            
         p, f = calculate_do_fit(self.ysi_do_mgl_arr,record_time, self.sdata['sample_hz'])
         do_guess = generate_do(record_time, p, f)
         # only accept values from curve fit if in reasonable range

@@ -180,8 +180,6 @@ class BluetoothReader(QObject):
                 self.current_sample_size = int(value[0])         
 
             elif key == "dstart":
-                # self.prev_sample_size = self.current_sample_size
-                # self.current_sample_size = int(value[0].strip())
                 self.data_counter = 0
                 self.sdata["do_vals"] = []
                 self.sdata["temp_vals"] = []

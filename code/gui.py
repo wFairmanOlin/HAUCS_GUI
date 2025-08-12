@@ -588,6 +588,11 @@ class DOApp(QWidget):
                 self.result_window.close()
             except Exception as e:
                 logger.info("result window already closed %s", e)
+                try:
+                    self.result_window = None
+                except Exception as e2:
+                    logger.info("failed to delete attribute result window %s", e2)
+                    
         if self.counter_time == 30:  # TODO: this should be exposed in settings.csv
             self.send_status("ready to pick up")
 
