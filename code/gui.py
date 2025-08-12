@@ -370,13 +370,13 @@ class DOApp(QWidget):
                 # cap max value displayed to 999%
                 display_val = 100 * data_dict['do']
                 display_val = 999 if display_val >= 1000 else display_val
-                self.hboi_val.setText(f"{display_val:0>3.0f}")
+                self.hboi_val.setText(f"{display_val:3.0f}")
                 self.hboi_unit.setText('%')
             else:
                 # cap max value displayed to 99.9 mg/l
                 display_val = data_dict['do_mgl']
                 display_val = 99.9 if display_val >= 100 else display_val
-                self.hboi_val.setText(f"{display_val:0>2.1f}")
+                self.hboi_val.setText(f"{display_val:4.1f}")
                 self.hboi_unit.setText('mg/l')
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
@@ -439,13 +439,13 @@ class DOApp(QWidget):
                     # cap max value displayed to 999%
                     display_val = 100 * do_ps
                     display_val = 999 if display_val >= 1000 else display_val
-                    self.ysi_val.setText(f"{display_val:0>3.0f}")
+                    self.ysi_val.setText(f"{display_val:3.0f}")
                 self.ysi_unit.setText('%')
             else:
                 # cap max value displayed to 99.9 mg/l
                 display_val = do_mgl
                 display_val = 99.9 if display_val >= 100 else display_val
-                self.ysi_val.setText(f"{display_val:0>2.1f}")
+                self.ysi_val.setText(f"{display_val:4.1f}")
                 self.ysi_unit.setText('mg/l')
 
         # update ysi color
