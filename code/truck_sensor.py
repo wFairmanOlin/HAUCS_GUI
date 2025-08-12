@@ -308,14 +308,16 @@ class TruckSensor(QThread):
         do_arr = self.sdata['do_vals']
         p, f = calculate_do_fit(do_arr, record_time, self.sdata['sample_hz'])
         do_guess = generate_do(record_time, p, f)
-        do = do_guess if do_guess > 0 else do_arr[-1]
+        # only accept values from curve fit if in reasonable range
+        do = do_guess if (5 * max(do_arr) > do_guess > 0) else do_arr[-1]
         do_mgl_arr = convert_raw_to_mgl(do_arr, self.water_temp, self.air_pressure)
         do_mgl = convert_raw_to_mgl(do, self.water_temp, self.air_pressure)
         
         # YSI DO
         p, f = calculate_do_fit(self.ysi_do_mgl_arr,record_time, self.sdata['sample_hz'])
         do_guess = generate_do(record_time, p, f)
-        ysi_do_mgl = do_guess if do_guess > 0 else self.ysi_do_mgl_arr[-1]
+        # only accept values from curve fit if in reasonable range
+        ysi_do_mgl = do_guess if (5 * max(self.ysi_do_mgl_arr) > do_guess > 0) else self.ysi_do_mgl_arr[-1]
         ysi_do_arr = convert_mgl_to_raw(self.ysi_do_mgl_arr, self.water_temp, self.air_pressure)
         ysi_do = convert_mgl_to_raw(ysi_do_mgl, self.water_temp, self.air_pressure)
 

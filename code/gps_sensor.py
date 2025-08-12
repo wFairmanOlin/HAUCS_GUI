@@ -25,6 +25,7 @@ class GPSSensor:
     speed_kmh = 0
     last_valid_signal = time.time()
     valid_signal_timeout = 20 # seconds
+    valid_signal = False
 
 
 
@@ -43,6 +44,7 @@ class GPSSensor:
         '''
         self.parse_nmea()
         if time.time() - self.last_valid_signal > self.valid_signal_timeout:
+            self.valid_signal = False
             logger.warning("no gps signal")
             self.reset_gps_data()
         self.get_pond_id()
@@ -69,6 +71,7 @@ class GPSSensor:
         except:
             logger.info('gps update failed')
         if msgs_received >= 2: # considered valid if 2/3 messages are beign transmitted
+            self.valid_signal = True
             self.last_valid_signal = time.time()
             
     def reset_gps_data(self):

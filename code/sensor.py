@@ -98,7 +98,7 @@ class I2CReader(QThread):
         }
         self.scheduled_msgs["cal_save"] = {
             "callback": self.save_imu_calibration,
-            "period": 10, #TODO: 2 minutes
+            "period": 60, #TODO: 2 minutes
             "timer": time.monotonic(),
             "priority": Priority.low
         }
@@ -196,8 +196,12 @@ class I2CReader(QThread):
             data["hdg_type"] = "imu"
         # otherwise fallback to GPS headning
         else:
-            data["hdg"] = self.gps.heading
-            data["hdg_type"] = "gps"
+            if self.gps.valid_signal:
+                data["hdg"] = self.gps.heading
+                data["hdg_type"] = "gps"
+            else:
+                data["hdg"] = 0
+                data["hdg_type"] = "none"
 
         logger.debug(f"gps data {data}")
         self.gps_publisher.emit(data)

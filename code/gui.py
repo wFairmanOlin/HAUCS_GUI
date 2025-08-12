@@ -216,7 +216,7 @@ class DOApp(QWidget):
         timer_label = QLabel('TIMER')
         
 
-        self.pid_val   = QLabel('-')
+        self.pid_val   = QLabel('')
         self.ysi_val   = QLabel('0')
         self.hboi_val  = QLabel('0')
         self.timer_val = QLabel('0')
@@ -367,10 +367,16 @@ class DOApp(QWidget):
             self.pid_val.setText(str(data_dict['pid']))
         if 'do' in data_dict:
             if self.unit == "percent":
-                self.hboi_val.setText(f"{100 * data_dict['do']:.0f}")
+                # cap max value displayed to 999%
+                display_val = 100 * data_dict['do']
+                display_val = 999 if display_val >= 1000 else display_val
+                self.hboi_val.setText(f"{display_val:0>3.0f}")
                 self.hboi_unit.setText('%')
             else:
-                self.hboi_val.setText(f"{data_dict['do_mgl']:.1f}")
+                # cap max value displayed to 99.9 mg/l
+                display_val = data_dict['do_mgl']
+                display_val = 99.9 if display_val >= 100 else display_val
+                self.hboi_val.setText(f"{display_val:0>2.1f}")
                 self.hboi_unit.setText('mg/l')
             # update label color based on mgl value in setting.setting
             do_val = data_dict['do_mgl']
@@ -383,8 +389,13 @@ class DOApp(QWidget):
         if 'ysi_do' in data_dict:
             self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
         if 'hdg' in data_dict:
-            self.hdg_deg.setText(f"{data_dict['hdg']:03.0f}\N{DEGREE SIGN}")
-            self.hdg_crd.setText(degToCompass(data_dict['hdg']))
+            # handle case without valid IMU or GPS heading
+            if data_dict['hdg_type'] == "none":
+                self.hdg_deg.setText("")
+                self.hdg_crd.setText("")
+            else:
+                self.hdg_deg.setText(f"{data_dict['hdg']:03.0f}\N{DEGREE SIGN}")
+                self.hdg_crd.setText(degToCompass(data_dict['hdg']))
             self.nsat_val.setText(f"{data_dict['nsat']:02d}")
             self.lat_val.setText(f"{data_dict['lat']:.5f}")
             self.lng_val.setText(f"{data_dict['lng']:.5f}")
@@ -423,12 +434,18 @@ class DOApp(QWidget):
             if self.unit == "percent":
                 # water temperature and/or pressure have not been recorded
                 if do_ps == -1:
-                    self.ysi_val.setText('-')
+                    self.ysi_val.setText('00.0')
                 else:
-                    self.ysi_val.setText(f"{100 * do_ps:.0f}")
+                    # cap max value displayed to 999%
+                    display_val = 100 * do_ps
+                    display_val = 999 if display_val >= 1000 else display_val
+                    self.ysi_val.setText(f"{display_val:0>3.0f}")
                 self.ysi_unit.setText('%')
             else:
-                self.ysi_val.setText(f"{do_mgl:.1f}")
+                # cap max value displayed to 99.9 mg/l
+                display_val = do_mgl
+                display_val = 99.9 if display_val >= 100 else display_val
+                self.ysi_val.setText(f"{display_val:0>2.1f}")
                 self.ysi_unit.setText('mg/l')
 
         # update ysi color
