@@ -8,11 +8,7 @@ from scipy.optimize import curve_fit
 import pandas as pd
 import json, logging, time, os, sys
 from time import sleep
-from datetime import datetime
-import subprocess
-import serial
 from subprocess import call
-from converter import convert_mgl_to_raw, convert_raw_to_mgl, to_fahrenheit, to_celcius
 
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QMutex, QMutexLocker
 
@@ -41,11 +37,10 @@ class BluetoothReader(QObject):
         's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
     }
 
-    def __init__(self, ble_mutex, sample_mutex):
+    def __init__(self, ble_mutex):
         super().__init__()
         self.transmission_timeouts = 0
         self.ble_mutex = ble_mutex
-        self.sample_mutex = sample_mutex
         self.ble = BLERadio()
         self._abort = False
 
@@ -181,16 +176,12 @@ class BluetoothReader(QObject):
                 self.sdata['sample_hz'] = float(value[0])
 
             elif key == "dsize":
-                # prevent truck thread from accessing data until both values are updated
-                with QMutexLocker(self.sample_mutex):
-                    self.prev_sample_size = self.current_sample_size
-                    self.current_sample_size = int(value[0])         
+                self.prev_sample_size = self.current_sample_size
+                self.current_sample_size = int(value[0])         
 
             elif key == "dstart":
-                # prevent truck thread from accessing data until both values are updated
-                with QMutexLocker(self.sample_mutex):
-                    self.prev_sample_size = self.current_sample_size
-                    self.current_sample_size = int(value[0].strip())
+                self.prev_sample_size = self.current_sample_size
+                self.current_sample_size = int(value[0].strip())
                 self.data_counter = 0
                 self.sdata["do_vals"] = []
                 self.sdata["temp_vals"] = []

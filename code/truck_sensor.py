@@ -30,9 +30,6 @@ class TruckSensor(QThread):
     ysi_data = pyqtSignal(float, float)
     calibration_data = pyqtSignal(dict)
 
-    # mutex for sample size
-    sample_mutex = QMutex()
-
     _abort = False
     sdata = {'pid':'unk25', 'prev_pid':'unk25', 'do':0, 'do_mgl':0, 'ysi_do':0, 'ysi_do_mgl':0, 'sample_hz':1}
     #TODO: sample hz should be pulled from settings
@@ -116,7 +113,7 @@ class TruckSensor(QThread):
 
 
     def init_ble(self):
-        self.ble = BluetoothReader(self.ble_mutex, self.sample_mutex)
+        self.ble = BluetoothReader(self.ble_mutex)
         if self.ble.connect():
             self.sync_ble_sdata()
             self.ble.set_lights('navigation')
@@ -142,7 +139,7 @@ class TruckSensor(QThread):
 
     def init_message_scheduler(self):
         self.scheduled_msgs = {}
-        self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.1, 'timer':0}
+        self.scheduled_msgs['s_size'] = {'callback':self.ble.get_sample_size, 'period':1.2, 'timer':0}
         self.scheduled_msgs['batt']   = {'callback':self.ble.get_battery, 'period':10, 'timer':0}
         self.scheduled_msgs['sync']   = {'callback':self.sync_ble_sdata, 'period':15, 'timer':0}
 
@@ -228,10 +225,8 @@ class TruckSensor(QThread):
                     self.sync_ble_sdata()
             
             # RUNS WHEN SENSOR IS CONNECTED 
-            # prevent BLE from updating values until copied
-            with QMutexLocker(self.sample_mutex):
-                current_sample_size = self.ble.current_sample_size
-                prev_sample_size = self.ble.prev_sample_size
+            current_sample_size = self.ble.current_sample_size
+            prev_sample_size = self.ble.prev_sample_size
 
             self.send_scheduled_messages()
             # sensor is connected with no data
