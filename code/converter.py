@@ -126,9 +126,13 @@ def calculate_do_fit(do_vals, max_time=30, sample_hz=1):
 
     except Exception as e:
         logger.info("curve fit failed, defaulting to line of best fit")
-
-        popt = np.polyfit(time, do_vals, 1)
-        fit_type = "linear"
+        try:
+            popt = np.polyfit(time, do_vals, 1)
+            fit_type = "linear"
+        except Exception as e:
+            logger.info("line of best fit failed, what did you do to the data?!\n %s", e)
+            fit_type = "none"
+            popt = 0
 
     return popt, fit_type
 
@@ -143,9 +147,10 @@ def generate_do(x, popt, fit_type):
     '''
     if fit_type == "curve":
         y = exp_func(x, *popt)
-    else:
+    elif fit_type == "linear":
         y = np.polyval(popt, x)
-
+    else:
+        y = 0 * x # set y to 0
     return y
 
 
