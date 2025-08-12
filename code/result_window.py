@@ -363,7 +363,7 @@ class ResultWindow(QWidget):
             time_hboi = time_hboi[time_hboi <= sample_stop_time]
 
             # generate time array for ysi sensor
-            time_ysi = np.arange(len(self.data['do_vals'])) / self.data['sample_hz']
+            time_ysi = np.arange(len(self.data['ysi_do_arr'])) / self.data['sample_hz']
             time_ysi = time_ysi[time_ysi <= sample_stop_time]
             
             # fit for HBOI SENSOR
