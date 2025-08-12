@@ -25,16 +25,16 @@ class BluetoothReader(QObject):
 
    # dictionary of commands (tx) and expected retunrs (rx)
     commands = {
-        'init_do': {'tx':'get init_do', 'rx':'init_do'},
-        'init_ps': {'tx':'get init_p', 'rx':'init_p'},
-        'battery': {'tx':'batt', 'rx':'v'},
+        'init_do': {'tx':'get init_do', 'rx':'init_do', 'size':2},
+        'init_ps': {'tx':'get init_p', 'rx':'init_p', 'size':2},
+        'battery': {'tx':'batt', 'rx':'v', 'size':4},
         's_reset': {'tx':'sample reset', 'rx':''},
-        's_size' : {'tx':'sample size', 'rx':'dsize'},
+        's_size' : {'tx':'sample size', 'rx':'dsize', 'size':2},
         's_print': {'tx':'sample print', 'rx':'dstart', 'end':'dfinish'},
-        'cal_do' : {'tx':'cal do', 'rx':'init do'},
-        'cal_ps' : {'tx':'cal ps', 'rx':'init p'},
+        'cal_do' : {'tx':'cal do', 'rx':'init do', 'size':2},
+        'cal_ps' : {'tx':'cal ps', 'rx':'init p', 'size':2},
         'xmas'   : {'tx':'set light xmas', 'rx':''},
-        's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz'},
+        's_rate' : {'tx':'get sample_hz', 'rx':'sample_hz', 'size':2},
     }
 
     def __init__(self, ble_mutex):
@@ -140,7 +140,7 @@ class BluetoothReader(QObject):
         return False
     
     def set_threshold(self, hpa):
-        command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold'}
+        command = {'tx':f"set threshold {int(hpa)}", 'rx':'threshold', 'size':2}
         msg = self.send_receive_command(command)
         # failed if no response
         if len(msg) < 2:
@@ -180,8 +180,8 @@ class BluetoothReader(QObject):
                 self.current_sample_size = int(value[0])         
 
             elif key == "dstart":
-                self.prev_sample_size = self.current_sample_size
-                self.current_sample_size = int(value[0].strip())
+                # self.prev_sample_size = self.current_sample_size
+                # self.current_sample_size = int(value[0].strip())
                 self.data_counter = 0
                 self.sdata["do_vals"] = []
                 self.sdata["temp_vals"] = []
@@ -241,7 +241,12 @@ class BluetoothReader(QObject):
                 msg = msg.replace("\n","")
                 msg = msg.lower()
                 msg = msg.split(",")
+                # check message length if defined
+                if command.get('size'):
+                    if command.get('size') != len(msg):
+                        logger.info("ble message corrupted %s", msg)
                 if len(msg) >= 1:
+                    logger.debug("message received %s", msg)
                     # handle first response
                     if msg[0] == command['rx']:
                         receiving_array = True
