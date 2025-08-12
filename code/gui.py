@@ -1,8 +1,14 @@
-ENABLE_DEBUG = False # set true to print logs to console and collect debug level logs
+ENABLE_DEBUG = False  # set true to print logs to console and collect debug level logs
 
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QGridLayout, QCheckBox, QMessageBox, QDialog
+    QApplication,
+    QWidget,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
+    QDialog,
 )
 from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal, QObject, QMutex, QMutexLocker
 from PyQt5.QtGui import QIcon, QCursor
@@ -29,13 +35,13 @@ import logging
 from logging.handlers import RotatingFileHandler
 import queue
 import argparse
-import sensor
 import truck_sensor
 from gps_sensor import degToCompass
 import gc
 import psutil
 
 import faulthandler
+
 faulthandler.enable()
 
 logger = logging.getLogger(__name__)
@@ -43,12 +49,13 @@ logger = logging.getLogger(__name__)
 #     print('no display found. Using :0.0')
 #     os.environ.__setitem__('DISPLAY', ':0.0')
 
+
 class DOApp(QWidget):
     def __init__(self):
         super().__init__()
         # global mutexes
-        self.database_mutex  = QMutex() # control access to datbase folder
-        self.csv_mutex = QMutex() # control access to setting/calibration.csv 
+        self.database_mutex = QMutex()  # control access to datbase folder
+        self.csv_mutex = QMutex()  # control access to setting/calibration.csv
         self.ble_mutex = QMutex()
 
         # DEBUGGER
@@ -60,21 +67,30 @@ class DOApp(QWidget):
             self.debug_timer.timeout.connect(self.on_debug_timer)
             self.debug_timer.setInterval(10000)
             self.debug_timer.start()
-    
-        #status message queue
+
+        # status message queue
         self.status_q = queue.Queue()
-        #status message timer
+        # status message timer
         self.status_timer = QTimer()
         self.status_timer.timeout.connect(self.on_status_timer)
+        self.status_timer.setSingleShot(True)
         self.status_timer.setInterval(5000)
-        self.status = None # create status in case send_status called too soon
-        
+        self.status = None  # create status in case send_status called too soon
+
         #### LOGGING ####
         # formatter for all handlers
-        fileFormatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+        fileFormatter = logging.Formatter(
+            "%(asctime)s %(name)s %(levelname)s: %(message)s"
+        )
         # rotating log file
-        fileHandler = RotatingFileHandler('log.log', mode='a', maxBytes=5*1024*1024, 
-                                 backupCount=3, encoding=None, delay=False)
+        fileHandler = RotatingFileHandler(
+            "log.log",
+            mode="a",
+            maxBytes=5 * 1024 * 1024,
+            backupCount=3,
+            encoding=None,
+            delay=False,
+        )
         fileHandler.setFormatter(fileFormatter)
         fileHandler.setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
         # custom logger to print messages to terminal/status widget
@@ -91,8 +107,8 @@ class DOApp(QWidget):
             handler.addFilter(localFilter)
         # set log level for overall logger
         logging.getLogger().setLevel((logging.DEBUG if ENABLE_DEBUG else logging.INFO))
-        
-        logger.info('\nSTARTING APPLICATION')
+
+        logger.info("\nSTARTING APPLICATION")
         self.current_time = datetime.now()
 
         self.setWindowTitle("DO Monitor")
@@ -128,7 +144,9 @@ class DOApp(QWidget):
         # self.timer.start()
 
     def setup_thread(self):
-        self.thread = TruckSensor(self.calibration, self.settings, self.database_mutex, self.ble_mutex)
+        self.thread = TruckSensor(
+            self.calibration, self.settings, self.database_mutex, self.ble_mutex
+        )
         self.thread.unit = self.unit
         self.thread.update_data.connect(self.on_data_update)
         self.thread.update_pond_data.connect(self.on_update_pond_data)
@@ -138,7 +156,7 @@ class DOApp(QWidget):
         self.thread.start()
 
     def setup_ui(self):
-        os.popen('sudo hciconfig hci0 reset')
+        os.popen("sudo hciconfig hci0 reset")
         main_layout = QVBoxLayout()
 
         # ==== Top Bar ====
@@ -146,17 +164,21 @@ class DOApp(QWidget):
 
         self.lbl_mgl = QLabel("mg/l")
         self.lbl_percent = QLabel("%")
-        
+
         if self.unit == "percent":
             self.unit_toggle = ToggleSwitch(checked=True)
             self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
+            self.lbl_percent.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: bold;"
+            )
         else:
             self.unit_toggle = ToggleSwitch(checked=False)
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
+            self.lbl_mgl.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: bold;"
+            )
             self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px;")
         self.unit_toggle.toggled.connect(self.on_toggle_click)
-            
+
         top_bar.addSpacing(5)
         top_bar.addWidget(self.lbl_mgl)
         top_bar.addSpacing(5)
@@ -167,22 +189,26 @@ class DOApp(QWidget):
         settings_btn = QPushButton()
         settings_btn.setIcon(QIcon(draw_square_teeth_gear_icon(size=50)))
         # settings_btn.setIcon(QIcon("settings.png"))
-        settings_btn.setIconSize(QSize(50, 50)) 
+        settings_btn.setIconSize(QSize(50, 50))
         settings_btn.setFixedSize(60, 60)
-        settings_btn.setStyleSheet("""
+        settings_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: transparent;
                 border: none;
             }
-        """)
+        """
+        )
         settings_btn.clicked.connect(self.open_settings_dialog)
         top_bar.addWidget(settings_btn)
         top_bar.addSpacing(5)
         self.led_status = LEDStatusWidget(status="disconnected")
         top_bar.addWidget(self.led_status)
         top_bar.addSpacing(5)
-        self.sid_val   = QLabel('')
-        self.sid_val.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold; padding-right: 10px;")
+        self.sid_val = QLabel("")
+        self.sid_val.setStyleSheet(
+            f"font-size: {self.base_font_size}px; font-weight: bold; padding-right: 10px;"
+        )
         top_bar.addWidget(self.sid_val)
         top_bar.addSpacing(5)
         self.battery_widget = BatteryWidget()
@@ -192,7 +218,8 @@ class DOApp(QWidget):
         # Exit Button (red X)
         exit_btn = QPushButton("X")
         exit_btn.setFixedSize(50, 50)
-        exit_btn.setStyleSheet(f"""
+        exit_btn.setStyleSheet(
+            f"""
             QPushButton {{
                 background-color: #e74c3c;
                 color: white;
@@ -201,7 +228,8 @@ class DOApp(QWidget):
                 border: none;
                 border-radius: 25px;
             }}
-        """)
+        """
+        )
         exit_btn.clicked.connect(self.close)
         top_bar.addWidget(exit_btn)
 
@@ -210,45 +238,69 @@ class DOApp(QWidget):
         # ==== Info Grid ====
         info_grid = QGridLayout()
 
-        pid_label   = QLabel('Pond')
-        ysi_label   = QLabel('YSI DO')
-        hboi_label  = QLabel('BLE DO')
-        timer_label = QLabel('TIMER')
-        
+        pid_label = QLabel("Pond")
+        ysi_label = QLabel("YSI DO")
+        hboi_label = QLabel("BLE DO")
+        timer_label = QLabel("TIMER")
 
-        self.pid_val   = QLabel('')
-        self.ysi_val   = QLabel('0')
-        self.hboi_val  = QLabel('0')
-        self.timer_val = QLabel('0')
-        self.status   = QLabel('')
-        self.status.setWordWrap(True) #allow multiple lines
+        self.pid_val = QLabel("")
+        self.ysi_val = QLabel("0")
+        self.hboi_val = QLabel("0")
+        self.timer_val = QLabel("0")
+        self.status = QLabel("")
+        self.status.setWordWrap(True)  # allow multiple lines
         self.status.setFixedWidth(550)
 
-        self.hboi_unit = QLabel('%' if self.unit == 'percent' else 'mg/l')
-        self.ysi_unit  = QLabel('%' if self.unit == 'percent' else 'mg/l')
-        self.timer_unit = QLabel('s')
-        
+        self.hboi_unit = QLabel("%" if self.unit == "percent" else "mg/l")
+        self.ysi_unit = QLabel("%" if self.unit == "percent" else "mg/l")
+        self.timer_unit = QLabel("s")
 
         pid_label.setStyleSheet(f"font-size: {self.label_font_large}px;")
-        ysi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
-        hboi_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;")
-        timer_label.setStyleSheet(f"font-size: {self.label_font_large}px; padding-left: 10px;") 
+        ysi_label.setStyleSheet(
+            f"font-size: {self.label_font_large}px; padding-left: 10px;"
+        )
+        hboi_label.setStyleSheet(
+            f"font-size: {self.label_font_large}px; padding-left: 10px;"
+        )
+        timer_label.setStyleSheet(
+            f"font-size: {self.label_font_large}px; padding-left: 10px;"
+        )
 
-        self.pid_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-right: 10px;")
-        self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
-        self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
-        self.timer_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold;")
-        self.status.setStyleSheet(f"font-size: {self.status_font}px; font-weight: bold;")
+        self.pid_val.setStyleSheet(
+            f"font-size: {self.label_font_xlarge}px; font-weight: bold; padding-right: 10px;"
+        )
+        self.ysi_val.setStyleSheet(
+            f"font-size: {self.label_font_xlarge}px; font-weight: bold;"
+        )
+        self.hboi_val.setStyleSheet(
+            f"font-size: {self.label_font_xlarge}px; font-weight: bold;"
+        )
+        self.timer_val.setStyleSheet(
+            f"font-size: {self.label_font_xlarge}px; font-weight: bold;"
+        )
+        self.status.setStyleSheet(
+            f"font-size: {self.status_font}px; font-weight: bold;"
+        )
 
-        self.hboi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
-        self.ysi_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
-        self.timer_unit.setStyleSheet(f"font-size: {self.unit_font}px; font-weight: bold;")
+        self.hboi_unit.setStyleSheet(
+            f"font-size: {self.unit_font}px; font-weight: bold;"
+        )
+        self.ysi_unit.setStyleSheet(
+            f"font-size: {self.unit_font}px; font-weight: bold;"
+        )
+        self.timer_unit.setStyleSheet(
+            f"font-size: {self.unit_font}px; font-weight: bold;"
+        )
 
         # HEADING/GPS WIDGETS
         self.hdg_crd = QLabel("")
-        self.hdg_crd.setStyleSheet(f"font-size: {self.label_font_large}px; font-weight: bold;")
+        self.hdg_crd.setStyleSheet(
+            f"font-size: {self.label_font_large}px; font-weight: bold;"
+        )
         self.hdg_deg = QLabel("")
-        self.hdg_deg.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
+        self.hdg_deg.setStyleSheet(
+            f"font-size: {self.base_font_size}px; font-weight: bold;"
+        )
         hdg_layout = QVBoxLayout()
         hdg_crd_layout = QHBoxLayout()
         hdg_crd_layout.addStretch()
@@ -270,41 +322,47 @@ class DOApp(QWidget):
         nsat_label = QLabel("NSAT")
         nsat_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight;")
         self.nsat_val = QLabel("0")
-        self.nsat_val.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight: bold;")
+        self.nsat_val.setStyleSheet(
+            f"font-size: {self.base_font_size}px; font-weight: bold;"
+        )
         lat_label = QLabel("LAT")
-        lat_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight; padding-left: 5px")
+        lat_label.setStyleSheet(
+            f"font-size: {self.base_font_size}px; font-weight; padding-left: 5px"
+        )
         lng_label = QLabel("LNG")
-        lng_label.setStyleSheet(f"font-size: {self.base_font_size}px; font-weight; padding-left: 5px")
+        lng_label.setStyleSheet(
+            f"font-size: {self.base_font_size}px; font-weight; padding-left: 5px"
+        )
         self.lat_val = QLabel("0.0")
         self.lng_val = QLabel("0.0")
         self.lat_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
         self.lng_val.setStyleSheet(f"font-size: {self.base_font_size}px;")
 
         gps_layout = QGridLayout()
-        gps_layout.addWidget(nsat_label,   0, 0, Qt.AlignCenter | Qt.AlignBottom)
-        gps_layout.addWidget(self.nsat_val,1, 0, Qt.AlignCenter | Qt.AlignTop)
-        gps_layout.addWidget(lat_label,    0, 1, Qt.AlignLeft | Qt.AlignBottom)
-        gps_layout.addWidget(lng_label,    1, 1, Qt.AlignLeft | Qt.AlignTop)
+        gps_layout.addWidget(nsat_label, 0, 0, Qt.AlignCenter | Qt.AlignBottom)
+        gps_layout.addWidget(self.nsat_val, 1, 0, Qt.AlignCenter | Qt.AlignTop)
+        gps_layout.addWidget(lat_label, 0, 1, Qt.AlignLeft | Qt.AlignBottom)
+        gps_layout.addWidget(lng_label, 1, 1, Qt.AlignLeft | Qt.AlignTop)
         gps_layout.addWidget(self.lat_val, 0, 2, Qt.AlignRight | Qt.AlignBottom)
         gps_layout.addWidget(self.lng_val, 1, 2, Qt.AlignRight | Qt.AlignTop)
         gps_widget = QWidget()
         gps_widget.setLayout(gps_layout)
 
-        info_grid.addWidget(hboi_label,     0, 0, Qt.AlignLeft)
-        info_grid.addWidget(self.hboi_val,  0, 1, Qt.AlignRight)
+        info_grid.addWidget(hboi_label, 0, 0, Qt.AlignLeft)
+        info_grid.addWidget(self.hboi_val, 0, 1, Qt.AlignRight)
         info_grid.addWidget(self.hboi_unit, 0, 2, Qt.AlignLeft)
-        info_grid.addWidget(pid_label,      0, 3, Qt.AlignLeft)
-        info_grid.addWidget(self.pid_val,   0, 4, Qt.AlignRight)
-        info_grid.addWidget(ysi_label,      1, 0, Qt.AlignLeft)
-        info_grid.addWidget(self.ysi_val,   1, 1, Qt.AlignRight)
-        info_grid.addWidget(self.ysi_unit , 1, 2, Qt.AlignLeft)
-        info_grid.addWidget(hdg_widget,     1, 3, Qt.AlignCenter)
-        info_grid.addWidget(gps_widget,     1, 4, Qt.AlignLeft)
-        info_grid.addWidget(timer_label,    2, 0, Qt.AlignLeft)
+        info_grid.addWidget(pid_label, 0, 3, Qt.AlignLeft)
+        info_grid.addWidget(self.pid_val, 0, 4, Qt.AlignRight)
+        info_grid.addWidget(ysi_label, 1, 0, Qt.AlignLeft)
+        info_grid.addWidget(self.ysi_val, 1, 1, Qt.AlignRight)
+        info_grid.addWidget(self.ysi_unit, 1, 2, Qt.AlignLeft)
+        info_grid.addWidget(hdg_widget, 1, 3, Qt.AlignCenter)
+        info_grid.addWidget(gps_widget, 1, 4, Qt.AlignLeft)
+        info_grid.addWidget(timer_label, 2, 0, Qt.AlignLeft)
         info_grid.addWidget(self.timer_val, 2, 1, Qt.AlignRight)
-        info_grid.addWidget(self.timer_unit,2, 2, Qt.AlignLeft)
-        info_grid.addWidget(self.status,    2, 3, 1, 2, Qt.AlignLeft)
-        
+        info_grid.addWidget(self.timer_unit, 2, 2, Qt.AlignLeft)
+        info_grid.addWidget(self.status, 2, 3, 1, 2, Qt.AlignLeft)
+
         main_layout.addLayout(info_grid)
 
         # ==== Bottom Buttons ====
@@ -318,7 +376,8 @@ class DOApp(QWidget):
         for label, handler in buttons:
             btn = QPushButton(label)
             btn.setFixedHeight(self.base_font_size * 4)
-            btn.setStyleSheet(f"""
+            btn.setStyleSheet(
+                f"""
                 QPushButton {{
                     background-color: #333;
                     border: 1px solid white;
@@ -332,7 +391,8 @@ class DOApp(QWidget):
                 QPushButton:pressed {{
                     background-color: #2ecc71;
                 }}
-            """)
+            """
+            )
             btn.clicked.connect(handler)
             btn_layout.addWidget(btn)
 
@@ -350,56 +410,67 @@ class DOApp(QWidget):
         self.save_local_csv(self.calibration, "calibration.csv")
 
     def on_data_update(self, data_dict):
-        if 'battv' in data_dict:
-            batt_percent = int((data_dict["battv"] - self.settings['min_battv']) / (self.settings['max_battv'] - self.settings['min_battv']) * 100)
+        if "battv" in data_dict:
+            batt_percent = int(
+                (data_dict["battv"] - self.settings["min_battv"])
+                / (self.settings["max_battv"] - self.settings["min_battv"])
+                * 100
+            )
             if batt_percent > 100:
                 batt_percent = 100
-            batt_charge = ("not charging" != data_dict['batt_status'][:12])
+            batt_charge = "not charging" != data_dict["batt_status"][:12]
             self.battery_widget.set_battery_status(batt_percent, batt_charge)
-        if 'connection' in data_dict:
-            if data_dict['connection']:
+        if "connection" in data_dict:
+            if data_dict["connection"]:
                 self.led_status.set_status("connected_ready")
             else:
                 self.led_status.set_status("disconnected")
-        if 'name' in data_dict:
-            self.sid_val.setText(str(data_dict['name']))
-        if 'pid' in data_dict:
-            self.pid_val.setText(str(data_dict['pid']))
-        if 'do' in data_dict:
+        if "name" in data_dict:
+            self.sid_val.setText(str(data_dict["name"]))
+        if "pid" in data_dict:
+            self.pid_val.setText(str(data_dict["pid"]))
+        if "do" in data_dict:
             if self.unit == "percent":
                 # cap max value displayed to 999%
-                display_val = 100 * data_dict['do']
+                display_val = 100 * data_dict["do"]
                 display_val = 999 if display_val >= 1000 else display_val
                 self.hboi_val.setText(f"{display_val:3.0f}")
-                self.hboi_unit.setText('%')
+                self.hboi_unit.setText("%")
             else:
                 # cap max value displayed to 99.9 mg/l
-                display_val = data_dict['do_mgl']
+                display_val = data_dict["do_mgl"]
                 display_val = 99.9 if display_val >= 100 else display_val
                 self.hboi_val.setText(f"{display_val:4.1f}")
-                self.hboi_unit.setText('mg/l')
+                self.hboi_unit.setText("mg/l")
             # update label color based on mgl value in setting.setting
-            do_val = data_dict['do_mgl']
+            do_val = data_dict["do_mgl"]
             if do_val < self.min_do:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: red;")
+                self.hboi_val.setStyleSheet(
+                    f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: red;"
+                )
             elif self.min_do <= do_val < self.good_do:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;")
+                self.hboi_val.setStyleSheet(
+                    f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;"
+                )
             else:
-                self.hboi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
-        if 'ysi_do' in data_dict:
-            self.on_ysi_update(do_ps=data_dict['ysi_do'], do_mgl=data_dict['ysi_do_mgl'], smooth=False)
-        if 'hdg' in data_dict:
+                self.hboi_val.setStyleSheet(
+                    f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;"
+                )
+        if "ysi_do" in data_dict:
+            self.on_ysi_update(
+                do_ps=data_dict["ysi_do"], do_mgl=data_dict["ysi_do_mgl"], smooth=False
+            )
+        if "hdg" in data_dict:
             # handle case without valid IMU or GPS heading
-            if data_dict['hdg_type'] == "none":
+            if data_dict["hdg_type"] == "none":
                 self.hdg_deg.setText("")
                 self.hdg_crd.setText("")
             else:
                 self.hdg_deg.setText(f"{data_dict['hdg']:03.0f}\N{DEGREE SIGN}")
-                self.hdg_crd.setText(degToCompass(data_dict['hdg']))
+                self.hdg_crd.setText(degToCompass(data_dict["hdg"]))
             self.nsat_val.setText(f"{data_dict['nsat']:02d}")
             self.lat_val.setText(f"{data_dict['lat']:.5f}")
             self.lng_val.setText(f"{data_dict['lng']:.5f}")
-
 
     def on_underwater_signal(self, value):
         # true if underwater, otherwise false
@@ -407,17 +478,17 @@ class DOApp(QWidget):
             self.counter_time = 0
             self.timer.start()
             self.timer_val.setText(f"{self.counter_time}")
-            self.send_status('collecting data')
+            self.send_status("collecting data")
 
         else:
             if self.timer.isActive():
                 self.timer.stop()
-                self.send_status('collection stopped')
+                self.send_status("collection stopped")
 
     def on_ysi_update(self, do_ps, do_mgl, smooth=True):
-        '''
+        """
         smooth applies moving average to live display only.
-        '''
+        """
         if smooth:
             alpha = 0.5
             if self.ysi_val.text().isnumeric():
@@ -428,33 +499,39 @@ class DOApp(QWidget):
                     else:
                         do_mgl = alpha * do_mgl + (1 - alpha) * old_data
                 except Exception as e:
-                    logger.warning(f'failed smooth ysi data \n{e}')
+                    logger.warning(f"failed smooth ysi data \n{e}")
         # only update main screen when in normal operations
         if self.thread.mode == truck_sensor.Mode.normal:
             if self.unit == "percent":
                 # water temperature and/or pressure have not been recorded
                 if do_ps == -1:
-                    self.ysi_val.setText('00.0')
+                    self.ysi_val.setText("00.0")
                 else:
                     # cap max value displayed to 999%
                     display_val = 100 * do_ps
                     display_val = 999 if display_val >= 1000 else display_val
                     self.ysi_val.setText(f"{display_val:3.0f}")
-                self.ysi_unit.setText('%')
+                self.ysi_unit.setText("%")
             else:
                 # cap max value displayed to 99.9 mg/l
                 display_val = do_mgl
                 display_val = 99.9 if display_val >= 100 else display_val
                 self.ysi_val.setText(f"{display_val:4.1f}")
-                self.ysi_unit.setText('mg/l')
+                self.ysi_unit.setText("mg/l")
 
         # update ysi color
         if do_mgl < self.min_do:
-            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: red;")
+            self.ysi_val.setStyleSheet(
+                f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: red;"
+            )
         elif self.min_do <= do_mgl < self.good_do:
-           self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;")
+            self.ysi_val.setStyleSheet(
+                f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: yellow;"
+            )
         else:
-            self.ysi_val.setStyleSheet(f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;")
+            self.ysi_val.setStyleSheet(
+                f"font-size: {self.label_font_xlarge}px; font-weight: bold; color: limegreen;"
+            )
 
     def on_status_timer(self):
         msg = ""
@@ -467,22 +544,26 @@ class DOApp(QWidget):
                 msg = self.status_q.get_nowait()
             except:
                 pass
-                
+
             if isinstance(msg, dict):
-                txt = msg.get('text', 'status error')
-                txt = txt[:100] # limit to first 50 characters
-                color = msg.get('color', 'white')
-                #shrink font size as message size scales
+                txt = msg.get("text", "status error")
+                txt = txt[:100]  # limit to first 100 characters
+                color = msg.get("color", "white")
+                # shrink font size as message size scales
                 font = self.status_font
                 if len(txt) > 60:
-                    font = int(font * 0.25)
+                    font = int(font * 0.4)
                 elif len(txt) > 40:
-                    font = int(font * 0.5)
+                    font = int(font * 0.6)
                 elif len(txt) > 20:
                     font = int(font * 0.75)
-                txt = "\u200b".join(txt) # add zero-width spacing to text (allows word wrapping)
+                txt = "\u200b".join(
+                    txt
+                )  # add zero-width spacing to text (allows word wrapping)
                 if self.status:
-                    self.status.setStyleSheet(f"font-size: {font}px; color: {color}; font-weight: bold;")
+                    self.status.setStyleSheet(
+                        f"font-size: {font}px; color: {color}; font-weight: bold;"
+                    )
                     self.status.setText(txt)
                 self.status_timer.start()
         # display nothing
@@ -490,49 +571,61 @@ class DOApp(QWidget):
             self.status.setText("")
 
     def send_status(self, msg, color="white"):
-        '''
+        """
         call this function to add a message to the status queue
         parameters:
-        '''
-        self.status_q.put({'text':msg, 'color':color})
+        """
+        self.status_q.put({"text": msg, "color": color})
         # not messages currently displayed
         if not self.status_timer.isActive():
             self.on_status_timer()
- 
 
     def on_counter(self):
         self.counter_time += 1
         # close result if open
-        if hasattr(self, 'result_window') and self.result_window is not None:
+        if hasattr(self, "result_window") and self.result_window is not None:
             try:
                 self.result_window.close()
             except Exception as e:
                 logger.info("result window already closed %s", e)
-        if self.counter_time == 30: # TODO: this should be exposed in settings.csv
-            self.send_status('ready to pick up')
+        if self.counter_time == 30:  # TODO: this should be exposed in settings.csv
+            self.send_status("ready to pick up")
 
         self.timer_val.setText(f"{self.counter_time}")
 
     def on_update_pond_data(self, data_dict):
-        self.result_window = ResultWindow(data_dict, self.unit, self.min_do, self.good_do, int(self.settings['autoclose_sec']))
+        self.result_window = ResultWindow(
+            data_dict,
+            self.unit,
+            self.min_do,
+            self.good_do,
+            int(self.settings["autoclose_sec"]),
+        )
         self.result_window.closed_data.connect(self.on_result_window_closed)
         self.result_window.set_do_temp_pressure(sample_stop_time=30)
 
     def on_result_window_closed(self, result_data):
         self.thread.update_database(result_data)
-        
 
     def on_toggle_click(self):
         if self.unit_toggle.isChecked() and self.unit != "percent":
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: normal;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
+            self.lbl_mgl.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: normal;"
+            )
+            self.lbl_percent.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: bold;"
+            )
             self.unit = "percent"
         elif self.unit == "percent":
-            self.lbl_mgl.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: bold;")
-            self.lbl_percent.setStyleSheet(f"font-size: {int(self.base_font_size)}px; font-weight: normal;")
+            self.lbl_mgl.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: bold;"
+            )
+            self.lbl_percent.setStyleSheet(
+                f"font-size: {int(self.base_font_size)}px; font-weight: normal;"
+            )
             self.unit = "mgl"
         # save unit permanently
-        self.settings['unit'] = self.unit
+        self.settings["unit"] = self.unit
         self.save_local_csv(self.settings, "settings.csv")
         self.thread.toggle_unit(self.unit)
 
@@ -544,41 +637,47 @@ class DOApp(QWidget):
                 success = self.thread.calibrate_DO()
                 if success:
                     now = datetime.now()
-                    formatted_time = now.strftime("%m/%d/%y %I:%M %p") 
+                    formatted_time = now.strftime("%m/%d/%y %I:%M %p")
                     self.last_calibration = formatted_time
-                    self.calibration['last_calibration'] = self.last_calibration
+                    self.calibration["last_calibration"] = self.last_calibration
                     self.save_local_csv(self.calibration, "calibration.csv")
             else:
                 # user clicked no
                 pass
-    
+
     def on_history_log_click(self):
-        self.history_window = HistoryLogWindow(self.unit, self.min_do, self.good_do, self.database_mutex)
+        self.history_window = HistoryLogWindow(
+            self.unit, self.min_do, self.good_do, self.database_mutex
+        )
 
     def on_calibrate_ysi_click(self):
         if not self.thread.underwater:
-            logger.debug('starting ysi calibration')
+            logger.debug("starting ysi calibration")
             self.thread.start_ysi_calibration(5)
             self.ysi_window = YsiCalibrationWindow(self.thread.ysi_data)
-            self.ysi_window.ysi_calibration_complete.connect(self.ysi_calibration_complete)
+            self.ysi_window.ysi_calibration_complete.connect(
+                self.ysi_calibration_complete
+            )
 
     def ysi_calibration_complete(self, data, save):
         logger.debug(f"setting page closed save? {save} \n{data}")
         self.thread.stop_ysi_calibration()
         if save:
-            self.calibration['ysi_zero_scale'] = data['zero']
-            self.calibration['ysi_full_scale'] = data['full_scale']
+            self.calibration["ysi_zero_scale"] = data["zero"]
+            self.calibration["ysi_full_scale"] = data["full_scale"]
             self.save_local_csv(self.calibration, "calibration.csv")
             self.thread.calibration = self.calibration
-            self.thread.set_ysi_calibration(data['zero'], data['full_scale'])
-            logger.info(f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}")
-            self.send_status('ysi calibration success', 'limegreen')
+            self.thread.set_ysi_calibration(data["zero"], data["full_scale"])
+            logger.info(
+                f"ysi calibration complete saved new values {data['zero']} {data['full_scale']}"
+            )
+            self.send_status("ysi calibration success", "limegreen")
         else:
             logger.info("ysi calibration not saved")
-            self.send_status('ysi calibration not saved')
+            self.send_status("ysi calibration not saved")
 
     def open_settings_dialog(self):
-        logger.debug('opening settings page')
+        logger.debug("opening settings page")
         self.settings_window = SettingDialog(self.settings)
         self.settings_window.setting_complete.connect(self.setting_complete)
 
@@ -589,16 +688,16 @@ class DOApp(QWidget):
                 self.settings[i] = data[i]
             self.save_local_csv(self.settings, "settings.csv")
             self.thread.settings = self.settings
-            self.thread.set_pressure_threshold(data['depth_threshold'])
+            self.thread.set_pressure_threshold(data["depth_threshold"])
             logger.info(f"settings successfully saved {data}")
-            self.send_status('settings saved', 'limegreen')
+            self.send_status("settings saved", "limegreen")
         else:
             logger.info("settings not saved")
-            self.send_status('settings not saved')
+            self.send_status("settings not saved")
 
     def save_local_csv(self, data_dict, filename):
         with QMutexLocker(self.csv_mutex):
-            with open(filename, 'w', newline='') as csvfile:
+            with open(filename, "w", newline="") as csvfile:
                 try:
                     writer = csv.DictWriter(csvfile, fieldnames=["param", "value"])
                     writer.writeheader()
@@ -614,23 +713,23 @@ class DOApp(QWidget):
                     logger.debug("tried to save: %s", data_dict)
 
     def load_local_csv(self, filename):
-        '''
+        """
         Loads data from local csv files containing setting and calibration info. Files
-        nested in folders not supported. 
+        nested in folders not supported.
 
         setting.csv:      settings for gui
-        calibration.csv:  calibration information  
-        '''
+        calibration.csv:  calibration information
+        """
         data_dict = {}
         if os.path.exists(filename):
             with QMutexLocker(self.csv_mutex):
-                with open(filename, newline='') as csvfile:
+                with open(filename, newline="") as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
-                        key = row['param']
+                        key = row["param"]
                         # split into mutliple values
-                        value = row['value']
-                        value = value.split('$')
+                        value = row["value"]
+                        value = value.split("$")
                         # process single values
                         if len(value) == 1:
                             try:
@@ -647,9 +746,9 @@ class DOApp(QWidget):
                                     value_arr.append(val)
                             data_dict[key] = value_arr
                         try:
-                            value = float(row['value'])
+                            value = float(row["value"])
                         except:
-                            value = row['value']
+                            value = row["value"]
                         data_dict[key] = value
         else:
             logger.warning("could not load %s", filename)
@@ -675,10 +774,12 @@ class DOApp(QWidget):
 
             elif dialog.result == "test":
                 logger.info("sending test data to bring up results page")
-                with open('test.pickle', 'rb') as file:
+                with open("test.pickle", "rb") as file:
                     fake_data = pickle.load(file)
-                    
-                fake_data['sample_duration'] = len(fake_data['do_vals']) / fake_data['sample_hz']
+
+                fake_data["sample_duration"] = (
+                    len(fake_data["do_vals"]) / fake_data["sample_hz"]
+                )
                 self.thread.update_pond_data.emit(fake_data)
                 event.ignore()
             else:
@@ -686,7 +787,7 @@ class DOApp(QWidget):
         else:
             # User pressed Cancel or closed dialog
             event.ignore()
-    
+
     def on_debug_timer(self):
         self.debug_count += 1
         logger.debug("number of active QObjects: %s", len(QApplication.allWidgets()))
@@ -702,13 +803,20 @@ class DOApp(QWidget):
         # print all active widgets every 5 minutes
         # if self.debug_count % 30 == 0:
         #     for w in QApplication.allWidgets():
-        #         logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w) 
-        
+        #         logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w)
+
         # print open files
         if self.debug_count % 3:
             p = psutil.Process(self.pid)
-            logger.debug("total num of file descriptors %s", len(os.listdir(f"/proc/{self.pid}/fd")))
-            logger.debug("num of  real open files: %s\nopen files:\n%s",len(p.open_files()), p.open_files())
+            logger.debug(
+                "total num of file descriptors %s",
+                len(os.listdir(f"/proc/{self.pid}/fd")),
+            )
+            logger.debug(
+                "num of  real open files: %s\nopen files:\n%s",
+                len(p.open_files()),
+                p.open_files(),
+            )
             current_fds = set(os.listdir(f"/proc/{self.pid}/fd"))
             if len(current_fds) != len(self.debug_prev_fds):
                 new_fds = current_fds - self.debug_prev_fds
@@ -722,11 +830,26 @@ class DOApp(QWidget):
                 self.debug_prev_fds = current_fds
 
         self.debug_timer.start()
-            
+
+
 class localOnlyFilter(logging.Filter):
-    names = ['__main__', 'bt_sensor', 'converter', 'firebase_worker', 'gps_sensor', 'history_window', 'sensor', 'truck_sensor']
+    names = [
+        "__main__",
+        "bt_sensor",
+        "converter",
+        "firebase_worker",
+        "gps_sensor",
+        "history_window",
+        "sensor",
+        "truck_sensor",
+        "result_window",
+        "bno055",
+        "ysi_calibration",
+    ]
+
     def filter(self, record):
         return record.name in self.names
+
 
 class customLogHandler(logging.Handler, QObject):
     log_message = pyqtSignal(str, str)
@@ -738,10 +861,14 @@ class customLogHandler(logging.Handler, QObject):
     def emit(self, record):
         self.format(record)
         if ENABLE_DEBUG:
-            print(f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}")
+            print(
+                f"{record.relativeCreated/1000:.2f}: {record.levelname} {record.message}"
+            )
         # if from truck sensor code .INFO or level greater than info
-        if (record.name == "truck_sensor" and record.levelno > 10) or record.levelno > 20:
-            
+        if (
+            record.name == "truck_sensor" and record.levelno > 10
+        ) or record.levelno > 20:
+
             if record.levelno > 30:
                 color = "red"
             elif record.levelno > 20:
@@ -750,9 +877,10 @@ class customLogHandler(logging.Handler, QObject):
                 color = "white"
             self.log_message.emit(record.message, color)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="gui")
-    parser.add_argument('-debug', '-d', '-D', action='store_true')
+    parser.add_argument("-debug", "-d", "-D", action="store_true")
 
     args = parser.parse_args()
     ENABLE_DEBUG = args.debug
@@ -760,6 +888,3 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = DOApp()
     sys.exit(app.exec_())
-
-
-

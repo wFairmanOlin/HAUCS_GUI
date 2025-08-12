@@ -21,6 +21,7 @@ import logging
 #init logger
 logger = logging.getLogger(__name__)
 
+
 class ResultWindow(QWidget):
     closed_data = pyqtSignal(dict)
     image_path=None
