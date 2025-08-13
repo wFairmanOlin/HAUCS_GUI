@@ -224,12 +224,11 @@ class TruckSensor(QThread):
                     connection_count = 0
                     self.sync_ble_sdata()
             
-            # RUNS WHEN SENSOR IS CONNECTED 
-            current_sample_size = self.ble.current_sample_size
-            prev_sample_size = self.ble.prev_sample_size
+            # RUNS WHEN SENSOR IS CONNECTED
+            # SEND SCHEDULED MESSAGES MUST BE RUN FIRST 
             self.send_scheduled_messages()
             # sensor is connected with no data
-            if current_sample_size <= 0:
+            if self.ble.current_sample_size <= 0:
                 # sensor reconncected with no data available
                 if self.underwater:
                     logger.warning('sensor reconnected with no data, try again')
@@ -237,9 +236,9 @@ class TruckSensor(QThread):
                 self.ysi_do_mgl_arr = []
                 continue # continue sampling
             # sensor has data
-            elif current_sample_size > 0:
+            elif self.ble.current_sample_size > 0:
                 # sensor is actively collecting data
-                if prev_sample_size < current_sample_size:
+                if self.ble.prev_sample_size < self.ble.current_sample_size:
                     # underwater, trigger any underwater events
                     if not self.underwater:
                         self.sensor_underwater.emit("True")
@@ -247,13 +246,12 @@ class TruckSensor(QThread):
                     continue # continue sampling
 
             # ignore sample sizes less than 10, reset ysi mgl array
-            if current_sample_size < 10:
-                logger.warning(f"sensor reconnected with {current_sample_size} data points, try again")
+            if self.ble.current_sample_size < 10:
+                logger.warning(f"sensor reconnected with {self.ble.current_sample_size} data points, try again")
                 if self.underwater:
                     self.sensor_underwater.emit("False")
                 self.ble.set_sample_reset()
                 self.ysi_do_mgl_arr = []
-
                 continue
             
             # RUNS WHEN DATA IS AVAILABLE

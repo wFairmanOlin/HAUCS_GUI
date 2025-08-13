@@ -65,7 +65,7 @@ class DOApp(QWidget):
             self.debug_count = 0
             self.debug_timer = QTimer()
             self.debug_timer.timeout.connect(self.on_debug_timer)
-            self.debug_timer.setInterval(10000)
+            self.debug_timer.setInterval(30000)
             self.debug_timer.start()
 
         # status message queue
@@ -812,7 +812,7 @@ class DOApp(QWidget):
         #         logger.debug("widget: %s | %s | %s", type(w), w.objectName(), w)
 
         # print open files
-        if self.debug_count % 3:
+        if self.debug_count % 10:
             p = psutil.Process(self.pid)
             logger.debug(
                 "total num of file descriptors %s",

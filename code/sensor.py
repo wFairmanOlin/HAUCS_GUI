@@ -92,7 +92,7 @@ class I2CReader(QThread):
         }
         self.scheduled_msgs["hdg_offset"] = {
             "callback": self.update_heading_offset,
-            "period": 5,
+            "period": 10,
             "timer": time.monotonic(),
             "priority": Priority.low
         }
