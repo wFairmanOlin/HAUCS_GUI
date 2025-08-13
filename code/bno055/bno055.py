@@ -1,6 +1,6 @@
 # GLOBAL SETTINGS
 MAX_HISTORY = 100
-MIN_SPEED = 8
+MIN_SPEED = 30
 FILE_PATH = "bno055/offset_data.csv"
 
 import adafruit_bno055

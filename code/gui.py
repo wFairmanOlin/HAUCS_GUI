@@ -536,9 +536,8 @@ class DOApp(QWidget):
     def on_status_timer(self):
         msg = ""
         if self.status_q.qsize() > 0:
-            if self.status_q.qsize() > 1:
-                self.status_timer.setInterval(1000)
-            else:
+            # let the last message display longer
+            if self.status_q.qsize() == 1:
                 self.status_timer.setInterval(5000)
             try:
                 msg = self.status_q.get_nowait()
@@ -579,6 +578,8 @@ class DOApp(QWidget):
         # not messages currently displayed
         if not self.status_timer.isActive():
             self.on_status_timer()
+        else:
+            self.status_timer.setInterval(1000)
 
     def on_counter(self):
         self.counter_time += 1
